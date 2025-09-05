@@ -25,9 +25,8 @@ describe('suggest-native-alternatives rule', () => {
           code: 'import _ from "lodash-es"; const result = _.isArray(value);',
           errors: [
             {
-              message: 'Consider using native \'Array.isArray\' instead of lodash \'isArray\'. Check if value is an array.',
+              message: 'Consider using native \'Array.isArray(value)\' instead of lodash \'isArray\'. Check if value is an array.',
               type: 'ImportDeclaration',
-              suggestions: [],
             },
           ],
         },
@@ -35,9 +34,8 @@ describe('suggest-native-alternatives rule', () => {
           code: 'import lodash from "lodash-es"; const result = lodash.map(array, fn);',
           errors: [
             {
-              message: 'Consider using native \'Array.prototype.map\' instead of lodash \'map\'. Transform array elements.',
+              message: 'Consider using native \'array.map(fn)\' instead of lodash \'map\'. Transform array elements.',
               type: 'ImportDeclaration',
-              suggestions: [],
             },
           ],
         },
@@ -47,12 +45,10 @@ describe('suggest-native-alternatives rule', () => {
             {
               message: 'Consider using native \'typeof value === "string"\' instead of lodash \'isString\'. Check if value is string.',
               type: 'ImportDeclaration',
-              suggestions: [],
             },
             {
-              message: 'Consider using native \'Math.max\' instead of lodash \'max\'. Get maximum value.',
+              message: 'Consider using native \'Math.max(...array)\' instead of lodash \'max\'. Get maximum value.',
               type: 'ImportDeclaration',
-              suggestions: [],
             },
           ],
         },
@@ -71,15 +67,15 @@ describe('suggest-native-alternatives rule', () => {
           code: 'import { isArray, map, filter } from "lodash-es";',
           errors: [
             {
-              message: 'Consider using native \'Array.isArray\' instead of lodash \'isArray\'. Check if value is an array.',
+              message: 'Consider using native \'Array.isArray(value)\' instead of lodash \'isArray\'. Check if value is an array.',
               type: 'ImportSpecifier',
             },
             {
-              message: 'Consider using native \'Array.prototype.map\' instead of lodash \'map\'. Transform array elements.',
+              message: 'Consider using native \'array.map(fn)\' instead of lodash \'map\'. Transform array elements.',
               type: 'ImportSpecifier',
             },
             {
-              message: 'Consider using native \'Array.prototype.filter\' instead of lodash \'filter\'. Filter array elements.',
+              message: 'Consider using native \'array.filter(predicate)\' instead of lodash \'filter\'. Filter array elements.',
               type: 'ImportSpecifier',
             },
           ],
@@ -96,7 +92,7 @@ describe('suggest-native-alternatives rule', () => {
               type: 'ImportSpecifier',
             },
             {
-              message: 'Consider using native \'Object.keys\' instead of lodash \'keys\'. Get object keys.',
+              message: 'Consider using native \'Object.keys(object)\' instead of lodash \'keys\'. Get object keys.',
               type: 'ImportSpecifier',
             },
           ],
@@ -121,7 +117,6 @@ describe('suggest-native-alternatives rule', () => {
             {
               message: /Consider using native.*reverse/,
               type: 'ImportDeclaration',
-              suggestions: [],
             },
           ],
         },

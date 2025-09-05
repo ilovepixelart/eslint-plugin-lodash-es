@@ -4,8 +4,6 @@
 import type { Rule } from 'eslint'
 import type {
   ImportDeclaration,
-  ImportDefaultSpecifier,
-  ImportNamespaceSpecifier,
   ImportSpecifier,
 } from 'estree'
 import { Usage, getSourceCode, isLodashModule, findLodashUsages } from './utils'
@@ -85,7 +83,6 @@ const suggestNativeAlternatives: Rule.RuleModule = {
         additionalProperties: false,
       },
     ],
-    hasSuggestions: true,
   },
 
   create(context: Rule.RuleContext) {
@@ -96,100 +93,78 @@ const suggestNativeAlternatives: Rule.RuleModule = {
       ...context.options[0],
     }
 
+    /**
+     * Handle default/namespace imports reporting
+     */
+    function handleDefaultImports(node: ImportDeclaration, importName: string): void {
+      const fullSourceCode = sourceCode.getText()
+      const alternativeUsages = findNativeAlternativeUsages(fullSourceCode, importName, options)
+
+      for (const usage of alternativeUsages) {
+        const alternative = getNativeAlternative(usage.functionName)!
+
+        context.report({
+          node,
+          loc: {
+            start: sourceCode.getLocFromIndex(usage.start),
+            end: sourceCode.getLocFromIndex(usage.end),
+          },
+          message: `Consider using native '${alternative.example?.native || alternative.native}' instead of lodash '${usage.functionName}'. ${alternative.description}.`,
+        })
+      }
+    }
+
+    /**
+     * Handle destructured imports reporting
+     */
+    function handleDestructuredImports(destructuredSpecifiers: ImportSpecifier[]): void {
+      const destructuredFunctions = destructuredSpecifiers
+        .map(spec => (spec.imported.type === 'Identifier' ? spec.imported.name : ''))
+        .filter(name => name !== '')
+
+      const alternativeFunctions = findNativeAlternativeDestructuredFunctions(destructuredFunctions, options)
+
+      for (const { functionName, hasAlternative } of alternativeFunctions) {
+        if (!hasAlternative) continue
+
+        const alternative = getNativeAlternative(functionName)!
+        const specifier = destructuredSpecifiers.find(spec =>
+          spec.imported.type === 'Identifier' && spec.imported.name === functionName,
+        )
+
+        if (!specifier) continue
+
+        const noteText = alternative.notes ? ` Note: ${alternative.notes}` : ''
+        const message = `Consider using native '${alternative.example?.native || alternative.native}' instead of lodash '${functionName}'. ${alternative.description}.${noteText}`
+
+        context.report({
+          node: specifier,
+          message,
+        })
+      }
+    }
+
     return {
       ImportDeclaration(node: ImportDeclaration): void {
         const source = node.source.value as string
-
-        if (!isLodashModule(source)) {
-          return
-        }
+        if (!isLodashModule(source)) return
 
         // Check for default or namespace imports
         const defaultOrNamespaceSpecifier = node.specifiers.find(spec =>
           spec.type === 'ImportDefaultSpecifier' || spec.type === 'ImportNamespaceSpecifier',
-        ) as ImportDefaultSpecifier | ImportNamespaceSpecifier
+        )
 
         if (defaultOrNamespaceSpecifier) {
-          // Handle default/namespace imports: _.isArray(), lodash.isArray()
-          const fullSourceCode = sourceCode.getText()
-          const alternativeUsages = findNativeAlternativeUsages(
-            fullSourceCode,
-            defaultOrNamespaceSpecifier.local.name,
-            options,
-          )
-
-          for (const usage of alternativeUsages) {
-            const alternative = getNativeAlternative(usage.functionName)!
-
-            context.report({
-              node,
-              loc: {
-                start: sourceCode.getLocFromIndex(usage.start),
-                end: sourceCode.getLocFromIndex(usage.end),
-              },
-              message: `Consider using native '${alternative.native}' instead of lodash '${usage.functionName}'. ${alternative.description}.`,
-              suggest: [
-                {
-                  desc: `Replace with native ${alternative.native}`,
-                  fix: (fixer: Rule.RuleFixer): Rule.Fix => {
-                    const range: [number, number] = [usage.start, usage.end]
-                    // For simple replacements like _.isArray(x) -> Array.isArray(x)
-                    const replacement = usage.fullMatch.replace(
-                      new RegExp(`${defaultOrNamespaceSpecifier.local.name}\\.${usage.functionName}`),
-                      alternative.native,
-                    )
-                    return fixer.replaceTextRange(range, replacement)
-                  },
-                },
-              ],
-            })
-          }
+          handleDefaultImports(node, defaultOrNamespaceSpecifier.local.name)
         }
 
-        // Check destructured imports: import { isArray, map } from 'lodash-es'
+        // Check destructured imports
         const destructuredSpecifiers = node.specifiers.filter(spec =>
           spec.type === 'ImportSpecifier',
-        ) as ImportSpecifier[]
+        )
 
         if (destructuredSpecifiers.length > 0) {
-          const destructuredFunctions = destructuredSpecifiers.map((spec) => {
-            return spec.imported.type === 'Identifier' ? spec.imported.name : ''
-          }).filter(name => name !== '')
-
-          const alternativeFunctions = findNativeAlternativeDestructuredFunctions(destructuredFunctions, options)
-
-          for (const { functionName, hasAlternative } of alternativeFunctions) {
-            if (hasAlternative) {
-              const alternative = getNativeAlternative(functionName)!
-              const specifier = destructuredSpecifiers.find(spec =>
-                spec.imported.type === 'Identifier' && spec.imported.name === functionName,
-              )
-
-              if (specifier) {
-                let message = `Consider using native '${alternative.native}' instead of lodash '${functionName}'. ${alternative.description}.`
-
-                if (alternative.notes) {
-                  message += ` Note: ${alternative.notes}`
-                }
-
-                context.report({
-                  node: specifier,
-                  message,
-                  suggest: [
-                    {
-                      desc: `See example: ${alternative.example?.lodash} → ${alternative.example?.native}`,
-                      fix: (): Rule.Fix[] => {
-                        // For destructured imports, we can't auto-fix easily since we need to
-                        // find all usages and replace them, plus remove from import.
-                        // This would require complex analysis, so we provide guidance only.
-                        return []
-                      },
-                    },
-                  ],
-                })
-              }
-            }
-          }
+          handleDestructuredImports(destructuredSpecifiers)
         }
       },
     }
