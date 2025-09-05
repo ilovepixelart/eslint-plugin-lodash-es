@@ -1,10 +1,8 @@
 <a id="v0.1.2"></a>
 # [v0.1.2](https://github.com/ilovepixelart/eslint-plugin-lodash-es/releases/tag/v0.1.2) - 2025-09-05
 
-- Merge pull request [#2](https://github.com/ilovepixelart/eslint-plugin-lodash-es/issues/2) from ilovepixelart/feature/sonar  87b7632
-- Sonar  7267ccb
-- Merge pull request [#1](https://github.com/ilovepixelart/eslint-plugin-lodash-es/issues/1) from ilovepixelart/feature/doc  32968e0
-- Doc  13a9850
+- Sonar  5c96b7a
+- Doc  1fa4d5c
 
 ---
 
