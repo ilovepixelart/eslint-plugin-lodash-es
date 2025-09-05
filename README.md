@@ -2,10 +2,11 @@
 
 [![npm](https://img.shields.io/npm/v/eslint-plugin-lodash-es)](https://www.npmjs.com/package/eslint-plugin-lodash-es)
 [![npm](https://img.shields.io/npm/dt/eslint-plugin-lodash-es)](https://www.npmjs.com/package/eslint-plugin-lodash-es)
-[![GitHub](https://img.shields.io/github/license/ilovepixelart/eslint-plugin-lodash-es)](https://github.com/ilovepixelart/eslint-plugin-lodash-es)
-
+[![GitHub](https://img.shields.io/github/license/ilovepixelart/eslint-plugin-lodash-es)](https://github.com/ilovepixelart/eslint-plugin-lodash-es/blob/main/LICENSE)
+\
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=ilovepixelart_eslint-plugin-lodash-es&metric=coverage)](https://sonarcloud.io/summary/new_code?id=ilovepixelart_eslint-plugin-lodash-es)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ilovepixelart_eslint-plugin-lodash-es&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=ilovepixelart_eslint-plugin-lodash-es)
+\
 [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=ilovepixelart_eslint-plugin-lodash-es&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=ilovepixelart_eslint-plugin-lodash-es)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=ilovepixelart_eslint-plugin-lodash-es&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=ilovepixelart_eslint-plugin-lodash-es)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=ilovepixelart_eslint-plugin-lodash-es&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=ilovepixelart_eslint-plugin-lodash-es)
