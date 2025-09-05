@@ -1,6 +1,7 @@
 import type { Rule } from 'eslint'
 import enforceDestructuring from './enforce-destructuring'
 import enforceFunctions from './enforce-functions'
+import suggestNativeAlternatives from './suggest-native-alternatives'
 
 // Proper TypeScript interfaces following ESLint ecosystem standards
 interface FlatConfig {
@@ -31,6 +32,7 @@ const plugin: ESLintPlugin = {
   rules: {
     'enforce-destructuring': enforceDestructuring,
     'enforce-functions': enforceFunctions,
+    'suggest-native-alternatives': suggestNativeAlternatives,
   },
   configs: {
     'base': [],
@@ -65,6 +67,7 @@ const allConfig: FlatConfig = {
   rules: {
     'lodash-es/enforce-destructuring': 'error',
     'lodash-es/enforce-functions': 'off', // Users must configure manually
+    'lodash-es/suggest-native-alternatives': 'off', // Users must configure manually
   },
 }
 
