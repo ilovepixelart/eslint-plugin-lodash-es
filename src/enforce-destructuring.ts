@@ -115,7 +115,7 @@ function extractUsedFunctions(sourceCode: string, importNode: ImportDefaultSpeci
     }
   }
 
-  return Array.from(usedFunctions).sort()
+  return Array.from(usedFunctions).sort((a, b) => a.localeCompare(b))
 }
 
 function findAllLodashUsages(sourceCode: string, importName: string): Usage[] {
@@ -152,7 +152,7 @@ const enforceLodashDestructuring: Rule.RuleModule = {
   },
 
   create(context: Rule.RuleContext) {
-    const sourceCode = context.getSourceCode()
+    const sourceCode = context.sourceCode ?? context.getSourceCode()
 
     return {
       ImportDeclaration(node: ImportDeclaration): void {
@@ -199,7 +199,7 @@ const enforceLodashDestructuring: Rule.RuleModule = {
 
                 // 2. Replace all usages in the code (_.functionName -> functionName)
                 // Sort usages in reverse order to avoid offset issues when replacing
-                const sortedUsages = allUsages.sort((a, b) => b.start - a.start)
+                const sortedUsages = [...allUsages].sort((a: Usage, b: Usage) => b.start - a.start)
 
                 for (const usage of sortedUsages) {
                   const range: [number, number] = [usage.start, usage.end]
