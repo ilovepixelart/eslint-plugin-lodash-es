@@ -1,5 +1,6 @@
 import type { Rule } from 'eslint'
 import enforceDestructuring from './enforce-destructuring'
+import enforceFunctions from './enforce-functions'
 
 // Proper TypeScript interfaces following ESLint ecosystem standards
 interface FlatConfig {
@@ -29,6 +30,7 @@ interface ESLintPlugin {
 const plugin: ESLintPlugin = {
   rules: {
     'enforce-destructuring': enforceDestructuring,
+    'enforce-functions': enforceFunctions,
   },
   configs: {
     'base': [],
@@ -57,12 +59,21 @@ const recommendedConfig: FlatConfig = {
   },
 }
 
+const allConfig: FlatConfig = {
+  name: 'lodash-es/all',
+  ...baseConfig,
+  rules: {
+    'lodash-es/enforce-destructuring': 'error',
+    'lodash-es/enforce-functions': 'off', // Users must configure manually
+  },
+}
+
 // Following TypeScript ESLint standard approach - configs return arrays
 plugin.configs = {
   // Modern flat config arrays (ESLint 9+) - following typescript-eslint approach
   'base': [baseConfig],
   'recommended': [recommendedConfig],
-  'all': [recommendedConfig], // Currently same as recommended
+  'all': [allConfig],
 
   // Legacy config for ESLint 8 and below
   'recommended-legacy': {
