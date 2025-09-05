@@ -9,10 +9,77 @@ import type {
   ImportSpecifier,
 } from 'estree'
 import { Usage, getSourceCode, isLodashModule, findLodashUsages } from './utils'
+import { getNativeAlternative } from './native-alternatives'
 
 interface RuleOptions {
   exclude?: string[]
   include?: string[]
+}
+
+function createEnhancedErrorMessage(functionName: string, reason: string): string {
+  const baseMessage = `Lodash function '${functionName}' is ${reason}.`
+  const nativeAlternative = getNativeAlternative(functionName)
+
+  if (nativeAlternative) {
+    return `${baseMessage} Consider using native ${nativeAlternative.native}: ${nativeAlternative.example?.native || ''}`
+  }
+
+  return baseMessage
+}
+
+function getReason(options: RuleOptions): string {
+  return options.exclude
+    ? 'excluded by configuration'
+    : 'not in the allowed functions list'
+}
+
+function handleDefaultOrNamespaceImports(
+  node: ImportDeclaration,
+  defaultOrNamespaceSpecifier: ImportDefaultSpecifier | ImportNamespaceSpecifier,
+  sourceCode: ReturnType<typeof getSourceCode>,
+  options: RuleOptions,
+  context: Rule.RuleContext,
+): void {
+  const fullSourceCode = sourceCode.getText()
+  const blockedUsages = findBlockedFunctions(fullSourceCode, defaultOrNamespaceSpecifier.local.name, options)
+  const reason = getReason(options)
+
+  for (const usage of blockedUsages) {
+    context.report({
+      node,
+      loc: {
+        start: sourceCode.getLocFromIndex(usage.start),
+        end: sourceCode.getLocFromIndex(usage.end),
+      },
+      message: createEnhancedErrorMessage(usage.functionName, reason),
+    })
+  }
+}
+
+function handleDestructuredImports(
+  destructuredSpecifiers: ImportSpecifier[],
+  options: RuleOptions,
+  context: Rule.RuleContext,
+): void {
+  const destructuredFunctions = destructuredSpecifiers.map((spec) => {
+    return spec.imported.type === 'Identifier' ? spec.imported.name : ''
+  }).filter(name => name !== '')
+  const blockedFunctions = findBlockedDestructuredFunctions(destructuredFunctions, options)
+  const reason = getReason(options)
+
+  for (const { functionName, isBlocked } of blockedFunctions) {
+    if (isBlocked) {
+      const specifier = destructuredSpecifiers.find(spec =>
+        spec.imported.type === 'Identifier' && spec.imported.name === functionName,
+      )
+      if (specifier) {
+        context.report({
+          node: specifier,
+          message: createEnhancedErrorMessage(functionName, reason),
+        })
+      }
+    }
+  }
 }
 
 function findBlockedFunctions(sourceCode: string, importName: string, options: RuleOptions): Usage[] {
@@ -21,7 +88,7 @@ function findBlockedFunctions(sourceCode: string, importName: string, options: R
   return allUsages.filter((usage) => {
     const functionName = usage.functionName
     return (options.include && !options.include.includes(functionName))
-      || (options.exclude && options.exclude.includes(functionName))
+      || (options.exclude?.includes(functionName))
   })
 }
 
@@ -31,7 +98,7 @@ function findBlockedDestructuredFunctions(
 ): { functionName: string, isBlocked: boolean }[] {
   return destructuredFunctions.map((functionName) => {
     const isBlocked = Boolean((options.include && !options.include.includes(functionName))
-      || (options.exclude && options.exclude.includes(functionName)))
+      || (options.exclude?.includes(functionName)))
 
     return { functionName, isBlocked }
   })
@@ -92,55 +159,16 @@ const enforceFunctions: Rule.RuleModule = {
         ) as ImportDefaultSpecifier | ImportNamespaceSpecifier
 
         if (defaultOrNamespaceSpecifier) {
-          // Handle default/namespace imports: _.map(), lodash.map()
-          const fullSourceCode = sourceCode.getText()
-          const blockedUsages = findBlockedFunctions(fullSourceCode, defaultOrNamespaceSpecifier.local.name, options)
-
-          const reason = options.exclude
-            ? 'excluded by configuration'
-            : 'not in the allowed functions list'
-
-          for (const usage of blockedUsages) {
-            context.report({
-              node,
-              loc: {
-                start: sourceCode.getLocFromIndex(usage.start),
-                end: sourceCode.getLocFromIndex(usage.end),
-              },
-              message: `Lodash function '${usage.functionName}' is ${reason}.`,
-            })
-          }
+          handleDefaultOrNamespaceImports(node, defaultOrNamespaceSpecifier, sourceCode, options, context)
         }
 
         // Check destructured imports: import { map, filter } from 'lodash-es'
-        const destructuredSpecifiers = node.specifiers.filter(spec =>
+        const destructuredSpecifiers = node.specifiers.filter((spec): spec is ImportSpecifier =>
           spec.type === 'ImportSpecifier',
-        ) as ImportSpecifier[]
+        )
 
         if (destructuredSpecifiers.length > 0) {
-          const destructuredFunctions = destructuredSpecifiers.map((spec) => {
-            // For ImportSpecifier, imported is always an Identifier in normal cases
-            return spec.imported.type === 'Identifier' ? spec.imported.name : ''
-          }).filter(name => name !== '')
-          const blockedFunctions = findBlockedDestructuredFunctions(destructuredFunctions, options)
-
-          const reason = options.exclude
-            ? 'excluded by configuration'
-            : 'not in the allowed functions list'
-
-          for (const { functionName, isBlocked } of blockedFunctions) {
-            if (isBlocked) {
-              const specifier = destructuredSpecifiers.find(spec =>
-                spec.imported.type === 'Identifier' && spec.imported.name === functionName,
-              )
-              if (specifier) {
-                context.report({
-                  node: specifier,
-                  message: `Lodash function '${functionName}' is ${reason}.`,
-                })
-              }
-            }
-          }
+          handleDestructuredImports(destructuredSpecifiers, options, context)
         }
       },
     }
