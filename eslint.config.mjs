@@ -16,7 +16,7 @@ export default defineConfig(
     },
   },
   eslint.configs.recommended,
-  tseslint.configs.recommended,
+  tseslint.configs.strict,
   tseslint.configs.stylistic,
   stylistic.configs.recommended,
   {
@@ -28,7 +28,7 @@ export default defineConfig(
     rules: {
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/explicit-function-return-type': 'error',
-      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-explicit-any': 'error',
     },
   },
 )

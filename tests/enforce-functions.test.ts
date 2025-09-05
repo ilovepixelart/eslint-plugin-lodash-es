@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest'
+
 import { RuleTester } from 'eslint'
-import enforceFunctions from '../src/enforce-functions'
+
+import enforceFunctions from '../src/rules/enforce-functions'
 
 // Create ESLint rule tester
 const ruleTester = new RuleTester({

@@ -1,6 +1,8 @@
 import { describe, it } from 'vitest'
+
 import { RuleTester } from 'eslint'
-import suggestNativeAlternatives from '../src/suggest-native-alternatives'
+
+import suggestNativeAlternatives from '../src/rules/suggest-native-alternatives'
 
 const ruleTester = new RuleTester({
   languageOptions: {

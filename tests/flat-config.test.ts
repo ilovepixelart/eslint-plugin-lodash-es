@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+
 import plugin from '../src/index'
 
 describe('flat config', () => {

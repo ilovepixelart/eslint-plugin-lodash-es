@@ -1,26 +1,26 @@
 /**
  * ESLint rule to suggest native JavaScript alternatives to lodash functions
  */
-import type { Rule } from 'eslint'
+import { getSourceCode, isLodashModule, findLodashUsages, hasNativeAlternative, getNativeAlternative } from '../utils'
+
 import type {
   ImportDeclaration,
   ImportSpecifier,
 } from 'estree'
-import { Usage, getSourceCode, isLodashModule, findLodashUsages } from './utils'
-import { hasNativeAlternative, getNativeAlternative } from './native-alternatives'
+import type { Rule } from 'eslint'
+import type { Usage, SuggestNativeAlternativesRuleOptions } from '../types'
 
-interface RuleOptions {
-  includeAll?: boolean // Include all alternatives, even if not perfect replacements
-  excludeUnsafe?: boolean // Exclude alternatives that have different behavior
-}
-
-function findNativeAlternativeUsages(sourceCode: string, importName: string, options: RuleOptions): Usage[] {
+function findNativeAlternativeUsages(sourceCode: string, importName: string, options: SuggestNativeAlternativesRuleOptions): Usage[] {
   const alternativeUsages: Usage[] = []
   const allUsages = findLodashUsages(sourceCode, importName)
 
   for (const usage of allUsages) {
     if (hasNativeAlternative(usage.functionName)) {
-      const alternative = getNativeAlternative(usage.functionName)!
+      const alternative = getNativeAlternative(usage.functionName)
+
+      if (!alternative) {
+        continue
+      }
 
       // Skip unsafe alternatives unless explicitly included
       if (options.excludeUnsafe && alternative.notes?.includes('different behavior')) {
@@ -36,7 +36,7 @@ function findNativeAlternativeUsages(sourceCode: string, importName: string, opt
 
 function findNativeAlternativeDestructuredFunctions(
   destructuredFunctions: string[],
-  options: RuleOptions,
+  options: SuggestNativeAlternativesRuleOptions,
 ): { functionName: string, hasAlternative: boolean }[] {
   return destructuredFunctions.map((functionName) => {
     const hasAlternative = hasNativeAlternative(functionName)
@@ -87,7 +87,7 @@ const suggestNativeAlternatives: Rule.RuleModule = {
 
   create(context: Rule.RuleContext) {
     const sourceCode = getSourceCode(context)
-    const options: RuleOptions = {
+    const options: SuggestNativeAlternativesRuleOptions = {
       includeAll: false,
       excludeUnsafe: true,
       ...context.options[0],
@@ -101,7 +101,11 @@ const suggestNativeAlternatives: Rule.RuleModule = {
       const alternativeUsages = findNativeAlternativeUsages(fullSourceCode, importName, options)
 
       for (const usage of alternativeUsages) {
-        const alternative = getNativeAlternative(usage.functionName)!
+        const alternative = getNativeAlternative(usage.functionName)
+
+        if (!alternative) {
+          continue
+        }
 
         context.report({
           node,
@@ -127,7 +131,12 @@ const suggestNativeAlternatives: Rule.RuleModule = {
       for (const { functionName, hasAlternative } of alternativeFunctions) {
         if (!hasAlternative) continue
 
-        const alternative = getNativeAlternative(functionName)!
+        const alternative = getNativeAlternative(functionName)
+
+        if (!alternative) {
+          continue
+        }
+
         const specifier = destructuredSpecifiers.find(spec =>
           spec.imported.type === 'Identifier' && spec.imported.name === functionName,
         )

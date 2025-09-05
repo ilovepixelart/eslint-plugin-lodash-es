@@ -1,20 +1,16 @@
 /**
  * ESLint rule to enforce specific lodash-es function usage policies
  */
-import type { Rule } from 'eslint'
+import { getSourceCode, isLodashModule, findLodashUsages, getNativeAlternative } from '../utils'
+
 import type {
   ImportDeclaration,
   ImportDefaultSpecifier,
   ImportNamespaceSpecifier,
   ImportSpecifier,
 } from 'estree'
-import { Usage, getSourceCode, isLodashModule, findLodashUsages } from './utils'
-import { getNativeAlternative } from './native-alternatives'
-
-interface RuleOptions {
-  exclude?: string[]
-  include?: string[]
-}
+import type { Rule } from 'eslint'
+import type { Usage, EnforceFunctionsRuleOptions } from '../types'
 
 function createEnhancedErrorMessage(functionName: string, reason: string): string {
   const baseMessage = `Lodash function '${functionName}' is ${reason}.`
@@ -27,7 +23,7 @@ function createEnhancedErrorMessage(functionName: string, reason: string): strin
   return baseMessage
 }
 
-function getReason(options: RuleOptions): string {
+function getReason(options: EnforceFunctionsRuleOptions): string {
   return options.exclude
     ? 'excluded by configuration'
     : 'not in the allowed functions list'
@@ -37,7 +33,7 @@ function handleDefaultOrNamespaceImports(
   node: ImportDeclaration,
   defaultOrNamespaceSpecifier: ImportDefaultSpecifier | ImportNamespaceSpecifier,
   sourceCode: ReturnType<typeof getSourceCode>,
-  options: RuleOptions,
+  options: EnforceFunctionsRuleOptions,
   context: Rule.RuleContext,
 ): void {
   const fullSourceCode = sourceCode.getText()
@@ -58,7 +54,7 @@ function handleDefaultOrNamespaceImports(
 
 function handleDestructuredImports(
   destructuredSpecifiers: ImportSpecifier[],
-  options: RuleOptions,
+  options: EnforceFunctionsRuleOptions,
   context: Rule.RuleContext,
 ): void {
   const destructuredFunctions = destructuredSpecifiers.map((spec) => {
@@ -82,7 +78,7 @@ function handleDestructuredImports(
   }
 }
 
-function findBlockedFunctions(sourceCode: string, importName: string, options: RuleOptions): Usage[] {
+function findBlockedFunctions(sourceCode: string, importName: string, options: EnforceFunctionsRuleOptions): Usage[] {
   const allUsages = findLodashUsages(sourceCode, importName)
 
   return allUsages.filter((usage) => {
@@ -94,7 +90,7 @@ function findBlockedFunctions(sourceCode: string, importName: string, options: R
 
 function findBlockedDestructuredFunctions(
   destructuredFunctions: string[],
-  options: RuleOptions,
+  options: EnforceFunctionsRuleOptions,
 ): { functionName: string, isBlocked: boolean }[] {
   return destructuredFunctions.map((functionName) => {
     const isBlocked = Boolean((options.include && !options.include.includes(functionName))
@@ -138,7 +134,7 @@ const enforceFunctions: Rule.RuleModule = {
 
   create(context: Rule.RuleContext) {
     const sourceCode = getSourceCode(context)
-    const options: RuleOptions = context.options[0] || {}
+    const options: EnforceFunctionsRuleOptions = context.options[0] || {}
 
     // Validate that only include OR exclude is used, not both
     if (options.include && options.exclude) {
