@@ -1,0 +1,86 @@
+name: PR check
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - feature*
+
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  tests:
+    name: Coverage
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+
+      - name: Installing dependencies
+        run: npm ci
+
+      - name: Type checking
+        run: npm run type:check
+
+      - name: Linting
+        run: npm run lint
+
+      - name: Coverage
+        run: npm run test
+
+  sonar:
+    name: ESLint, Coverage & Sonar
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Use Node.js 22.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: npm
+
+      - name: Installing dependencies
+        run: npm ci
+
+      - name: ESLint
+        run: npm run lint
+
+      - name: Coverage
+        run: npm run test
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        if: env.SONAR_TOKEN != null
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.organization=ilovepixelart
+            -Dsonar.projectName=eslint-plugin-lodash-es
+            -Dsonar.projectKey=ilovepixelart_eslint-plugin-lodash-es
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.sources=src
+            -Dsonar.tests=tests
+            -Dsonar.test.exclusions=tests/**
+            -Dsonar.coverage.exclusions=tests/**,src/**/*.test.*,src/**/*.spec.*
