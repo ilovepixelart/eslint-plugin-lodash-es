@@ -1,0 +1,11 @@
+.DS_Store
+Thumbs.db
+node_modules
+dist
+coverage
+npm-debug.log
+pnpm-lock.yaml
+yarn.lock
+.idea
+.env
+/globalConfig.json
