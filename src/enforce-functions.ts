@@ -8,129 +8,21 @@ import type {
   ImportNamespaceSpecifier,
   ImportSpecifier,
 } from 'estree'
-
-const LODASH_MODULES = new Set([
-  'lodash',
-  'lodash-es',
-])
-
-const COMMON_LODASH_FUNCTIONS = [
-  // Array
-  'chunk', 'compact', 'concat', 'difference', 'differenceBy', 'differenceWith',
-  'drop', 'dropRight', 'dropRightWhile', 'dropWhile', 'fill', 'findIndex',
-  'findLastIndex', 'first', 'flatten', 'flattenDeep', 'flattenDepth',
-  'fromPairs', 'head', 'indexOf', 'initial', 'intersection', 'intersectionBy',
-  'intersectionWith', 'join', 'last', 'lastIndexOf', 'nth', 'pull', 'pullAll',
-  'pullAllBy', 'pullAllWith', 'pullAt', 'remove', 'reverse', 'slice', 'sortBy',
-  'sortedIndex', 'sortedIndexBy', 'sortedIndexOf', 'sortedLastIndex',
-  'sortedLastIndexBy', 'sortedLastIndexOf', 'sortedUniq', 'sortedUniqBy',
-  'tail', 'take', 'takeRight', 'takeRightWhile', 'takeWhile', 'union',
-  'unionBy', 'unionWith', 'uniq', 'uniqBy', 'uniqWith', 'unzip', 'unzipWith',
-  'without', 'xor', 'xorBy', 'xorWith', 'zip', 'zipObject', 'zipObjectDeep',
-  'zipWith',
-
-  // Collection
-  'countBy', 'each', 'eachRight', 'every', 'filter', 'find', 'findLast',
-  'flatMap', 'flatMapDeep', 'flatMapDepth', 'forEach', 'forEachRight',
-  'groupBy', 'includes', 'invokeMap', 'keyBy', 'map', 'orderBy', 'partition',
-  'reduce', 'reduceRight', 'reject', 'sample', 'sampleSize', 'shuffle',
-  'size', 'some', 'sortBy',
-
-  // Date
-  'now',
-
-  // Function
-  'after', 'ary', 'before', 'bind', 'bindKey', 'curry', 'curryRight',
-  'debounce', 'defer', 'delay', 'flip', 'memoize', 'negate', 'once',
-  'overArgs', 'partial', 'partialRight', 'rearg', 'rest', 'spread',
-  'throttle', 'unary', 'wrap',
-
-  // Lang
-  'castArray', 'clone', 'cloneDeep', 'cloneDeepWith', 'cloneWith',
-  'conformsTo', 'eq', 'gt', 'gte', 'isArguments', 'isArray', 'isArrayBuffer',
-  'isArrayLike', 'isArrayLikeObject', 'isBoolean', 'isBuffer', 'isDate',
-  'isElement', 'isEmpty', 'isEqual', 'isEqualWith', 'isError', 'isFinite',
-  'isFunction', 'isInteger', 'isLength', 'isMap', 'isMatch', 'isMatchWith',
-  'isNaN', 'isNative', 'isNil', 'isNull', 'isNumber', 'isObject',
-  'isObjectLike', 'isPlainObject', 'isRegExp', 'isSafeInteger', 'isSet',
-  'isString', 'isSymbol', 'isTypedArray', 'isUndefined', 'isWeakMap',
-  'isWeakSet', 'lt', 'lte', 'toArray', 'toFinite', 'toInteger', 'toLength',
-  'toNumber', 'toPlainObject', 'toSafeInteger', 'toString',
-
-  // Math
-  'add', 'ceil', 'divide', 'floor', 'max', 'maxBy', 'mean', 'meanBy',
-  'min', 'minBy', 'multiply', 'round', 'subtract', 'sum', 'sumBy',
-
-  // Number
-  'clamp', 'inRange', 'random',
-
-  // Object
-  'assign', 'assignIn', 'assignInWith', 'assignWith', 'at', 'create',
-  'defaults', 'defaultsDeep', 'entries', 'entriesIn', 'extend', 'extendWith',
-  'findKey', 'findLastKey', 'forIn', 'forInRight', 'forOwn', 'forOwnRight',
-  'functions', 'functionsIn', 'get', 'has', 'hasIn', 'invert', 'invertBy',
-  'invoke', 'keys', 'keysIn', 'mapKeys', 'mapValues', 'merge', 'mergeWith',
-  'omit', 'omitBy', 'pick', 'pickBy', 'result', 'set', 'setWith', 'toPairs',
-  'toPairsIn', 'transform', 'unset', 'update', 'updateWith', 'values',
-  'valuesIn',
-
-  // Seq
-  'chain', 'tap', 'thru', 'value',
-
-  // String
-  'camelCase', 'capitalize', 'deburr', 'endsWith', 'escape', 'escapeRegExp',
-  'kebabCase', 'lowerCase', 'lowerFirst', 'pad', 'padEnd', 'padStart',
-  'parseInt', 'repeat', 'replace', 'snakeCase', 'split', 'startCase',
-  'startsWith', 'template', 'toLower', 'toUpper', 'trim', 'trimEnd',
-  'trimStart', 'truncate', 'unescape', 'upperCase', 'upperFirst', 'words',
-
-  // Util
-  'attempt', 'bindAll', 'cond', 'conforms', 'constant', 'defaultTo',
-  'flow', 'flowRight', 'identity', 'iteratee', 'matches', 'matchesProperty',
-  'method', 'methodOf', 'mixin', 'noConflict', 'noop', 'nthArg', 'over',
-  'overEvery', 'overSome', 'property', 'propertyOf', 'range', 'rangeRight',
-  'stubArray', 'stubFalse', 'stubObject', 'stubString', 'stubTrue', 'times',
-  'toPath', 'uniqueId',
-]
+import { Usage, getSourceCode, isLodashModule, findLodashUsages } from './utils'
 
 interface RuleOptions {
   exclude?: string[]
   include?: string[]
 }
 
-interface Usage {
-  start: number
-  end: number
-  fullMatch: string
-  functionName: string
-  originalText: string
-}
-
 function findBlockedFunctions(sourceCode: string, importName: string, options: RuleOptions): Usage[] {
-  const blockedUsages: Usage[] = []
-  const regex = new RegExp(`\\b${importName}\\.(\\w+)`, 'g')
-  let match
+  const allUsages = findLodashUsages(sourceCode, importName)
 
-  while ((match = regex.exec(sourceCode)) !== null) {
-    const functionName = match[1]
-    if (functionName && COMMON_LODASH_FUNCTIONS.includes(functionName)) {
-      // Check if function is blocked by include/exclude filters
-      const isBlocked = (options.include && !options.include.includes(functionName))
-        || (options.exclude && options.exclude.includes(functionName))
-
-      if (isBlocked) {
-        blockedUsages.push({
-          start: match.index,
-          end: match.index + match[0].length,
-          fullMatch: match[0], // e.g., "_.map"
-          functionName: functionName, // e.g., "map"
-          originalText: match[0],
-        })
-      }
-    }
-  }
-
-  return blockedUsages
+  return allUsages.filter((usage) => {
+    const functionName = usage.functionName
+    return (options.include && !options.include.includes(functionName))
+      || (options.exclude && options.exclude.includes(functionName))
+  })
 }
 
 function findBlockedDestructuredFunctions(
@@ -178,7 +70,7 @@ const enforceFunctions: Rule.RuleModule = {
   },
 
   create(context: Rule.RuleContext) {
-    const sourceCode = context.sourceCode ?? context.getSourceCode()
+    const sourceCode = getSourceCode(context)
     const options: RuleOptions = context.options[0] || {}
 
     // Validate that only include OR exclude is used, not both
@@ -190,7 +82,7 @@ const enforceFunctions: Rule.RuleModule = {
       ImportDeclaration(node: ImportDeclaration): void {
         const source = node.source.value as string
 
-        if (!LODASH_MODULES.has(source)) {
+        if (!isLodashModule(source)) {
           return
         }
 
