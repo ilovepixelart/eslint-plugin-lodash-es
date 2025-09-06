@@ -125,4 +125,56 @@ describe('suggest-native-alternatives rule', () => {
       ],
     })
   })
+
+  it('should handle edge cases with unsupported functions', () => {
+    // Test with functions that don't have native alternatives to ensure defensive programming works
+    ruleTester.run('suggest-native-alternatives edge cases', suggestNativeAlternatives, {
+      valid: [
+        // Functions that don't have native alternatives should not trigger errors
+        'import _ from "lodash-es"; const result = _.debounce(fn, 100);',
+        'import { debounce, throttle } from "lodash-es"; // No native alternatives',
+        // Test import specifier edge cases
+        'import { chunk, compact } from "lodash-es"; // No native alternatives',
+      ],
+      invalid: [
+        // Mix of functions with and without alternatives
+        {
+          code: 'import { isArray, debounce } from "lodash-es";',
+          errors: [
+            {
+              message: 'Consider using native \'Array.isArray(value)\' instead of lodash \'isArray\'. Check if value is an array.',
+              type: 'ImportSpecifier',
+            },
+            // debounce should not generate an error since it has no native alternative
+          ],
+        },
+      ],
+    })
+  })
+
+  it('should handle excludeUnsafe option with functions that have different behavior', () => {
+    // This tests the branch where alternatives with "different behavior" are excluded
+    ruleTester.run('suggest-native-alternatives unsafe exclusion', suggestNativeAlternatives, {
+      valid: [
+        // Should not suggest reverse when excludeUnsafe is true (default)
+        {
+          code: 'import { reverse } from "lodash-es";',
+          options: [{ excludeUnsafe: true }],
+        },
+      ],
+      invalid: [
+        // Should suggest reverse when excludeUnsafe is false
+        {
+          code: 'import { reverse } from "lodash-es";',
+          options: [{ excludeUnsafe: false }],
+          errors: [
+            {
+              message: /Consider using native.*reverse/,
+              type: 'ImportSpecifier',
+            },
+          ],
+        },
+      ],
+    })
+  })
 })
