@@ -1,36 +1,15 @@
-import type { Rule } from 'eslint'
-import enforceDestructuring from './enforce-destructuring'
-import enforceFunctions from './enforce-functions'
+import enforceDestructuring from './rules/enforce-destructuring'
+import enforceFunctions from './rules/enforce-functions'
+import suggestNativeAlternatives from './rules/suggest-native-alternatives'
 
-// Proper TypeScript interfaces following ESLint ecosystem standards
-interface FlatConfig {
-  name?: string
-  plugins?: Record<string, ESLintPlugin>
-  rules?: Record<string, string | string[]>
-}
-
-type ConfigArray = FlatConfig[]
-
-interface LegacyConfig {
-  plugins: string[]
-  rules: Record<string, string>
-}
-
-interface ESLintPlugin {
-  rules: Record<string, Rule.RuleModule>
-  configs: {
-    'base': ConfigArray
-    'recommended': ConfigArray
-    'all': ConfigArray
-    'recommended-legacy': LegacyConfig
-  }
-}
+import type { ESLintPlugin, FlatConfig } from './types'
 
 // Plugin export for ESLint
 const plugin: ESLintPlugin = {
   rules: {
     'enforce-destructuring': enforceDestructuring,
     'enforce-functions': enforceFunctions,
+    'suggest-native-alternatives': suggestNativeAlternatives,
   },
   configs: {
     'base': [],
@@ -65,6 +44,7 @@ const allConfig: FlatConfig = {
   rules: {
     'lodash-es/enforce-destructuring': 'error',
     'lodash-es/enforce-functions': 'off', // Users must configure manually
+    'lodash-es/suggest-native-alternatives': 'off', // Users must configure manually
   },
 }
 

@@ -1,13 +1,15 @@
 /**
  * ESLint rule to enforce destructured imports from lodash-es and auto-fix them
  */
-import type { Rule } from 'eslint'
+import { getSourceCode, isLodashModule, findLodashUsages, extractFunctionNames } from '../utils'
+
 import type {
   ImportDeclaration,
   ImportDefaultSpecifier,
   ImportNamespaceSpecifier,
 } from 'estree'
-import { Usage, getSourceCode, isLodashModule, findLodashUsages, extractFunctionNames } from './utils'
+import type { Rule } from 'eslint'
+import type { Usage } from '../types'
 
 const enforceLodashDestructuring: Rule.RuleModule = {
   meta: {

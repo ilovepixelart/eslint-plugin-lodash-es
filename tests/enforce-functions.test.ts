@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest'
+
 import { RuleTester } from 'eslint'
-import enforceFunctions from '../src/enforce-functions'
+
+import enforceFunctions from '../src/rules/enforce-functions'
 
 // Create ESLint rule tester
 const ruleTester = new RuleTester({
@@ -41,7 +43,7 @@ describe('enforce-functions', () => {
             options: [{ exclude: ['map'] }],
             errors: [
               {
-                message: 'Lodash function \'map\' is excluded by configuration.',
+                message: 'Lodash function \'map\' is excluded by configuration. Consider using native Array.prototype.map: array.map(fn)',
               },
             ],
           },
@@ -52,10 +54,10 @@ const filtered = _.filter([1, 2, 3], x => x > 1);`,
             options: [{ exclude: ['map', 'filter'] }],
             errors: [
               {
-                message: 'Lodash function \'map\' is excluded by configuration.',
+                message: 'Lodash function \'map\' is excluded by configuration. Consider using native Array.prototype.map: array.map(fn)',
               },
               {
-                message: 'Lodash function \'filter\' is excluded by configuration.',
+                message: 'Lodash function \'filter\' is excluded by configuration. Consider using native Array.prototype.filter: array.filter(predicate)',
               },
             ],
           },
@@ -79,7 +81,7 @@ const filtered = _.filter([1, 2, 3], x => x > 1);`,
             options: [{ exclude: ['map'] }],
             errors: [
               {
-                message: 'Lodash function \'map\' is excluded by configuration.',
+                message: 'Lodash function \'map\' is excluded by configuration. Consider using native Array.prototype.map: array.map(fn)',
               },
             ],
           },
@@ -103,7 +105,7 @@ const filtered = _.filter([1, 2, 3], x => x > 1);`,
             options: [{ exclude: ['map'] }],
             errors: [
               {
-                message: 'Lodash function \'map\' is excluded by configuration.',
+                message: 'Lodash function \'map\' is excluded by configuration. Consider using native Array.prototype.map: array.map(fn)',
               },
             ],
           },
@@ -112,10 +114,10 @@ const filtered = _.filter([1, 2, 3], x => x > 1);`,
             options: [{ exclude: ['map', 'filter'] }],
             errors: [
               {
-                message: 'Lodash function \'map\' is excluded by configuration.',
+                message: 'Lodash function \'map\' is excluded by configuration. Consider using native Array.prototype.map: array.map(fn)',
               },
               {
-                message: 'Lodash function \'filter\' is excluded by configuration.',
+                message: 'Lodash function \'filter\' is excluded by configuration. Consider using native Array.prototype.filter: array.filter(predicate)',
               },
             ],
           },
@@ -139,7 +141,7 @@ const filtered = _.filter([1, 2, 3], x => x > 1);`,
             options: [{ include: ['first', 'last'] }],
             errors: [
               {
-                message: 'Lodash function \'map\' is not in the allowed functions list.',
+                message: 'Lodash function \'map\' is not in the allowed functions list. Consider using native Array.prototype.map: array.map(fn)',
               },
             ],
           },
@@ -150,7 +152,7 @@ const sorted = _.sortBy([1, 2, 3]);`,
             options: [{ include: ['first', 'last'] }],
             errors: [
               {
-                message: 'Lodash function \'map\' is not in the allowed functions list.',
+                message: 'Lodash function \'map\' is not in the allowed functions list. Consider using native Array.prototype.map: array.map(fn)',
               },
               {
                 message: 'Lodash function \'sortBy\' is not in the allowed functions list.',
@@ -177,7 +179,7 @@ const sorted = _.sortBy([1, 2, 3]);`,
             options: [{ include: ['first', 'last'] }],
             errors: [
               {
-                message: 'Lodash function \'map\' is not in the allowed functions list.',
+                message: 'Lodash function \'map\' is not in the allowed functions list. Consider using native Array.prototype.map: array.map(fn)',
               },
             ],
           },
@@ -186,10 +188,10 @@ const sorted = _.sortBy([1, 2, 3]);`,
             options: [{ include: ['first', 'last'] }],
             errors: [
               {
-                message: 'Lodash function \'map\' is not in the allowed functions list.',
+                message: 'Lodash function \'map\' is not in the allowed functions list. Consider using native Array.prototype.map: array.map(fn)',
               },
               {
-                message: 'Lodash function \'filter\' is not in the allowed functions list.',
+                message: 'Lodash function \'filter\' is not in the allowed functions list. Consider using native Array.prototype.filter: array.filter(predicate)',
               },
             ],
           },
@@ -210,10 +212,10 @@ filter([1, 2, 3], x => x > 1);`,
             options: [{ exclude: ['map', 'filter'] }],
             errors: [
               {
-                message: 'Lodash function \'filter\' is excluded by configuration.',
+                message: 'Lodash function \'filter\' is excluded by configuration. Consider using native Array.prototype.filter: array.filter(predicate)',
               },
               {
-                message: 'Lodash function \'map\' is excluded by configuration.',
+                message: 'Lodash function \'map\' is excluded by configuration. Consider using native Array.prototype.map: array.map(fn)',
               },
             ],
           },
@@ -251,7 +253,7 @@ filter([1, 2, 3], x => x > 1);`,
             options: [{ exclude: ['map'] }],
             errors: [
               {
-                message: 'Lodash function \'map\' is excluded by configuration.',
+                message: 'Lodash function \'map\' is excluded by configuration. Consider using native Array.prototype.map: array.map(fn)',
               },
             ],
           },

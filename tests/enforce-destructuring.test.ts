@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest'
+
 import { RuleTester } from 'eslint'
-import enforceDestructuring from '../src/enforce-destructuring'
+
+import enforceDestructuring from '../src/rules/enforce-destructuring'
 
 // Create ESLint rule tester
 const ruleTester = new RuleTester({

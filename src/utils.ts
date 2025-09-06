@@ -1,16 +1,10 @@
 /**
  * Shared utility functions for lodash-es ESLint rules
  */
-import type { Rule, SourceCode } from 'eslint'
-import { lodashModules, lodashFunctions } from './constants'
+import { lodashModules, lodashFunctions, nativeAlternatives } from './constants'
 
-export interface Usage {
-  start: number
-  end: number
-  fullMatch: string
-  functionName: string
-  originalText: string
-}
+import type { Rule, SourceCode } from 'eslint'
+import type { Usage, NativeAlternative } from './types'
 
 /**
  * Get source code from ESLint context (handles deprecated API)
@@ -80,4 +74,18 @@ export function extractFunctionNames(sourceCode: string, importName: string): st
   }
 
   return Array.from(functionNames).sort((a, b) => a.localeCompare(b))
+}
+
+/**
+ * Get native alternative for a lodash function
+ */
+export function getNativeAlternative(functionName: string): NativeAlternative | undefined {
+  return nativeAlternatives[functionName]
+}
+
+/**
+ * Check if a lodash function has a native alternative
+ */
+export function hasNativeAlternative(functionName: string): boolean {
+  return functionName in nativeAlternatives
 }
