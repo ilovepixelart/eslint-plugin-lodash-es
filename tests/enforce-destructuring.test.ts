@@ -155,4 +155,30 @@ const grouped = groupBy(users, 'age');`,
       })
     }).not.toThrow()
   })
+
+  it('should handle invalid code patterns gracefully', () => {
+    // Test with code that contains no valid lodash functions - should remove import
+    expect(() => {
+      ruleTester.run('enforce-destructuring edge cases', enforceDestructuring, {
+        valid: [],
+        invalid: [
+          {
+            code: `import _ from 'lodash-es';
+// Code with unusual patterns that might stress the regex parsing
+const result = _.undefinedFunction(data); // This function doesn't exist in lodash
+const obj = { method: _.realFunction };`, // Property assignment
+            output: `
+// Code with unusual patterns that might stress the regex parsing
+const result = _.undefinedFunction(data); // This function doesn't exist in lodash
+const obj = { method: _.realFunction };`, // Import removed since no valid functions found
+            errors: [
+              {
+                message: 'Use destructured imports from lodash-es instead of default import.',
+              },
+            ],
+          },
+        ],
+      })
+    }).not.toThrow()
+  })
 })
