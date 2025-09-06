@@ -1,3 +1,24 @@
+<a id="v0.3.0"></a>
+# [v0.3.0](https://github.com/ilovepixelart/eslint-plugin-lodash-es/releases/tag/v0.3.0) - 2025-09-06
+
+- Merge pull request [#5](https://github.com/ilovepixelart/eslint-plugin-lodash-es/issues/5) from ilovepixelart/feature/dep-and-test  15a384f
+- Dep, test  8c375b2
+- Merge pull request [#4](https://github.com/ilovepixelart/eslint-plugin-lodash-es/issues/4) from ilovepixelart/feature/suggest-native-alternatives  68191eb
+- Doc  89ecb16
+- Reorganize files  cc1c37f
+- Refactor  a195bb9
+- Refactor  a2e483a
+- Update changelog for v0.2.0  07c10f7
+- Import  ab37eaf
+- Suggest native alternatives  f108420
+
+---
+
+https://github.com/ilovepixelart/eslint-plugin-lodash-es/compare/v0.2.0...v0.3.0
+
+[Changes][v0.3.0]
+
+
 <a id="v0.2.0"></a>
 # [v0.2.0](https://github.com/ilovepixelart/eslint-plugin-lodash-es/releases/tag/v0.2.0) - 2025-09-05
 
@@ -54,6 +75,7 @@ https://github.com/ilovepixelart/eslint-plugin-lodash-es/compare/62ffd58aa10c5f1
 [Changes][v0.1.1]
 
 
+[v0.3.0]: https://github.com/ilovepixelart/eslint-plugin-lodash-es/compare/v0.2.0...v0.3.0
 [v0.2.0]: https://github.com/ilovepixelart/eslint-plugin-lodash-es/compare/v0.1.2...v0.2.0
 [v0.1.2]: https://github.com/ilovepixelart/eslint-plugin-lodash-es/compare/v0.1.1...v0.1.2
 [v0.1.1]: https://github.com/ilovepixelart/eslint-plugin-lodash-es/tree/v0.1.1
