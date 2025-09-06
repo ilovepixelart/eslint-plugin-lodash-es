@@ -1,6 +1,6 @@
 {
   "name": "eslint-plugin-lodash-es",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "ESLint plugin that enforces destructured imports from lodash-es and auto-fixes them",
   "author": "ilovepixelart",
   "license": "MIT",
