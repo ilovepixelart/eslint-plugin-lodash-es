@@ -5,7 +5,7 @@ Prevent lodash chaining that kills tree-shaking even with destructured imports.
 | | |
 |:---|:---|
 | **Rule type** | problem |
-| **Fixable** | 💡 Yes |
+| **Fixable** | 🔧 Yes |
 | **Recommended** | ✅ Yes |
 
 ## Rule Details

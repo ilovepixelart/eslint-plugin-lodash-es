@@ -5,7 +5,7 @@ Prevent deprecated per-method lodash imports that bypass tree-shaking and will b
 | | |
 |:---|:---|
 | **Rule type** | problem |
-| **Fixable** | 💡 Yes |
+| **Fixable** | 🔧 Yes |
 | **Recommended** | ✅ Yes |
 
 ## Rule Details

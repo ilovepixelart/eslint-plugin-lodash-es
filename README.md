@@ -122,8 +122,8 @@ const result = first([1, 2, 3])
 | Rule | Description | 💡 | 🔧 | ✅ |
 |------|-------------|:--:|:--:|:--:|
 | [enforce-destructuring](./docs/rules/enforce-destructuring.md) | Enforce destructured imports from lodash-es | | 🔧 | ✅ |
-| [no-chaining](./docs/rules/no-chaining.md) | Prevent chaining that kills tree-shaking | 💡 | | ✅ |
-| [no-method-imports](./docs/rules/no-method-imports.md) | Prevent deprecated per-method imports | 💡 | | ✅ |
+| [no-chaining](./docs/rules/no-chaining.md) | Prevent chaining that kills tree-shaking | 💡 | 🔧 | ✅ |
+| [no-method-imports](./docs/rules/no-method-imports.md) | Prevent deprecated per-method imports | 💡 | 🔧 | ✅ |
 | [enforce-functions](./docs/rules/enforce-functions.md) | Control which lodash functions are allowed | 💡 | | |
 | [suggest-native-alternatives](./docs/rules/suggest-native-alternatives.md) | Suggest native JavaScript alternatives | 💡 | | |
 
