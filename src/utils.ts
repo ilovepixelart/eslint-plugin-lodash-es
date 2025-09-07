@@ -79,17 +79,17 @@ export function extractFunctionNames(sourceCode: string, importName: string): Lo
 /**
  * Get native alternative for a lodash function
  */
-export function getNativeAlternative(functionName: LodashAlternativeFunctionName | LodashFunctionName): NativeAlternative | undefined {
-  if (!isLodashFunction(functionName)) return undefined
-  return nativeAlternatives.get(functionName as LodashAlternativeFunctionName)
+export function getNativeAlternative(functionName: string): NativeAlternative | undefined {
+  if (!lodashFunctions.has(functionName as LodashFunctionName)) return undefined
+  return nativeAlternatives.get(functionName)
 }
 
 /**
  * Check if a lodash function has a native alternative
  */
-export function hasNativeAlternative(functionName: LodashAlternativeFunctionName | LodashFunctionName): boolean {
-  if (!isLodashFunction(functionName)) return false
-  return nativeAlternatives.has(functionName as LodashAlternativeFunctionName)
+export function hasNativeAlternative(functionName: string): boolean {
+  if (!lodashFunctions.has(functionName as LodashFunctionName)) return false
+  return nativeAlternatives.has(functionName)
 }
 
 // Utility functions for working with alternatives structure

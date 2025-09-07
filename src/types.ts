@@ -6,6 +6,18 @@ import type { NativeAlternative } from './shared'
 
 import type { Rule } from 'eslint'
 
+// Re-export commonly used types from shared
+export type {
+  NativeAlternative,
+  AlternativeFilterConfig,
+  SafetyLevel,
+  MigrationDifficulty,
+  FunctionCategory,
+  NativeExample,
+  SafetyInfo,
+  MigrationInfo,
+} from './shared'
+
 export type LodashModuleName = typeof lodashModules extends Set<infer T> ? T : never
 export type LodashFunctionName = typeof lodashFunctions extends Set<infer T> ? T : never
 export type LodashAlternativeFunctionName = typeof nativeAlternatives extends Map<infer K, NativeAlternative> ? K : never
