@@ -4,87 +4,53 @@
 import { FunctionCategory, createAlternative } from '../shared'
 import type { NativeAlternative } from '../shared'
 
+// Number/Math method helper
+function createMathMethod(
+  lodashName: string,
+  native: string,
+  description: string,
+  params = 'number',
+  notes?: readonly string[],
+): NativeAlternative {
+  return createAlternative({
+    category: FunctionCategory.Number,
+    native: `Math.${native}`,
+    description,
+    example: {
+      lodash: `_.${lodashName}(${params})`,
+      native: `Math.${native}(${params})`,
+    },
+    ...(notes && { notes }),
+  })
+}
+
+// Number static method helper
+function createNumberMethod(
+  lodashName: string,
+  native: string,
+  description: string,
+  params = 'value',
+): NativeAlternative {
+  return createAlternative({
+    category: FunctionCategory.Number,
+    native: `Number.${native}`,
+    description,
+    example: {
+      lodash: `_.${lodashName}(${params})`,
+      native: `Number.${native}(${params})`,
+    },
+  })
+}
+
 export const numberAlternatives = new Map<string, NativeAlternative>([
-  ['isFinite', createAlternative({
-    category: FunctionCategory.Number,
-    native: 'Number.isFinite',
-    description: 'Check if value is finite number',
-    example: {
-      lodash: '_.isFinite(value)',
-      native: 'Number.isFinite(value)',
-    },
-  })],
-
-  ['isInteger', createAlternative({
-    category: FunctionCategory.Number,
-    native: 'Number.isInteger',
-    description: 'Check if value is integer',
-    example: {
-      lodash: '_.isInteger(value)',
-      native: 'Number.isInteger(value)',
-    },
-  })],
-
-  ['isNaN', createAlternative({
-    category: FunctionCategory.Number,
-    native: 'Number.isNaN',
-    description: 'Check if value is NaN',
-    example: {
-      lodash: '_.isNaN(value)',
-      native: 'Number.isNaN(value)',
-    },
-  })],
+  ['isFinite', createNumberMethod('isFinite', 'isFinite', 'Check if value is finite number')],
+  ['isInteger', createNumberMethod('isInteger', 'isInteger', 'Check if value is integer')],
+  ['isNaN', createNumberMethod('isNaN', 'isNaN', 'Check if value is NaN')],
 
   // Math methods
-  ['max', createAlternative({
-    category: FunctionCategory.Number,
-    native: 'Math.max',
-    description: 'Get maximum value',
-    example: {
-      lodash: '_.max(array)',
-      native: 'Math.max(...array)',
-    },
-    notes: ['Use spread operator with native Math.max'],
-  })],
-
-  ['min', createAlternative({
-    category: FunctionCategory.Number,
-    native: 'Math.min',
-    description: 'Get minimum value',
-    example: {
-      lodash: '_.min(array)',
-      native: 'Math.min(...array)',
-    },
-    notes: ['Use spread operator with native Math.min'],
-  })],
-
-  ['ceil', createAlternative({
-    category: FunctionCategory.Number,
-    native: 'Math.ceil',
-    description: 'Round up to nearest integer',
-    example: {
-      lodash: '_.ceil(number)',
-      native: 'Math.ceil(number)',
-    },
-  })],
-
-  ['floor', createAlternative({
-    category: FunctionCategory.Number,
-    native: 'Math.floor',
-    description: 'Round down to nearest integer',
-    example: {
-      lodash: '_.floor(number)',
-      native: 'Math.floor(number)',
-    },
-  })],
-
-  ['round', createAlternative({
-    category: FunctionCategory.Number,
-    native: 'Math.round',
-    description: 'Round to nearest integer',
-    example: {
-      lodash: '_.round(number)',
-      native: 'Math.round(number)',
-    },
-  })],
+  ['max', createMathMethod('max', 'max', 'Get maximum value', '...array', ['Use spread operator with native Math.max'])],
+  ['min', createMathMethod('min', 'min', 'Get minimum value', '...array', ['Use spread operator with native Math.min'])],
+  ['ceil', createMathMethod('ceil', 'ceil', 'Round up to nearest integer')],
+  ['floor', createMathMethod('floor', 'floor', 'Round down to nearest integer')],
+  ['round', createMathMethod('round', 'round', 'Round to nearest integer')],
 ])
