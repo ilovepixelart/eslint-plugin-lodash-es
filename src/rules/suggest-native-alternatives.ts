@@ -3,13 +3,9 @@
  */
 import { getSourceCode, isLodashModule, findLodashUsages, hasNativeAlternative, getNativeAlternative } from '../utils'
 
-import type {
-  ImportDeclaration,
-  ImportSpecifier,
-} from 'estree'
+import type { ImportDeclaration, ImportSpecifier } from 'estree'
 import type { Rule } from 'eslint'
-import type { Usage, SuggestNativeAlternativesRuleOptions } from '../types'
-import type { LodashFunctionName, LodashModuleName } from '../constants'
+import type { Usage, SuggestNativeAlternativesRuleOptions, LodashFunctionName, LodashModuleName } from '../types'
 
 /**
  * Create message with null safety warnings and context

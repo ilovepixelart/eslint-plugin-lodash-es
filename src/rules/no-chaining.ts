@@ -4,13 +4,9 @@
  */
 import { getSourceCode, isLodashModule } from '../utils'
 
-import type {
-  ImportDeclaration,
-  ImportSpecifier,
-  CallExpression,
-} from 'estree'
+import type { ImportDeclaration, ImportSpecifier, CallExpression } from 'estree'
 import type { Rule } from 'eslint'
-import { LodashModuleName } from '../constants'
+import type { LodashModuleName } from '../types'
 
 const noChaining: Rule.RuleModule = {
   meta: {

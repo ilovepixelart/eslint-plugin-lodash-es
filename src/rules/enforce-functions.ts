@@ -10,8 +10,7 @@ import type {
   ImportSpecifier,
 } from 'estree'
 import type { Rule } from 'eslint'
-import type { Usage, EnforceFunctionsRuleOptions } from '../types'
-import type { LodashFunctionName, LodashModuleName } from '../constants'
+import type { Usage, EnforceFunctionsRuleOptions, LodashFunctionName, LodashModuleName } from '../types'
 
 function createErrorMessage(functionName: LodashFunctionName, reason: string): string {
   const nativeAlternative = getNativeAlternative(functionName)

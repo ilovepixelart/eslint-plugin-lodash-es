@@ -4,8 +4,7 @@
 import { lodashModules, lodashFunctions, nativeAlternatives } from './constants'
 
 import type { Rule, SourceCode } from 'eslint'
-import type { Usage, NativeAlternative, FunctionCategory, MigrationDifficulty, AlternativeFilterConfig } from './types'
-import type { LodashFunctionName, LodashModuleName } from './constants'
+import type { Usage, NativeAlternative, FunctionCategory, MigrationDifficulty, AlternativeFilterConfig, LodashFunctionName, LodashModuleName, LodashAlternativeFunctionName } from './types'
 
 /**
  * Get source code from ESLint context (handles deprecated API)
@@ -80,17 +79,17 @@ export function extractFunctionNames(sourceCode: string, importName: string): Lo
 /**
  * Get native alternative for a lodash function
  */
-export function getNativeAlternative(functionName: LodashFunctionName): NativeAlternative | undefined {
+export function getNativeAlternative(functionName: LodashAlternativeFunctionName | LodashFunctionName): NativeAlternative | undefined {
   if (!isLodashFunction(functionName)) return undefined
-  return nativeAlternatives.get(functionName)
+  return nativeAlternatives.get(functionName as LodashAlternativeFunctionName)
 }
 
 /**
  * Check if a lodash function has a native alternative
  */
-export function hasNativeAlternative(functionName: LodashFunctionName): boolean {
+export function hasNativeAlternative(functionName: LodashAlternativeFunctionName | LodashFunctionName): boolean {
   if (!isLodashFunction(functionName)) return false
-  return nativeAlternatives.has(functionName)
+  return nativeAlternatives.has(functionName as LodashAlternativeFunctionName)
 }
 
 // Utility functions for working with alternatives structure
@@ -98,8 +97,8 @@ export function hasNativeAlternative(functionName: LodashFunctionName): boolean 
 /**
  * Get alternatives by function category (array, object, string, etc.)
  */
-export function getAlternativesByCategory(category: FunctionCategory): Record<string, NativeAlternative> {
-  const result: Record<string, NativeAlternative> = {}
+export function getAlternativesByCategory(category: FunctionCategory): Partial<Record<LodashAlternativeFunctionName, NativeAlternative>> {
+  const result: Partial<Record<LodashAlternativeFunctionName, NativeAlternative>> = {}
   for (const [key, alt] of nativeAlternatives) {
     if (alt.category === category) {
       result[key] = alt
@@ -111,8 +110,8 @@ export function getAlternativesByCategory(category: FunctionCategory): Record<st
 /**
  * Get only safe alternatives (no behavioral differences)
  */
-export function getSafeAlternatives(): Record<string, NativeAlternative> {
-  const result: Record<string, NativeAlternative> = {}
+export function getSafeAlternatives(): Partial<Record<LodashAlternativeFunctionName, NativeAlternative>> {
+  const result: Partial<Record<LodashAlternativeFunctionName, NativeAlternative>> = {}
   for (const [key, alt] of nativeAlternatives) {
     if (alt.safety.level === 'safe') {
       result[key] = alt
@@ -124,8 +123,8 @@ export function getSafeAlternatives(): Record<string, NativeAlternative> {
 /**
  * Get alternatives by migration difficulty level
  */
-export function getAlternativesByDifficulty(difficulty: MigrationDifficulty): Record<string, NativeAlternative> {
-  const result: Record<string, NativeAlternative> = {}
+export function getAlternativesByDifficulty(difficulty: MigrationDifficulty): Partial<Record<LodashAlternativeFunctionName, NativeAlternative>> {
+  const result: Partial<Record<LodashAlternativeFunctionName, NativeAlternative>> = {}
   for (const [key, alt] of nativeAlternatives) {
     if (alt.migration.difficulty === difficulty) {
       result[key] = alt
@@ -135,17 +134,10 @@ export function getAlternativesByDifficulty(difficulty: MigrationDifficulty): Re
 }
 
 /**
- * Get all alternatives (support filtering removed)
- */
-export function getAllAlternatives(): Record<string, NativeAlternative> {
-  return Object.fromEntries(nativeAlternatives)
-}
-
-/**
  * Get filtered alternatives based on configuration
  */
-export function getFilteredAlternatives(config: AlternativeFilterConfig): Record<string, NativeAlternative> {
-  const result: Record<string, NativeAlternative> = {}
+export function getFilteredAlternatives(config: AlternativeFilterConfig): Partial<Record<string, NativeAlternative>> {
+  const result: Partial<Record<string, NativeAlternative>> = {}
   for (const [key, alt] of nativeAlternatives) {
     if (config.categories && !config.categories.includes(alt.category)) continue
     if (config.safetyLevels && !config.safetyLevels.includes(alt.safety.level)) continue
