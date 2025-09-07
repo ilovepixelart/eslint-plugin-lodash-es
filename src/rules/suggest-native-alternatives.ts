@@ -9,6 +9,29 @@ import type {
 } from 'estree'
 import type { Rule } from 'eslint'
 import type { Usage, SuggestNativeAlternativesRuleOptions } from '../types'
+import type { LodashFunctionName, LodashModuleName } from '../constants'
+
+/**
+ * Create message with null safety warnings and context
+ */
+function createMessage(functionName: LodashFunctionName, alternative: { example?: { native?: string }, native: string, description: string, notes?: readonly string[] }): string {
+  const baseExample = alternative.example?.native || alternative.native
+  const description = alternative.description
+
+  // Add null safety warning for functions that lose lodash's null safety
+  const nullSafeFunctions = ['keys', 'values', 'entries', 'size', 'isEmpty']
+  const needsNullSafety = nullSafeFunctions.includes(functionName)
+
+  // Add mutation warning for functions with different behavior
+  const mutatingFunctions = ['reverse']
+  const hasMutationRisk = mutatingFunctions.includes(functionName)
+
+  const nullSafetyWarning = needsNullSafety ? ' ⚠️  Add null safety: use `obj || {}` to prevent runtime errors.' : ''
+  const mutationWarning = hasMutationRisk ? ' ⚠️  Native version mutates the original array.' : ''
+  const notesText = alternative.notes?.length ? ` Note: ${alternative.notes.join('. ')}` : ''
+
+  return `Consider native '${baseExample}' instead of '_.${functionName}()'. ${description}.${nullSafetyWarning}${mutationWarning}${notesText}`
+}
 
 function findNativeAlternativeUsages(sourceCode: string, importName: string, options: SuggestNativeAlternativesRuleOptions): Usage[] {
   const alternativeUsages: Usage[] = []
@@ -23,7 +46,7 @@ function findNativeAlternativeUsages(sourceCode: string, importName: string, opt
       }
 
       // Skip unsafe alternatives unless explicitly included
-      if (options.excludeUnsafe && alternative.notes?.includes('different behavior')) {
+      if (options.excludeUnsafe && alternative.excludeByDefault) {
         continue
       }
 
@@ -35,9 +58,9 @@ function findNativeAlternativeUsages(sourceCode: string, importName: string, opt
 }
 
 function findNativeAlternativeDestructuredFunctions(
-  destructuredFunctions: string[],
+  destructuredFunctions: LodashFunctionName[],
   options: SuggestNativeAlternativesRuleOptions,
-): { functionName: string, hasAlternative: boolean }[] {
+): { functionName: LodashFunctionName, hasAlternative: boolean }[] {
   return destructuredFunctions.map((functionName) => {
     const hasAlternative = hasNativeAlternative(functionName)
 
@@ -48,7 +71,7 @@ function findNativeAlternativeDestructuredFunctions(
     // Check if we should exclude unsafe alternatives
     if (options.excludeUnsafe) {
       const alternative = getNativeAlternative(functionName)
-      if (alternative?.notes?.includes('different behavior')) {
+      if (alternative?.excludeByDefault) {
         return { functionName, hasAlternative: false }
       }
     }
@@ -113,7 +136,7 @@ const suggestNativeAlternatives: Rule.RuleModule = {
             start: sourceCode.getLocFromIndex(usage.start),
             end: sourceCode.getLocFromIndex(usage.end),
           },
-          message: `Consider using native '${alternative.example?.native || alternative.native}' instead of lodash '${usage.functionName}'. ${alternative.description}.`,
+          message: createMessage(usage.functionName, alternative),
         })
       }
     }
@@ -124,7 +147,7 @@ const suggestNativeAlternatives: Rule.RuleModule = {
     function handleDestructuredImports(destructuredSpecifiers: ImportSpecifier[]): void {
       const destructuredFunctions = destructuredSpecifiers
         .map(spec => (spec.imported.type === 'Identifier' ? spec.imported.name : ''))
-        .filter(name => name !== '')
+        .filter(name => name !== '') as LodashFunctionName[]
 
       const alternativeFunctions = findNativeAlternativeDestructuredFunctions(destructuredFunctions, options)
 
@@ -143,19 +166,17 @@ const suggestNativeAlternatives: Rule.RuleModule = {
 
         if (!specifier) continue
 
-        const noteText = alternative.notes ? ` Note: ${alternative.notes}` : ''
-        const message = `Consider using native '${alternative.example?.native || alternative.native}' instead of lodash '${functionName}'. ${alternative.description}.${noteText}`
-
         context.report({
           node: specifier,
-          message,
+          message: createMessage(functionName, alternative),
         })
       }
     }
 
     return {
       ImportDeclaration(node: ImportDeclaration): void {
-        const source = node.source.value as string
+        const source = node.source.value as LodashModuleName
+        if (typeof source !== 'string') return
         if (!isLodashModule(source)) return
 
         // Check for default or namespace imports

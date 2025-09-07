@@ -4,7 +4,8 @@
 import { lodashModules, lodashFunctions, nativeAlternatives } from './constants'
 
 import type { Rule, SourceCode } from 'eslint'
-import type { Usage, NativeAlternative } from './types'
+import type { Usage, NativeAlternative, FunctionCategory, MigrationDifficulty, AlternativeFilterConfig } from './types'
+import type { LodashFunctionName, LodashModuleName } from './constants'
 
 /**
  * Get source code from ESLint context (handles deprecated API)
@@ -16,14 +17,14 @@ export function getSourceCode(context: Rule.RuleContext): SourceCode {
 /**
  * Check if import source is a lodash module
  */
-export function isLodashModule(source: string): boolean {
+export function isLodashModule(source: LodashModuleName): boolean {
   return lodashModules.has(source)
 }
 
 /**
  * Check if function name is a valid lodash function
  */
-export function isLodashFunction(functionName: string): boolean {
+export function isLodashFunction(functionName: LodashFunctionName): boolean {
   return lodashFunctions.has(functionName)
 }
 
@@ -43,7 +44,7 @@ export function findLodashUsages(sourceCode: string, importName: string): Usage[
   let match
 
   while ((match = regex.exec(sourceCode)) !== null) {
-    const functionName = match[1]
+    const functionName = match[1] as LodashFunctionName
     if (functionName && isLodashFunction(functionName)) {
       usages.push({
         start: match.index,
@@ -61,13 +62,13 @@ export function findLodashUsages(sourceCode: string, importName: string): Usage[
 /**
  * Extract unique function names from lodash usage patterns
  */
-export function extractFunctionNames(sourceCode: string, importName: string): string[] {
-  const functionNames = new Set<string>()
+export function extractFunctionNames(sourceCode: string, importName: string): LodashFunctionName[] {
+  const functionNames = new Set<LodashFunctionName>()
   const regex = createLodashMemberRegex(importName)
   let match
 
   while ((match = regex.exec(sourceCode)) !== null) {
-    const functionName = match[1]
+    const functionName = match[1] as LodashFunctionName
     if (functionName && isLodashFunction(functionName)) {
       functionNames.add(functionName)
     }
@@ -79,13 +80,83 @@ export function extractFunctionNames(sourceCode: string, importName: string): st
 /**
  * Get native alternative for a lodash function
  */
-export function getNativeAlternative(functionName: string): NativeAlternative | undefined {
-  return nativeAlternatives[functionName]
+export function getNativeAlternative(functionName: LodashFunctionName): NativeAlternative | undefined {
+  if (!isLodashFunction(functionName)) return undefined
+  return nativeAlternatives.get(functionName)
 }
 
 /**
  * Check if a lodash function has a native alternative
  */
-export function hasNativeAlternative(functionName: string): boolean {
-  return functionName in nativeAlternatives
+export function hasNativeAlternative(functionName: LodashFunctionName): boolean {
+  if (!isLodashFunction(functionName)) return false
+  return nativeAlternatives.has(functionName)
+}
+
+// Utility functions for working with alternatives structure
+
+/**
+ * Get alternatives by function category (array, object, string, etc.)
+ */
+export function getAlternativesByCategory(category: FunctionCategory): Record<string, NativeAlternative> {
+  const result: Record<string, NativeAlternative> = {}
+  for (const [key, alt] of nativeAlternatives) {
+    if (alt.category === category) {
+      result[key] = alt
+    }
+  }
+  return result
+}
+
+/**
+ * Get only safe alternatives (no behavioral differences)
+ */
+export function getSafeAlternatives(): Record<string, NativeAlternative> {
+  const result: Record<string, NativeAlternative> = {}
+  for (const [key, alt] of nativeAlternatives) {
+    if (alt.safety.level === 'safe') {
+      result[key] = alt
+    }
+  }
+  return result
+}
+
+/**
+ * Get alternatives by migration difficulty level
+ */
+export function getAlternativesByDifficulty(difficulty: MigrationDifficulty): Record<string, NativeAlternative> {
+  const result: Record<string, NativeAlternative> = {}
+  for (const [key, alt] of nativeAlternatives) {
+    if (alt.migration.difficulty === difficulty) {
+      result[key] = alt
+    }
+  }
+  return result
+}
+
+/**
+ * Get all alternatives (support filtering removed)
+ */
+export function getAllAlternatives(): Record<string, NativeAlternative> {
+  return Object.fromEntries(nativeAlternatives)
+}
+
+/**
+ * Get filtered alternatives based on configuration
+ */
+export function getFilteredAlternatives(config: AlternativeFilterConfig): Record<string, NativeAlternative> {
+  const result: Record<string, NativeAlternative> = {}
+  for (const [key, alt] of nativeAlternatives) {
+    if (config.categories && !config.categories.includes(alt.category)) continue
+    if (config.safetyLevels && !config.safetyLevels.includes(alt.safety.level)) continue
+    if (config.excludeByDefault === false && alt.excludeByDefault) continue
+    if (config.maxDifficulty) {
+      const difficultyOrder = { easy: 0, medium: 1, hard: 2 }
+      const maxLevel = difficultyOrder[config.maxDifficulty]
+      const altLevel = difficultyOrder[alt.migration.difficulty]
+      if (altLevel > maxLevel) continue
+    }
+    result[key] = alt
+  }
+  return result
 }

@@ -1,6 +1,8 @@
 import enforceDestructuring from './rules/enforce-destructuring'
 import enforceFunctions from './rules/enforce-functions'
 import suggestNativeAlternatives from './rules/suggest-native-alternatives'
+import noChaining from './rules/no-chaining'
+import noMethodImports from './rules/no-method-imports'
 
 import type { ESLintPlugin, FlatConfig } from './types'
 
@@ -8,6 +10,8 @@ import type { ESLintPlugin, FlatConfig } from './types'
 const plugin: ESLintPlugin = {
   rules: {
     'enforce-destructuring': enforceDestructuring,
+    'no-chaining': noChaining,
+    'no-method-imports': noMethodImports,
     'enforce-functions': enforceFunctions,
     'suggest-native-alternatives': suggestNativeAlternatives,
   },
@@ -35,6 +39,8 @@ const recommendedConfig: FlatConfig = {
   ...baseConfig,
   rules: {
     'lodash-es/enforce-destructuring': 'error',
+    'lodash-es/no-chaining': 'error',
+    'lodash-es/no-method-imports': 'error',
   },
 }
 
@@ -43,6 +49,8 @@ const allConfig: FlatConfig = {
   ...baseConfig,
   rules: {
     'lodash-es/enforce-destructuring': 'error',
+    'lodash-es/no-chaining': 'error',
+    'lodash-es/no-method-imports': 'error',
     'lodash-es/enforce-functions': 'off', // Users must configure manually
     'lodash-es/suggest-native-alternatives': 'off', // Users must configure manually
   },
@@ -60,6 +68,8 @@ plugin.configs = {
     plugins: ['lodash-es'],
     rules: {
       'lodash-es/enforce-destructuring': 'error',
+      'lodash-es/no-chaining': 'error',
+      'lodash-es/no-method-imports': 'error',
     },
   },
 }

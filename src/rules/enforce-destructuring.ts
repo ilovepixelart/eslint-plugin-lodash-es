@@ -5,11 +5,10 @@ import { getSourceCode, isLodashModule, findLodashUsages, extractFunctionNames }
 
 import type {
   ImportDeclaration,
-  ImportDefaultSpecifier,
-  ImportNamespaceSpecifier,
 } from 'estree'
 import type { Rule } from 'eslint'
 import type { Usage } from '../types'
+import type { LodashModuleName } from '../constants'
 
 const enforceLodashDestructuring: Rule.RuleModule = {
   meta: {
@@ -28,7 +27,8 @@ const enforceLodashDestructuring: Rule.RuleModule = {
 
     return {
       ImportDeclaration(node: ImportDeclaration): void {
-        const source = node.source.value as string
+        const source = node.source.value as LodashModuleName
+        if (typeof source !== 'string') return
 
         if (!isLodashModule(source)) {
           return
@@ -46,7 +46,8 @@ const enforceLodashDestructuring: Rule.RuleModule = {
         if (hasDefaultImport || hasNamespaceImport) {
           const importSpecifier = node.specifiers.find(spec =>
             spec.type === 'ImportDefaultSpecifier' || spec.type === 'ImportNamespaceSpecifier',
-          ) as ImportDefaultSpecifier | ImportNamespaceSpecifier
+          )
+          if (!importSpecifier) return
 
           context.report({
             node,
