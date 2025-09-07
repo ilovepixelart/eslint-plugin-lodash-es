@@ -1,7 +1,7 @@
 /**
  * TypeScript types for the lodash-es ESLint plugin
  */
-import { lodashModules, lodashFunctions, nativeAlternatives, functionCategories, migrationDifficulties, safetyLevels } from './constants'
+import { lodashModules, lodashFunctions, nativeAlternatives, SafetyLevel, MigrationDifficulty, FunctionCategory } from './constants'
 
 import type { Rule } from 'eslint'
 
@@ -47,11 +47,6 @@ export interface SuggestNativeAlternativesRuleOptions {
   includeAll?: boolean
   excludeUnsafe?: boolean
 }
-
-// Native alternatives types
-export type SafetyLevel = typeof safetyLevels[number]
-export type MigrationDifficulty = typeof migrationDifficulties[number]
-export type FunctionCategory = typeof functionCategories[number]
 
 export interface NativeExample {
   lodash: string

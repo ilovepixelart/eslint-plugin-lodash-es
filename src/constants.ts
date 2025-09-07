@@ -2,11 +2,33 @@
  * Shared constants for lodash module detection and function validation
  */
 
-export const safetyLevels = ['safe', 'caution', 'unsafe'] as const
+export enum SafetyLevel {
+  Safe = 'safe',
+  Caution = 'caution',
+  Unsafe = 'unsafe',
+}
 
-export const migrationDifficulties = ['easy', 'medium', 'hard'] as const
+export const safetyLevels = Object.values(SafetyLevel)
 
-export const functionCategories = ['array', 'object', 'string', 'number', 'date', 'function', 'collection'] as const
+export enum MigrationDifficulty {
+  Easy = 'easy',
+  Medium = 'medium',
+  Hard = 'hard',
+}
+
+export const migrationDifficulties = Object.values(MigrationDifficulty)
+
+export enum FunctionCategory {
+  Array = 'array',
+  Object = 'object',
+  String = 'string',
+  Number = 'number',
+  Date = 'date',
+  Function = 'function',
+  Collection = 'collection',
+}
+
+export const functionCategories = Object.values(FunctionCategory)
 
 export const lodashModules = new Set([
   'lodash',
@@ -33,7 +55,7 @@ export const lodashFunctions = new Set([
   'flatMap', 'flatMapDeep', 'flatMapDepth', 'forEach', 'forEachRight',
   'groupBy', 'includes', 'invokeMap', 'keyBy', 'map', 'orderBy', 'partition',
   'reduce', 'reduceRight', 'reject', 'sample', 'sampleSize', 'shuffle',
-  'size', 'some', 'sortBy',
+  'size', 'some', // 'sortBy' moved to Array section only
 
   // Date
   'now',
@@ -100,7 +122,7 @@ export const lodashFunctions = new Set([
 export const nativeAlternatives = new Map([
   // Array Methods - Safe and Direct Replacements
   ['isArray', {
-    category: 'array',
+    category: FunctionCategory.Array,
     native: 'Array.isArray',
     description: 'Check if value is an array (reliable & performant)',
     example: {
@@ -108,15 +130,15 @@ export const nativeAlternatives = new Map([
       native: 'Array.isArray(value)',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
   }],
 
   ['forEach', {
-    category: 'array',
+    category: FunctionCategory.Array,
     native: 'Array.prototype.forEach',
     description: 'Iterate over array elements (native is faster)',
     example: {
@@ -124,16 +146,16 @@ export const nativeAlternatives = new Map([
       native: 'array.forEach(fn)',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
     related: ['map', 'filter'],
   }],
 
   ['map', {
-    category: 'array',
+    category: FunctionCategory.Array,
     native: 'Array.prototype.map',
     description: 'Transform array elements using a callback function',
     example: {
@@ -141,10 +163,10 @@ export const nativeAlternatives = new Map([
       native: 'array.map(fn)',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
       steps: [
         'Replace _.map(array, fn) with array.map(fn)',
         'Ensure array is not null/undefined before calling',
@@ -154,7 +176,7 @@ export const nativeAlternatives = new Map([
   }],
 
   ['filter', {
-    category: 'array',
+    category: FunctionCategory.Array,
     native: 'Array.prototype.filter',
     description: 'Filter array elements (native is faster)',
     example: {
@@ -162,16 +184,16 @@ export const nativeAlternatives = new Map([
       native: 'array.filter(predicate)',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
     related: ['map', 'find'],
   }],
 
   ['find', {
-    category: 'array',
+    category: FunctionCategory.Array,
     native: 'Array.prototype.find',
     description: 'Find first matching element',
     example: {
@@ -179,16 +201,16 @@ export const nativeAlternatives = new Map([
       native: 'array.find(predicate)',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
     related: ['filter', 'findIndex'],
   }],
 
   ['findIndex', {
-    category: 'array',
+    category: FunctionCategory.Array,
     native: 'Array.prototype.findIndex',
     description: 'Find index of first matching element',
     example: {
@@ -196,16 +218,16 @@ export const nativeAlternatives = new Map([
       native: 'array.findIndex(predicate)',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
     related: ['find', 'indexOf'],
   }],
 
   ['includes', {
-    category: 'array',
+    category: FunctionCategory.Array,
     native: 'Array.prototype.includes',
     description: 'Check if array includes a value',
     example: {
@@ -213,16 +235,16 @@ export const nativeAlternatives = new Map([
       native: 'array.includes(value)',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
     related: ['indexOf', 'find'],
   }],
 
   ['reduce', {
-    category: 'array',
+    category: FunctionCategory.Array,
     native: 'Array.prototype.reduce',
     description: 'Reduce array to single value',
     example: {
@@ -230,16 +252,16 @@ export const nativeAlternatives = new Map([
       native: 'array.reduce(fn, initial)',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
     related: ['map', 'filter'],
   }],
 
   ['some', {
-    category: 'array',
+    category: FunctionCategory.Array,
     native: 'Array.prototype.some',
     description: 'Test if some elements match predicate',
     example: {
@@ -247,16 +269,16 @@ export const nativeAlternatives = new Map([
       native: 'array.some(predicate)',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
     related: ['every', 'find'],
   }],
 
   ['every', {
-    category: 'array',
+    category: FunctionCategory.Array,
     native: 'Array.prototype.every',
     description: 'Test if all elements match predicate',
     example: {
@@ -264,16 +286,16 @@ export const nativeAlternatives = new Map([
       native: 'array.every(predicate)',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
     related: ['some', 'filter'],
   }],
 
   ['slice', {
-    category: 'array',
+    category: FunctionCategory.Array,
     native: 'Array.prototype.slice',
     description: 'Extract section of array',
     example: {
@@ -281,15 +303,15 @@ export const nativeAlternatives = new Map([
       native: 'array.slice(start, end)',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
   }],
 
   ['concat', {
-    category: 'array',
+    category: FunctionCategory.Array,
     native: 'Array.prototype.concat',
     description: 'Concatenate arrays',
     example: {
@@ -297,15 +319,15 @@ export const nativeAlternatives = new Map([
       native: 'array.concat(...values)',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
   }],
 
   ['join', {
-    category: 'array',
+    category: FunctionCategory.Array,
     native: 'Array.prototype.join',
     description: 'Join array elements into string',
     example: {
@@ -313,16 +335,16 @@ export const nativeAlternatives = new Map([
       native: 'array.join(separator)',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
   }],
 
   // Array Methods - With Behavioral Differences
   ['reverse', {
-    category: 'array',
+    category: FunctionCategory.Array,
     native: 'Array.prototype.reverse',
     description: 'Reverse array elements in place',
     example: {
@@ -330,12 +352,12 @@ export const nativeAlternatives = new Map([
       native: 'array.reverse()',
     },
     safety: {
-      level: 'caution',
+      level: SafetyLevel.Caution,
       concerns: ['Mutates original array'],
       mitigation: 'Use [...array].reverse() or array.slice().reverse() for immutable version',
     },
     migration: {
-      difficulty: 'medium',
+      difficulty: MigrationDifficulty.Medium,
       challenges: ['Behavioral difference - mutable vs immutable'],
       steps: [
         'Decide if mutation is acceptable',
@@ -349,7 +371,7 @@ export const nativeAlternatives = new Map([
 
   // Object Methods - With Null Safety Issues
   ['keys', {
-    category: 'object',
+    category: FunctionCategory.Object,
     native: 'Object.keys',
     description: 'Get enumerable property names of object',
     example: {
@@ -357,12 +379,12 @@ export const nativeAlternatives = new Map([
       native: 'Object.keys(object)',
     },
     safety: {
-      level: 'caution',
+      level: SafetyLevel.Caution,
       concerns: ['Throws on null/undefined input'],
       mitigation: 'Use Object.keys(object || {}) for null safety',
     },
     migration: {
-      difficulty: 'medium',
+      difficulty: MigrationDifficulty.Medium,
       challenges: ['Null safety handling'],
       steps: [
         'Check all usage sites for potential null/undefined values',
@@ -374,7 +396,7 @@ export const nativeAlternatives = new Map([
   }],
 
   ['values', {
-    category: 'object',
+    category: FunctionCategory.Object,
     native: 'Object.values',
     description: 'Get object values as array',
     example: {
@@ -382,12 +404,12 @@ export const nativeAlternatives = new Map([
       native: 'Object.values(object || {})',
     },
     safety: {
-      level: 'caution',
+      level: SafetyLevel.Caution,
       concerns: ['Throws on null/undefined input'],
       mitigation: 'Use Object.values(object || {}) for null safety',
     },
     migration: {
-      difficulty: 'medium',
+      difficulty: MigrationDifficulty.Medium,
       challenges: ['Null safety handling'],
       steps: [
         'Add null checks: Object.values(object || {})',
@@ -397,7 +419,7 @@ export const nativeAlternatives = new Map([
   }],
 
   ['entries', {
-    category: 'object',
+    category: FunctionCategory.Object,
     native: 'Object.entries',
     description: 'Get object key-value pairs as array',
     example: {
@@ -405,12 +427,12 @@ export const nativeAlternatives = new Map([
       native: 'Object.entries(object || {})',
     },
     safety: {
-      level: 'caution',
+      level: SafetyLevel.Caution,
       concerns: ['Throws on null/undefined input'],
       mitigation: 'Use Object.entries(object || {}) for null safety',
     },
     migration: {
-      difficulty: 'medium',
+      difficulty: MigrationDifficulty.Medium,
       challenges: ['Null safety handling'],
       steps: [
         'Add null checks: Object.entries(object || {})',
@@ -420,7 +442,7 @@ export const nativeAlternatives = new Map([
   }],
 
   ['assign', {
-    category: 'object',
+    category: FunctionCategory.Object,
     native: 'Object.assign',
     description: 'Copy properties to target object',
     example: {
@@ -428,16 +450,16 @@ export const nativeAlternatives = new Map([
       native: 'Object.assign(target, ...sources)',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
   }],
 
   // Type checking methods
   ['isNull', {
-    category: 'function',
+    category: FunctionCategory.Function,
     native: 'value === null',
     description: 'Check if value is null',
     example: {
@@ -445,15 +467,15 @@ export const nativeAlternatives = new Map([
       native: 'value === null',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
   }],
 
   ['isUndefined', {
-    category: 'function',
+    category: FunctionCategory.Function,
     native: 'value === undefined',
     description: 'Check if value is undefined',
     example: {
@@ -461,15 +483,15 @@ export const nativeAlternatives = new Map([
       native: 'value === undefined',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
   }],
 
   ['isNil', {
-    category: 'function',
+    category: FunctionCategory.Function,
     native: 'value == null',
     description: 'Check if value is null or undefined',
     example: {
@@ -477,15 +499,15 @@ export const nativeAlternatives = new Map([
       native: 'value == null',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
   }],
 
   ['isBoolean', {
-    category: 'function',
+    category: FunctionCategory.Function,
     native: 'typeof value === "boolean"',
     description: 'Check if value is boolean',
     example: {
@@ -493,15 +515,15 @@ export const nativeAlternatives = new Map([
       native: 'typeof value === "boolean"',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
   }],
 
   ['isNumber', {
-    category: 'function',
+    category: FunctionCategory.Function,
     native: 'typeof value === "number"',
     description: 'Check if value is number',
     example: {
@@ -509,16 +531,16 @@ export const nativeAlternatives = new Map([
       native: 'typeof value === "number"',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
     notes: ['Consider Number.isFinite() for finite numbers'],
   }],
 
   ['isString', {
-    category: 'function',
+    category: FunctionCategory.Function,
     native: 'typeof value === "string"',
     description: 'Check if value is string',
     example: {
@@ -526,15 +548,15 @@ export const nativeAlternatives = new Map([
       native: 'typeof value === "string"',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
   }],
 
   ['isFunction', {
-    category: 'function',
+    category: FunctionCategory.Function,
     native: 'typeof value === "function"',
     description: 'Check if value is function',
     example: {
@@ -542,15 +564,15 @@ export const nativeAlternatives = new Map([
       native: 'typeof value === "function"',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
   }],
 
   ['isObject', {
-    category: 'function',
+    category: FunctionCategory.Function,
     native: 'typeof value === "object" && value !== null',
     description: 'Check if value is object',
     example: {
@@ -558,19 +580,19 @@ export const nativeAlternatives = new Map([
       native: 'typeof value === "object" && value !== null',
     },
     safety: {
-      level: 'caution',
+      level: SafetyLevel.Caution,
       concerns: ['Different behavior - lodash includes functions'],
       mitigation: 'Use (typeof value === "object" && value !== null) || typeof value === "function" for exact lodash behavior',
     },
     migration: {
-      difficulty: 'medium',
+      difficulty: MigrationDifficulty.Medium,
       challenges: ['Behavioral difference with functions'],
     },
     notes: ['Lodash isObject also returns true for functions'],
   }],
 
   ['isFinite', {
-    category: 'number',
+    category: FunctionCategory.Number,
     native: 'Number.isFinite',
     description: 'Check if value is finite number',
     example: {
@@ -578,15 +600,15 @@ export const nativeAlternatives = new Map([
       native: 'Number.isFinite(value)',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
   }],
 
   ['isInteger', {
-    category: 'number',
+    category: FunctionCategory.Number,
     native: 'Number.isInteger',
     description: 'Check if value is integer',
     example: {
@@ -594,15 +616,15 @@ export const nativeAlternatives = new Map([
       native: 'Number.isInteger(value)',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
   }],
 
   ['isNaN', {
-    category: 'number',
+    category: FunctionCategory.Number,
     native: 'Number.isNaN',
     description: 'Check if value is NaN',
     example: {
@@ -610,16 +632,16 @@ export const nativeAlternatives = new Map([
       native: 'Number.isNaN(value)',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
   }],
 
   // String Methods
   ['startsWith', {
-    category: 'string',
+    category: FunctionCategory.String,
     native: 'String.prototype.startsWith',
     description: 'Check if string starts with target',
     example: {
@@ -627,15 +649,15 @@ export const nativeAlternatives = new Map([
       native: 'string.startsWith(target)',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
   }],
 
   ['endsWith', {
-    category: 'string',
+    category: FunctionCategory.String,
     native: 'String.prototype.endsWith',
     description: 'Check if string ends with target',
     example: {
@@ -643,15 +665,15 @@ export const nativeAlternatives = new Map([
       native: 'string.endsWith(target)',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
   }],
 
   ['repeat', {
-    category: 'string',
+    category: FunctionCategory.String,
     native: 'String.prototype.repeat',
     description: 'Repeat string n times',
     example: {
@@ -659,15 +681,15 @@ export const nativeAlternatives = new Map([
       native: 'string.repeat(n)',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
   }],
 
   ['trim', {
-    category: 'string',
+    category: FunctionCategory.String,
     native: 'String.prototype.trim',
     description: 'Remove whitespace from both ends',
     example: {
@@ -675,15 +697,15 @@ export const nativeAlternatives = new Map([
       native: 'string.trim()',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
   }],
 
   ['trimStart', {
-    category: 'string',
+    category: FunctionCategory.String,
     native: 'String.prototype.trimStart',
     description: 'Remove whitespace from start',
     example: {
@@ -691,15 +713,15 @@ export const nativeAlternatives = new Map([
       native: 'string.trimStart()',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
   }],
 
   ['trimEnd', {
-    category: 'string',
+    category: FunctionCategory.String,
     native: 'String.prototype.trimEnd',
     description: 'Remove whitespace from end',
     example: {
@@ -707,15 +729,15 @@ export const nativeAlternatives = new Map([
       native: 'string.trimEnd()',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
   }],
 
   ['toLower', {
-    category: 'string',
+    category: FunctionCategory.String,
     native: 'String.prototype.toLowerCase',
     description: 'Convert string to lowercase',
     example: {
@@ -723,15 +745,15 @@ export const nativeAlternatives = new Map([
       native: 'string.toLowerCase()',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
   }],
 
   ['toUpper', {
-    category: 'string',
+    category: FunctionCategory.String,
     native: 'String.prototype.toUpperCase',
     description: 'Convert string to uppercase',
     example: {
@@ -739,15 +761,15 @@ export const nativeAlternatives = new Map([
       native: 'string.toUpperCase()',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
   }],
 
   ['replace', {
-    category: 'string',
+    category: FunctionCategory.String,
     native: 'String.prototype.replace',
     description: 'Replace substring',
     example: {
@@ -755,15 +777,15 @@ export const nativeAlternatives = new Map([
       native: 'string.replace(pattern, replacement)',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
   }],
 
   ['split', {
-    category: 'string',
+    category: FunctionCategory.String,
     native: 'String.prototype.split',
     description: 'Split string into array',
     example: {
@@ -771,16 +793,16 @@ export const nativeAlternatives = new Map([
       native: 'string.split(separator)',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
   }],
 
   // Math methods
   ['max', {
-    category: 'number',
+    category: FunctionCategory.Number,
     native: 'Math.max',
     description: 'Get maximum value',
     example: {
@@ -788,16 +810,16 @@ export const nativeAlternatives = new Map([
       native: 'Math.max(...array)',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
     notes: ['Use spread operator with native Math.max'],
   }],
 
   ['min', {
-    category: 'number',
+    category: FunctionCategory.Number,
     native: 'Math.min',
     description: 'Get minimum value',
     example: {
@@ -805,16 +827,16 @@ export const nativeAlternatives = new Map([
       native: 'Math.min(...array)',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
     notes: ['Use spread operator with native Math.min'],
   }],
 
   ['ceil', {
-    category: 'number',
+    category: FunctionCategory.Number,
     native: 'Math.ceil',
     description: 'Round up to nearest integer',
     example: {
@@ -822,15 +844,15 @@ export const nativeAlternatives = new Map([
       native: 'Math.ceil(number)',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
   }],
 
   ['floor', {
-    category: 'number',
+    category: FunctionCategory.Number,
     native: 'Math.floor',
     description: 'Round down to nearest integer',
     example: {
@@ -838,15 +860,15 @@ export const nativeAlternatives = new Map([
       native: 'Math.floor(number)',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
   }],
 
   ['round', {
-    category: 'number',
+    category: FunctionCategory.Number,
     native: 'Math.round',
     description: 'Round to nearest integer',
     example: {
@@ -854,16 +876,16 @@ export const nativeAlternatives = new Map([
       native: 'Math.round(number)',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
   }],
 
   // Utility
   ['now', {
-    category: 'date',
+    category: FunctionCategory.Date,
     native: 'Date.now',
     description: 'Get current timestamp',
     example: {
@@ -871,15 +893,15 @@ export const nativeAlternatives = new Map([
       native: 'Date.now()',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
   }],
 
   ['toNumber', {
-    category: 'function',
+    category: FunctionCategory.Function,
     native: 'Number',
     description: 'Convert value to number',
     example: {
@@ -887,16 +909,16 @@ export const nativeAlternatives = new Map([
       native: 'Number(value)',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
     notes: ['Consider parseFloat() or parseInt() for strings'],
   }],
 
   ['toString', {
-    category: 'function',
+    category: FunctionCategory.Function,
     native: 'String',
     description: 'Convert value to string',
     example: {
@@ -904,17 +926,17 @@ export const nativeAlternatives = new Map([
       native: 'String(value)',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
     notes: ['Consider .toString() method for objects'],
   }],
 
   // String Methods
   ['padStart', {
-    category: 'string',
+    category: FunctionCategory.String,
     native: 'String.prototype.padStart',
     description: 'Pad string to target length from start',
     example: {
@@ -922,16 +944,16 @@ export const nativeAlternatives = new Map([
       native: 'string.padStart(length, chars)',
     },
     safety: {
-      level: 'safe',
+      level: SafetyLevel.Safe,
     },
     migration: {
-      difficulty: 'easy',
+      difficulty: MigrationDifficulty.Easy,
     },
   }],
 
   // More Complex Cases
   ['isEmpty', {
-    category: 'collection',
+    category: FunctionCategory.Collection,
     native: 'Various approaches',
     description: 'Check if collection is empty',
     example: {
@@ -939,7 +961,7 @@ export const nativeAlternatives = new Map([
       native: '!value || Object.keys(value).length === 0',
     },
     safety: {
-      level: 'unsafe',
+      level: SafetyLevel.Unsafe,
       concerns: [
         'No single native equivalent',
         'Different behavior for different types',
@@ -948,7 +970,7 @@ export const nativeAlternatives = new Map([
       mitigation: 'Create utility function or use multiple checks based on expected types',
     },
     migration: {
-      difficulty: 'hard',
+      difficulty: MigrationDifficulty.Hard,
       challenges: [
         'No direct equivalent',
         'Type-specific logic needed',
