@@ -1,105 +1,130 @@
 /**
  * Native alternatives for Array functions
  */
-import { FunctionCategory, SafetyLevel, MigrationDifficulty, createAlternative } from '../shared'
-import type { NativeAlternative, CreateAlternativeOptions } from '../shared'
-
-// Array method helper
-function createArrayMethod(
-  lodashName: string,
-  native: string,
-  description: string,
-  params = '',
-  options?: Partial<CreateAlternativeOptions>,
-): NativeAlternative {
-  const paramSuffix = params ? `, ${params}` : ''
-  return createAlternative({
-    category: FunctionCategory.Array,
-    native: `Array.prototype.${native}`,
-    description,
-    example: {
-      lodash: `_.${lodashName}(array${paramSuffix})`,
-      native: `array.${native}(${params})`,
-    },
-    ...options,
-  })
-}
-
-// Static Array method helper
-function createStaticArrayMethod(
-  lodashName: string,
-  native: string,
-  description: string,
-  params = 'value',
-): NativeAlternative {
-  return createAlternative({
-    category: FunctionCategory.Array,
-    native: `Array.${native}`,
-    description,
-    example: {
-      lodash: `_.${lodashName}(${params})`,
-      native: `Array.${native}(${params})`,
-    },
-  })
-}
+import { FunctionCategory, createPrototypeMethodAlternative, createStaticMethodAlternative, safetyConfigs, migrationConfigs } from '../shared'
+import type { NativeAlternative } from '../shared'
 
 export const arrayAlternatives = new Map<string, NativeAlternative>([
   // Array Methods - Safe and Direct Replacements
-  ['isArray', createStaticArrayMethod('isArray', 'isArray', 'Check if value is an array (reliable & performant)')],
-  ['forEach', createArrayMethod('forEach', 'forEach', 'Iterate over array elements (native is faster)', 'fn', {
-    related: ['map', 'filter'],
-  })],
-  ['map', createArrayMethod('map', 'map', 'Transform array elements using a callback function', 'fn', {
-    migration: {
-      steps: [
-        'Replace _.map(array, fn) with array.map(fn)',
-        'Ensure array is not null/undefined before calling',
-      ],
+  ['isArray', createStaticMethodAlternative(
+    FunctionCategory.Array,
+    'isArray',
+    'Array',
+    'Check if value is an array (reliable & performant)',
+  )],
+
+  ['forEach', createPrototypeMethodAlternative(
+    FunctionCategory.Array,
+    'forEach',
+    'Iterate over array elements (native is faster)',
+    'fn',
+    { related: ['map', 'filter'] },
+  )],
+
+  ['map', createPrototypeMethodAlternative(
+    FunctionCategory.Array,
+    'map',
+    'Transform array elements using a callback function',
+    'fn',
+    {
+      migration: {
+        steps: [
+          'Replace _.map(array, fn) with array.map(fn)',
+          'Ensure array is not null/undefined before calling',
+        ],
+      },
+      related: ['filter', 'forEach'],
     },
-    related: ['filter', 'forEach'],
-  })],
-  ['filter', createArrayMethod('filter', 'filter', 'Filter array elements (native is faster)', 'predicate', {
-    related: ['map', 'find'],
-  })],
-  ['find', createArrayMethod('find', 'find', 'Find first matching element', 'predicate', {
-    related: ['filter', 'findIndex'],
-  })],
-  ['findIndex', createArrayMethod('findIndex', 'findIndex', 'Find index of first matching element', 'predicate', {
-    related: ['find', 'indexOf'],
-  })],
-  ['includes', createArrayMethod('includes', 'includes', 'Check if array includes a value', 'value', {
-    related: ['indexOf', 'find'],
-  })],
-  ['reduce', createArrayMethod('reduce', 'reduce', 'Reduce array to single value', 'fn, initial', {
-    related: ['map', 'filter'],
-  })],
-  ['some', createArrayMethod('some', 'some', 'Test if some elements match predicate', 'predicate', {
-    related: ['every', 'find'],
-  })],
-  ['every', createArrayMethod('every', 'every', 'Test if all elements match predicate', 'predicate', {
-    related: ['some', 'filter'],
-  })],
-  ['slice', createArrayMethod('slice', 'slice', 'Extract section of array', 'start, end')],
-  ['concat', createArrayMethod('concat', 'concat', 'Concatenate arrays', '...values')],
-  ['join', createArrayMethod('join', 'join', 'Join array elements into string', 'separator')],
+  )],
+
+  ['filter', createPrototypeMethodAlternative(
+    FunctionCategory.Array,
+    'filter',
+    'Filter array elements (native is faster)',
+    'predicate',
+    { related: ['map', 'find'] },
+  )],
+
+  ['find', createPrototypeMethodAlternative(
+    FunctionCategory.Array,
+    'find',
+    'Find first matching element',
+    'predicate',
+    { related: ['filter', 'findIndex'] },
+  )],
+
+  ['findIndex', createPrototypeMethodAlternative(
+    FunctionCategory.Array,
+    'findIndex',
+    'Find index of first matching element',
+    'predicate',
+    { related: ['find', 'indexOf'] },
+  )],
+
+  ['includes', createPrototypeMethodAlternative(
+    FunctionCategory.Array,
+    'includes',
+    'Check if array includes a value',
+    'value',
+    { related: ['indexOf', 'find'] },
+  )],
+
+  ['reduce', createPrototypeMethodAlternative(
+    FunctionCategory.Array,
+    'reduce',
+    'Reduce array to single value',
+    'fn, initial',
+    { related: ['map', 'filter'] },
+  )],
+
+  ['some', createPrototypeMethodAlternative(
+    FunctionCategory.Array,
+    'some',
+    'Test if some elements match predicate',
+    'predicate',
+    { related: ['every', 'find'] },
+  )],
+
+  ['every', createPrototypeMethodAlternative(
+    FunctionCategory.Array,
+    'every',
+    'Test if all elements match predicate',
+    'predicate',
+    { related: ['some', 'filter'] },
+  )],
+
+  ['slice', createPrototypeMethodAlternative(
+    FunctionCategory.Array,
+    'slice',
+    'Extract section of array',
+    'start, end',
+  )],
+
+  ['concat', createPrototypeMethodAlternative(
+    FunctionCategory.Array,
+    'concat',
+    'Concatenate arrays',
+    '...values',
+  )],
+
+  ['join', createPrototypeMethodAlternative(
+    FunctionCategory.Array,
+    'join',
+    'Join array elements into string',
+    'separator',
+  )],
 
   // Array Methods - With Behavioral Differences
-  ['reverse', createArrayMethod('reverse', 'reverse', 'Reverse array elements in place', '', {
-    safety: {
-      level: SafetyLevel.Caution,
-      concerns: ['Mutates original array'],
-      mitigation: 'Use [...array].reverse() or array.slice().reverse() for immutable version',
+  ['reverse', createPrototypeMethodAlternative(
+    FunctionCategory.Array,
+    'reverse',
+    'Reverse array elements in place',
+    undefined,
+    {
+      safety: safetyConfigs.mutatesOriginal,
+      migration: migrationConfigs.mutabilityConcerns,
+      excludeByDefault: true,
+      related: ['sort'],
     },
-    migration: {
-      difficulty: MigrationDifficulty.Medium,
-      challenges: ['Behavioral difference - mutable vs immutable'],
-      steps: [
-        'Decide if mutation is acceptable',
-        'Use [...array].reverse() for immutable version',
-        'Or use array.slice().reverse() for older browser support',
-      ],
-    },
-    excludeByDefault: true,
-    related: ['sort'],
-  })],
+  )],
 ])
