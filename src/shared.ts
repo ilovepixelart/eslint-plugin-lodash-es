@@ -71,6 +71,42 @@ export const functionClassifications = {
   mutating: ['reverse'] as const,
 } as const
 
+// Common related function groups to reduce duplication
+export const relatedFunctions = {
+  arrayIterators: ['map', 'filter', 'forEach'] as const,
+  arrayFinders: ['find', 'findIndex', 'indexOf'] as const,
+  arrayTests: ['some', 'every', 'filter'] as const,
+  arrayReducers: ['map', 'filter', 'reduce'] as const,
+  arrayMutators: ['sort', 'reverse'] as const,
+} as const
+
+// Common description templates to reduce duplication
+export const descriptions = {
+  // Array descriptions
+  iterateElements: (type: string) => `Iterate over ${type} elements (native is faster)`,
+  transformElements: (type: string) => `Transform ${type} elements using a callback function`,
+  filterElements: (type: string) => `Filter ${type} elements (native is faster)`,
+  findElement: 'Find first matching element',
+  findIndex: 'Find index of first matching element',
+  checkIncludes: (type: string) => `Check if ${type} includes a value`,
+  reduceToValue: 'Reduce array to single value',
+  testSome: 'Test if some elements match predicate',
+  testAll: 'Test if all elements match predicate',
+
+  // String descriptions
+  checkStringStarts: 'Check if string starts with target',
+  checkStringEnds: 'Check if string ends with target',
+  repeatString: 'Repeat string n times',
+  removeWhitespace: (location: string) => `Remove whitespace from ${location}`,
+  convertStringCase: (direction: string) => `Convert string to ${direction}`,
+  replaceSubstring: 'Replace substring',
+  splitStringToArray: 'Split string into array',
+  padString: (direction: string) => `Pad string to target length from ${direction}`,
+
+  // General descriptions
+  checkIfArray: 'Check if value is an array (reliable & performant)',
+} as const
+
 export interface NativeExample {
   lodash: string
   native: string

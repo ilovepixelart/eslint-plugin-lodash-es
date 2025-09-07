@@ -1,7 +1,7 @@
 /**
  * Native alternatives for String functions
  */
-import { FunctionCategory, createPrototypeMethodAlternative } from '../shared'
+import { FunctionCategory, createPrototypeMethodAlternative, descriptions } from '../shared'
 import type { NativeAlternative } from '../shared'
 
 export const stringAlternatives = new Map<string, NativeAlternative>([
@@ -9,72 +9,72 @@ export const stringAlternatives = new Map<string, NativeAlternative>([
   ['startsWith', createPrototypeMethodAlternative(
     FunctionCategory.String,
     'startsWith',
-    'Check if string starts with target',
+    descriptions.checkStringStarts,
     'target',
   )],
 
   ['endsWith', createPrototypeMethodAlternative(
     FunctionCategory.String,
     'endsWith',
-    'Check if string ends with target',
+    descriptions.checkStringEnds,
     'target',
   )],
 
   ['repeat', createPrototypeMethodAlternative(
     FunctionCategory.String,
     'repeat',
-    'Repeat string n times',
+    descriptions.repeatString,
     'n',
   )],
 
   ['trim', createPrototypeMethodAlternative(
     FunctionCategory.String,
     'trim',
-    'Remove whitespace from both ends',
+    descriptions.removeWhitespace('both ends'),
   )],
 
   ['trimStart', createPrototypeMethodAlternative(
     FunctionCategory.String,
     'trimStart',
-    'Remove whitespace from start',
+    descriptions.removeWhitespace('start'),
   )],
 
   ['trimEnd', createPrototypeMethodAlternative(
     FunctionCategory.String,
     'trimEnd',
-    'Remove whitespace from end',
+    descriptions.removeWhitespace('end'),
   )],
 
   ['toLower', createPrototypeMethodAlternative(
     FunctionCategory.String,
     'toLowerCase',
-    'Convert string to lowercase',
+    descriptions.convertStringCase('lowercase'),
   )],
 
   ['toUpper', createPrototypeMethodAlternative(
     FunctionCategory.String,
     'toUpperCase',
-    'Convert string to uppercase',
+    descriptions.convertStringCase('uppercase'),
   )],
 
   ['replace', createPrototypeMethodAlternative(
     FunctionCategory.String,
     'replace',
-    'Replace substring',
+    descriptions.replaceSubstring,
     'pattern, replacement',
   )],
 
   ['split', createPrototypeMethodAlternative(
     FunctionCategory.String,
     'split',
-    'Split string into array',
+    descriptions.splitStringToArray,
     'separator',
   )],
 
-  ['padStart', createPrototypeMethodAlternative(
+  ['padEnd', createPrototypeMethodAlternative(
     FunctionCategory.String,
-    'padStart',
-    'Pad string to target length from start',
+    'padEnd',
+    descriptions.padString('end'),
     'length, chars',
   )],
 ])

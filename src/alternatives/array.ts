@@ -1,7 +1,7 @@
 /**
  * Native alternatives for Array functions
  */
-import { FunctionCategory, createPrototypeMethodAlternative, createStaticMethodAlternative, safetyConfigs, migrationConfigs } from '../shared'
+import { FunctionCategory, createPrototypeMethodAlternative, createStaticMethodAlternative, safetyConfigs, migrationConfigs, relatedFunctions, descriptions } from '../shared'
 import type { NativeAlternative } from '../shared'
 
 export const arrayAlternatives = new Map<string, NativeAlternative>([
@@ -10,21 +10,21 @@ export const arrayAlternatives = new Map<string, NativeAlternative>([
     FunctionCategory.Array,
     'isArray',
     'Array',
-    'Check if value is an array (reliable & performant)',
+    descriptions.checkIfArray,
   )],
 
   ['forEach', createPrototypeMethodAlternative(
     FunctionCategory.Array,
     'forEach',
-    'Iterate over array elements (native is faster)',
+    descriptions.iterateElements('array'),
     'fn',
-    { related: ['map', 'filter'] },
+    { related: [...relatedFunctions.arrayIterators] },
   )],
 
   ['map', createPrototypeMethodAlternative(
     FunctionCategory.Array,
     'map',
-    'Transform array elements using a callback function',
+    descriptions.transformElements('array'),
     'fn',
     {
       migration: {
@@ -33,16 +33,16 @@ export const arrayAlternatives = new Map<string, NativeAlternative>([
           'Ensure array is not null/undefined before calling',
         ],
       },
-      related: ['filter', 'forEach'],
+      related: [...relatedFunctions.arrayIterators],
     },
   )],
 
   ['filter', createPrototypeMethodAlternative(
     FunctionCategory.Array,
     'filter',
-    'Filter array elements (native is faster)',
+    descriptions.filterElements('array'),
     'predicate',
-    { related: ['map', 'find'] },
+    { related: [...relatedFunctions.arrayIterators] },
   )],
 
   ['find', createPrototypeMethodAlternative(
@@ -50,7 +50,7 @@ export const arrayAlternatives = new Map<string, NativeAlternative>([
     'find',
     'Find first matching element',
     'predicate',
-    { related: ['filter', 'findIndex'] },
+    { related: [...relatedFunctions.arrayFinders] },
   )],
 
   ['findIndex', createPrototypeMethodAlternative(
@@ -58,7 +58,7 @@ export const arrayAlternatives = new Map<string, NativeAlternative>([
     'findIndex',
     'Find index of first matching element',
     'predicate',
-    { related: ['find', 'indexOf'] },
+    { related: [...relatedFunctions.arrayFinders] },
   )],
 
   ['includes', createPrototypeMethodAlternative(
@@ -66,7 +66,7 @@ export const arrayAlternatives = new Map<string, NativeAlternative>([
     'includes',
     'Check if array includes a value',
     'value',
-    { related: ['indexOf', 'find'] },
+    { related: [...relatedFunctions.arrayFinders] },
   )],
 
   ['reduce', createPrototypeMethodAlternative(
@@ -74,7 +74,7 @@ export const arrayAlternatives = new Map<string, NativeAlternative>([
     'reduce',
     'Reduce array to single value',
     'fn, initial',
-    { related: ['map', 'filter'] },
+    { related: [...relatedFunctions.arrayReducers] },
   )],
 
   ['some', createPrototypeMethodAlternative(
@@ -82,7 +82,7 @@ export const arrayAlternatives = new Map<string, NativeAlternative>([
     'some',
     'Test if some elements match predicate',
     'predicate',
-    { related: ['every', 'find'] },
+    { related: [...relatedFunctions.arrayTests] },
   )],
 
   ['every', createPrototypeMethodAlternative(
@@ -90,7 +90,7 @@ export const arrayAlternatives = new Map<string, NativeAlternative>([
     'every',
     'Test if all elements match predicate',
     'predicate',
-    { related: ['some', 'filter'] },
+    { related: [...relatedFunctions.arrayTests] },
   )],
 
   ['slice', createPrototypeMethodAlternative(
@@ -124,7 +124,7 @@ export const arrayAlternatives = new Map<string, NativeAlternative>([
       safety: safetyConfigs.mutatesOriginal,
       migration: migrationConfigs.mutabilityConcerns,
       excludeByDefault: true,
-      related: ['sort'],
+      related: [...relatedFunctions.arrayMutators],
     },
   )],
 ])
