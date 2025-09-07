@@ -1,14 +1,17 @@
 /**
  * Shared constants for lodash module detection and function validation
  */
-import type { NativeAlternative } from './types'
+
+export const safetyLevels = ['safe', 'caution', 'unsafe'] as const
+
+export const migrationDifficulties = ['easy', 'medium', 'hard'] as const
+
+export const functionCategories = ['array', 'object', 'string', 'number', 'date', 'function', 'collection'] as const
 
 export const lodashModules = new Set([
   'lodash',
   'lodash-es',
 ] as const)
-
-export type LodashModuleName = typeof lodashModules extends Set<infer T> ? T : never
 
 export const lodashFunctions = new Set([
   // Array
@@ -89,14 +92,12 @@ export const lodashFunctions = new Set([
   'toPath', 'uniqueId',
 ] as const)
 
-export type LodashFunctionName = typeof lodashFunctions extends Set<infer T> ? T : never
-
 /**
  * Native alternatives data
  */
 
 // Native alternatives with comprehensive metadata
-export const nativeAlternatives = new Map<LodashFunctionName, NativeAlternative>([
+export const nativeAlternatives = new Map([
   // Array Methods - Safe and Direct Replacements
   ['isArray', {
     category: 'array',
@@ -966,4 +967,4 @@ export const nativeAlternatives = new Map<LodashFunctionName, NativeAlternative>
       'Consider if you really need such generic empty checking',
     ],
   }],
-])
+] as const)

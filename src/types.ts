@@ -1,7 +1,13 @@
 /**
  * TypeScript types for the lodash-es ESLint plugin
  */
+import { lodashModules, lodashFunctions, nativeAlternatives, functionCategories, migrationDifficulties, safetyLevels } from './constants'
+
 import type { Rule } from 'eslint'
+
+export type LodashModuleName = typeof lodashModules extends Set<infer T> ? T : never
+export type LodashFunctionName = typeof lodashFunctions extends Set<infer T> ? T : never
+export type LodashAlternativeFunctionName = typeof nativeAlternatives extends Map<infer K, NativeAlternative> ? K : never
 
 export interface Usage {
   start: number
@@ -10,8 +16,6 @@ export interface Usage {
   functionName: LodashFunctionName
   originalText: string
 }
-
-import type { LodashFunctionName } from './constants'
 
 export interface FlatConfig {
   name?: string
@@ -35,18 +39,14 @@ export interface ESLintPlugin {
 }
 
 export interface EnforceFunctionsRuleOptions {
-  exclude?: string[]
-  include?: string[]
+  exclude?: LodashFunctionName[]
+  include?: LodashFunctionName[]
 }
 
 export interface SuggestNativeAlternativesRuleOptions {
   includeAll?: boolean
   excludeUnsafe?: boolean
 }
-
-export const safetyLevels = ['safe', 'caution', 'unsafe'] as const
-export const migrationDifficulties = ['easy', 'medium', 'hard'] as const
-export const functionCategories = ['array', 'object', 'string', 'number', 'date', 'function', 'collection'] as const
 
 // Native alternatives types
 export type SafetyLevel = typeof safetyLevels[number]

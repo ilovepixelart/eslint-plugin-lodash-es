@@ -4,12 +4,9 @@
  */
 import { isLodashFunction } from '../utils'
 
-import type {
-  ImportDeclaration,
-  ImportDefaultSpecifier,
-} from 'estree'
+import type { ImportDeclaration, ImportDefaultSpecifier } from 'estree'
 import type { Rule } from 'eslint'
-import type { LodashFunctionName } from '../constants'
+import type { LodashFunctionName } from '../types'
 
 /**
  * Patterns that indicate per-method imports (deprecated/being removed)

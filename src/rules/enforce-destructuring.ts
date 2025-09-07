@@ -3,12 +3,9 @@
  */
 import { getSourceCode, isLodashModule, findLodashUsages, extractFunctionNames } from '../utils'
 
-import type {
-  ImportDeclaration,
-} from 'estree'
+import type { ImportDeclaration } from 'estree'
 import type { Rule } from 'eslint'
-import type { Usage } from '../types'
-import type { LodashModuleName } from '../constants'
+import type { Usage, LodashModuleName } from '../types'
 
 const enforceLodashDestructuring: Rule.RuleModule = {
   meta: {
