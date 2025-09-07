@@ -2,6 +2,7 @@
  * ESLint rule to suggest native JavaScript alternatives to lodash functions
  */
 import { getSourceCode, isLodashModule, findLodashUsages, hasNativeAlternative, getNativeAlternative } from '../utils'
+import { functionClassifications } from '../shared'
 
 import type { ImportDeclaration, ImportSpecifier } from 'estree'
 import type { Rule } from 'eslint'
@@ -15,12 +16,10 @@ function createMessage(functionName: LodashFunctionName, alternative: { example?
   const description = alternative.description
 
   // Add null safety warning for functions that lose lodash's null safety
-  const nullSafeFunctions = ['keys', 'values', 'entries', 'size', 'isEmpty']
-  const needsNullSafety = nullSafeFunctions.includes(functionName)
+  const needsNullSafety = (functionClassifications.nullSafe as readonly string[]).includes(functionName)
 
   // Add mutation warning for functions with different behavior
-  const mutatingFunctions = ['reverse']
-  const hasMutationRisk = mutatingFunctions.includes(functionName)
+  const hasMutationRisk = (functionClassifications.mutating as readonly string[]).includes(functionName)
 
   const nullSafetyWarning = needsNullSafety ? ' ⚠️  Add null safety: use `obj || {}` to prevent runtime errors.' : ''
   const mutationWarning = hasMutationRisk ? ' ⚠️  Native version mutates the original array.' : ''

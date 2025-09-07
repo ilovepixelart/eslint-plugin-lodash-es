@@ -1,9 +1,22 @@
 /**
  * TypeScript types for the lodash-es ESLint plugin
  */
-import { lodashModules, lodashFunctions, nativeAlternatives, functionCategories, migrationDifficulties, safetyLevels } from './constants'
+import { lodashModules, lodashFunctions, nativeAlternatives } from './constants'
+import type { NativeAlternative } from './shared'
 
 import type { Rule } from 'eslint'
+
+// Re-export commonly used types from shared
+export type {
+  NativeAlternative,
+  AlternativeFilterConfig,
+  SafetyLevel,
+  MigrationDifficulty,
+  FunctionCategory,
+  NativeExample,
+  SafetyInfo,
+  MigrationInfo,
+} from './shared'
 
 export type LodashModuleName = typeof lodashModules extends Set<infer T> ? T : never
 export type LodashFunctionName = typeof lodashFunctions extends Set<infer T> ? T : never
@@ -46,45 +59,4 @@ export interface EnforceFunctionsRuleOptions {
 export interface SuggestNativeAlternativesRuleOptions {
   includeAll?: boolean
   excludeUnsafe?: boolean
-}
-
-// Native alternatives types
-export type SafetyLevel = typeof safetyLevels[number]
-export type MigrationDifficulty = typeof migrationDifficulties[number]
-export type FunctionCategory = typeof functionCategories[number]
-
-export interface NativeExample {
-  lodash: string
-  native: string
-}
-
-export interface SafetyInfo {
-  level: SafetyLevel
-  concerns?: readonly string[] // What makes it unsafe
-  mitigation?: string // How to make it safer
-}
-
-export interface MigrationInfo {
-  difficulty: MigrationDifficulty
-  challenges?: readonly string[] // What makes it difficult
-  steps?: readonly string[] // Step-by-step migration guide
-}
-
-export interface NativeAlternative {
-  category: FunctionCategory // Category for grouping
-  native: string // Native JavaScript equivalent
-  description: string // Human readable description
-  example: NativeExample // Code examples
-  safety: SafetyInfo // Safety assessment
-  migration: MigrationInfo // How difficult is migration
-  notes?: readonly string[] // Additional contextual notes
-  related?: readonly string[] // Related functions that might be alternatives
-  excludeByDefault?: boolean // If this alternative should be excluded by default in certain configs
-}
-
-export interface AlternativeFilterConfig {
-  categories?: FunctionCategory[]
-  safetyLevels?: SafetyLevel[]
-  maxDifficulty?: MigrationDifficulty
-  excludeByDefault?: boolean
 }

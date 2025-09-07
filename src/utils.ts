@@ -1,10 +1,10 @@
 /**
  * Shared utility functions for lodash-es ESLint rules
  */
-import { lodashModules, lodashFunctions, nativeAlternatives } from './constants'
+import { lodashModules, lodashFunctions, nativeAlternatives, SafetyLevel, MigrationDifficulty, FunctionCategory } from './constants'
 
 import type { Rule, SourceCode } from 'eslint'
-import type { Usage, NativeAlternative, FunctionCategory, MigrationDifficulty, AlternativeFilterConfig, LodashFunctionName, LodashModuleName, LodashAlternativeFunctionName } from './types'
+import type { Usage, NativeAlternative, AlternativeFilterConfig, LodashFunctionName, LodashModuleName, LodashAlternativeFunctionName } from './types'
 
 /**
  * Get source code from ESLint context (handles deprecated API)
@@ -79,17 +79,17 @@ export function extractFunctionNames(sourceCode: string, importName: string): Lo
 /**
  * Get native alternative for a lodash function
  */
-export function getNativeAlternative(functionName: LodashAlternativeFunctionName | LodashFunctionName): NativeAlternative | undefined {
-  if (!isLodashFunction(functionName)) return undefined
-  return nativeAlternatives.get(functionName as LodashAlternativeFunctionName)
+export function getNativeAlternative(functionName: string): NativeAlternative | undefined {
+  if (!lodashFunctions.has(functionName as LodashFunctionName)) return undefined
+  return nativeAlternatives.get(functionName)
 }
 
 /**
  * Check if a lodash function has a native alternative
  */
-export function hasNativeAlternative(functionName: LodashAlternativeFunctionName | LodashFunctionName): boolean {
-  if (!isLodashFunction(functionName)) return false
-  return nativeAlternatives.has(functionName as LodashAlternativeFunctionName)
+export function hasNativeAlternative(functionName: string): boolean {
+  if (!lodashFunctions.has(functionName as LodashFunctionName)) return false
+  return nativeAlternatives.has(functionName)
 }
 
 // Utility functions for working with alternatives structure
@@ -113,7 +113,7 @@ export function getAlternativesByCategory(category: FunctionCategory): Partial<R
 export function getSafeAlternatives(): Partial<Record<LodashAlternativeFunctionName, NativeAlternative>> {
   const result: Partial<Record<LodashAlternativeFunctionName, NativeAlternative>> = {}
   for (const [key, alt] of nativeAlternatives) {
-    if (alt.safety.level === 'safe') {
+    if (alt.safety.level === SafetyLevel.Safe) {
       result[key] = alt
     }
   }
@@ -143,7 +143,11 @@ export function getFilteredAlternatives(config: AlternativeFilterConfig): Partia
     if (config.safetyLevels && !config.safetyLevels.includes(alt.safety.level)) continue
     if (config.excludeByDefault === false && alt.excludeByDefault) continue
     if (config.maxDifficulty) {
-      const difficultyOrder = { easy: 0, medium: 1, hard: 2 }
+      const difficultyOrder = {
+        [MigrationDifficulty.Easy]: 0,
+        [MigrationDifficulty.Medium]: 1,
+        [MigrationDifficulty.Hard]: 2,
+      }
       const maxLevel = difficultyOrder[config.maxDifficulty]
       const altLevel = difficultyOrder[alt.migration.difficulty]
       if (altLevel > maxLevel) continue
