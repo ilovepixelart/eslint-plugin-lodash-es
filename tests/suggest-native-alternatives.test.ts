@@ -27,7 +27,7 @@ describe('suggest-native-alternatives rule', () => {
           code: 'import _ from "lodash-es"; const result = _.isArray(value);',
           errors: [
             {
-              message: 'Consider using native \'Array.isArray(value)\' instead of lodash \'isArray\'. Check if value is an array.',
+              message: 'Consider native \'Array.isArray(value)\' instead of \'_.isArray()\'. Check if value is an array (reliable & performant).',
               type: 'ImportDeclaration',
             },
           ],
@@ -36,7 +36,7 @@ describe('suggest-native-alternatives rule', () => {
           code: 'import lodash from "lodash-es"; const result = lodash.map(array, fn);',
           errors: [
             {
-              message: 'Consider using native \'array.map(fn)\' instead of lodash \'map\'. Transform array elements.',
+              message: 'Consider native \'array.map(fn)\' instead of \'_.map()\'. Transform array elements using a callback function.',
               type: 'ImportDeclaration',
             },
           ],
@@ -45,11 +45,11 @@ describe('suggest-native-alternatives rule', () => {
           code: 'import _ from "lodash-es"; const check = _.isString(value); const nums = _.max(array);',
           errors: [
             {
-              message: 'Consider using native \'typeof value === "string"\' instead of lodash \'isString\'. Check if value is string.',
+              message: 'Consider native \'typeof value === "string"\' instead of \'_.isString()\'. Check if value is string.',
               type: 'ImportDeclaration',
             },
             {
-              message: 'Consider using native \'Math.max(...array)\' instead of lodash \'max\'. Get maximum value.',
+              message: 'Consider native \'Math.max(...array)\' instead of \'_.max()\'. Get maximum value. Note: Use spread operator with native Math.max',
               type: 'ImportDeclaration',
             },
           ],
@@ -69,15 +69,15 @@ describe('suggest-native-alternatives rule', () => {
           code: 'import { isArray, map, filter } from "lodash-es";',
           errors: [
             {
-              message: 'Consider using native \'Array.isArray(value)\' instead of lodash \'isArray\'. Check if value is an array.',
+              message: 'Consider native \'Array.isArray(value)\' instead of \'_.isArray()\'. Check if value is an array (reliable & performant).',
               type: 'ImportSpecifier',
             },
             {
-              message: 'Consider using native \'array.map(fn)\' instead of lodash \'map\'. Transform array elements.',
+              message: 'Consider native \'array.map(fn)\' instead of \'_.map()\'. Transform array elements using a callback function.',
               type: 'ImportSpecifier',
             },
             {
-              message: 'Consider using native \'array.filter(predicate)\' instead of lodash \'filter\'. Filter array elements.',
+              message: 'Consider native \'array.filter(predicate)\' instead of \'_.filter()\'. Filter array elements (native is faster).',
               type: 'ImportSpecifier',
             },
           ],
@@ -86,15 +86,15 @@ describe('suggest-native-alternatives rule', () => {
           code: 'import { isNull, isUndefined, keys } from "lodash-es";',
           errors: [
             {
-              message: 'Consider using native \'value === null\' instead of lodash \'isNull\'. Check if value is null.',
+              message: 'Consider native \'value === null\' instead of \'_.isNull()\'. Check if value is null.',
               type: 'ImportSpecifier',
             },
             {
-              message: 'Consider using native \'value === undefined\' instead of lodash \'isUndefined\'. Check if value is undefined.',
+              message: 'Consider native \'value === undefined\' instead of \'_.isUndefined()\'. Check if value is undefined.',
               type: 'ImportSpecifier',
             },
             {
-              message: 'Consider using native \'Object.keys(object)\' instead of lodash \'keys\'. Get object keys.',
+              message: 'Consider native \'Object.keys(object)\' instead of \'_.keys()\'. Get enumerable property names of object. ⚠️  Add null safety: use `obj || {}` to prevent runtime errors. Note: Lodash version handles null/undefined gracefully',
               type: 'ImportSpecifier',
             },
           ],
@@ -117,7 +117,7 @@ describe('suggest-native-alternatives rule', () => {
           options: [{ excludeUnsafe: false }],
           errors: [
             {
-              message: /Consider using native.*reverse/,
+              message: /Consider native.*reverse/,
               type: 'ImportDeclaration',
             },
           ],
@@ -142,7 +142,7 @@ describe('suggest-native-alternatives rule', () => {
           code: 'import { isArray, debounce } from "lodash-es";',
           errors: [
             {
-              message: 'Consider using native \'Array.isArray(value)\' instead of lodash \'isArray\'. Check if value is an array.',
+              message: 'Consider native \'Array.isArray(value)\' instead of \'_.isArray()\'. Check if value is an array (reliable & performant).',
               type: 'ImportSpecifier',
             },
             // debounce should not generate an error since it has no native alternative
@@ -169,7 +169,7 @@ describe('suggest-native-alternatives rule', () => {
           options: [{ excludeUnsafe: false }],
           errors: [
             {
-              message: /Consider using native.*reverse/,
+              message: /Consider native.*reverse/,
               type: 'ImportSpecifier',
             },
           ],

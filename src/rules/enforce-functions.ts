@@ -11,16 +11,15 @@ import type {
 } from 'estree'
 import type { Rule } from 'eslint'
 import type { Usage, EnforceFunctionsRuleOptions } from '../types'
+import type { LodashFunctionName, LodashModuleName } from '../constants'
 
-function createEnhancedErrorMessage(functionName: string, reason: string): string {
-  const baseMessage = `Lodash function '${functionName}' is ${reason}.`
+function createErrorMessage(functionName: LodashFunctionName, reason: string): string {
   const nativeAlternative = getNativeAlternative(functionName)
+  const nativeExample = nativeAlternative?.example?.native || ''
 
-  if (nativeAlternative) {
-    return `${baseMessage} Consider using native ${nativeAlternative.native}: ${nativeAlternative.example?.native || ''}`
-  }
-
-  return baseMessage
+  return nativeAlternative
+    ? `Lodash function '${functionName}' is ${reason}. Consider using native ${nativeAlternative.native}: ${nativeExample}`
+    : `Lodash function '${functionName}' is ${reason}.`
 }
 
 function getReason(options: EnforceFunctionsRuleOptions): string {
@@ -47,7 +46,7 @@ function handleDefaultOrNamespaceImports(
         start: sourceCode.getLocFromIndex(usage.start),
         end: sourceCode.getLocFromIndex(usage.end),
       },
-      message: createEnhancedErrorMessage(usage.functionName, reason),
+      message: createErrorMessage(usage.functionName, reason),
     })
   }
 }
@@ -59,7 +58,7 @@ function handleDestructuredImports(
 ): void {
   const destructuredFunctions = destructuredSpecifiers.map((spec) => {
     return spec.imported.type === 'Identifier' ? spec.imported.name : ''
-  }).filter(name => name !== '')
+  }).filter(name => name !== '') as LodashFunctionName[]
   const blockedFunctions = findBlockedDestructuredFunctions(destructuredFunctions, options)
   const reason = getReason(options)
 
@@ -71,7 +70,7 @@ function handleDestructuredImports(
       if (specifier) {
         context.report({
           node: specifier,
-          message: createEnhancedErrorMessage(functionName, reason),
+          message: createErrorMessage(functionName, reason),
         })
       }
     }
@@ -89,9 +88,9 @@ function findBlockedFunctions(sourceCode: string, importName: string, options: E
 }
 
 function findBlockedDestructuredFunctions(
-  destructuredFunctions: string[],
+  destructuredFunctions: LodashFunctionName[],
   options: EnforceFunctionsRuleOptions,
-): { functionName: string, isBlocked: boolean }[] {
+): { functionName: LodashFunctionName, isBlocked: boolean }[] {
   return destructuredFunctions.map((functionName) => {
     const isBlocked = Boolean((options.include && !options.include.includes(functionName))
       || (options.exclude?.includes(functionName)))
@@ -143,7 +142,8 @@ const enforceFunctions: Rule.RuleModule = {
 
     return {
       ImportDeclaration(node: ImportDeclaration): void {
-        const source = node.source.value as string
+        const source = node.source.value as LodashModuleName
+        if (typeof source !== 'string') return
 
         if (!isLodashModule(source)) {
           return
@@ -152,7 +152,7 @@ const enforceFunctions: Rule.RuleModule = {
         // Check for default or namespace imports
         const defaultOrNamespaceSpecifier = node.specifiers.find(spec =>
           spec.type === 'ImportDefaultSpecifier' || spec.type === 'ImportNamespaceSpecifier',
-        ) as ImportDefaultSpecifier | ImportNamespaceSpecifier
+        )
 
         if (defaultOrNamespaceSpecifier) {
           handleDefaultOrNamespaceImports(node, defaultOrNamespaceSpecifier, sourceCode, options, context)
