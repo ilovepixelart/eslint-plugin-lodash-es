@@ -1,12 +1,12 @@
 /**
  * Native alternatives for String functions
  */
-import { FunctionCategory, SafetyLevel, MigrationDifficulty } from '../shared'
+import { FunctionCategory, createAlternative } from '../shared'
 import type { NativeAlternative } from '../shared'
 
 export const stringAlternatives = new Map<string, NativeAlternative>([
   // String Methods
-  ['startsWith', {
+  ['startsWith', createAlternative({
     category: FunctionCategory.String,
     native: 'String.prototype.startsWith',
     description: 'Check if string starts with target',
@@ -14,15 +14,9 @@ export const stringAlternatives = new Map<string, NativeAlternative>([
       lodash: '_.startsWith(string, target)',
       native: 'string.startsWith(target)',
     },
-    safety: {
-      level: SafetyLevel.Safe,
-    },
-    migration: {
-      difficulty: MigrationDifficulty.Easy,
-    },
-  }],
+  })],
 
-  ['endsWith', {
+  ['endsWith', createAlternative({
     category: FunctionCategory.String,
     native: 'String.prototype.endsWith',
     description: 'Check if string ends with target',
@@ -30,15 +24,9 @@ export const stringAlternatives = new Map<string, NativeAlternative>([
       lodash: '_.endsWith(string, target)',
       native: 'string.endsWith(target)',
     },
-    safety: {
-      level: SafetyLevel.Safe,
-    },
-    migration: {
-      difficulty: MigrationDifficulty.Easy,
-    },
-  }],
+  })],
 
-  ['repeat', {
+  ['repeat', createAlternative({
     category: FunctionCategory.String,
     native: 'String.prototype.repeat',
     description: 'Repeat string n times',
@@ -46,15 +34,9 @@ export const stringAlternatives = new Map<string, NativeAlternative>([
       lodash: '_.repeat(string, n)',
       native: 'string.repeat(n)',
     },
-    safety: {
-      level: SafetyLevel.Safe,
-    },
-    migration: {
-      difficulty: MigrationDifficulty.Easy,
-    },
-  }],
+  })],
 
-  ['trim', {
+  ['trim', createAlternative({
     category: FunctionCategory.String,
     native: 'String.prototype.trim',
     description: 'Remove whitespace from both ends',
@@ -62,15 +44,9 @@ export const stringAlternatives = new Map<string, NativeAlternative>([
       lodash: '_.trim(string)',
       native: 'string.trim()',
     },
-    safety: {
-      level: SafetyLevel.Safe,
-    },
-    migration: {
-      difficulty: MigrationDifficulty.Easy,
-    },
-  }],
+  })],
 
-  ['trimStart', {
+  ['trimStart', createAlternative({
     category: FunctionCategory.String,
     native: 'String.prototype.trimStart',
     description: 'Remove whitespace from start',
@@ -78,15 +54,9 @@ export const stringAlternatives = new Map<string, NativeAlternative>([
       lodash: '_.trimStart(string)',
       native: 'string.trimStart()',
     },
-    safety: {
-      level: SafetyLevel.Safe,
-    },
-    migration: {
-      difficulty: MigrationDifficulty.Easy,
-    },
-  }],
+  })],
 
-  ['trimEnd', {
+  ['trimEnd', createAlternative({
     category: FunctionCategory.String,
     native: 'String.prototype.trimEnd',
     description: 'Remove whitespace from end',
@@ -94,15 +64,9 @@ export const stringAlternatives = new Map<string, NativeAlternative>([
       lodash: '_.trimEnd(string)',
       native: 'string.trimEnd()',
     },
-    safety: {
-      level: SafetyLevel.Safe,
-    },
-    migration: {
-      difficulty: MigrationDifficulty.Easy,
-    },
-  }],
+  })],
 
-  ['toLower', {
+  ['toLower', createAlternative({
     category: FunctionCategory.String,
     native: 'String.prototype.toLowerCase',
     description: 'Convert string to lowercase',
@@ -110,15 +74,9 @@ export const stringAlternatives = new Map<string, NativeAlternative>([
       lodash: '_.toLower(string)',
       native: 'string.toLowerCase()',
     },
-    safety: {
-      level: SafetyLevel.Safe,
-    },
-    migration: {
-      difficulty: MigrationDifficulty.Easy,
-    },
-  }],
+  })],
 
-  ['toUpper', {
+  ['toUpper', createAlternative({
     category: FunctionCategory.String,
     native: 'String.prototype.toUpperCase',
     description: 'Convert string to uppercase',
@@ -126,15 +84,9 @@ export const stringAlternatives = new Map<string, NativeAlternative>([
       lodash: '_.toUpper(string)',
       native: 'string.toUpperCase()',
     },
-    safety: {
-      level: SafetyLevel.Safe,
-    },
-    migration: {
-      difficulty: MigrationDifficulty.Easy,
-    },
-  }],
+  })],
 
-  ['replace', {
+  ['replace', createAlternative({
     category: FunctionCategory.String,
     native: 'String.prototype.replace',
     description: 'Replace substring',
@@ -142,15 +94,9 @@ export const stringAlternatives = new Map<string, NativeAlternative>([
       lodash: '_.replace(string, pattern, replacement)',
       native: 'string.replace(pattern, replacement)',
     },
-    safety: {
-      level: SafetyLevel.Safe,
-    },
-    migration: {
-      difficulty: MigrationDifficulty.Easy,
-    },
-  }],
+  })],
 
-  ['split', {
+  ['split', createAlternative({
     category: FunctionCategory.String,
     native: 'String.prototype.split',
     description: 'Split string into array',
@@ -158,15 +104,9 @@ export const stringAlternatives = new Map<string, NativeAlternative>([
       lodash: '_.split(string, separator)',
       native: 'string.split(separator)',
     },
-    safety: {
-      level: SafetyLevel.Safe,
-    },
-    migration: {
-      difficulty: MigrationDifficulty.Easy,
-    },
-  }],
+  })],
 
-  ['padStart', {
+  ['padStart', createAlternative({
     category: FunctionCategory.String,
     native: 'String.prototype.padStart',
     description: 'Pad string to target length from start',
@@ -174,11 +114,5 @@ export const stringAlternatives = new Map<string, NativeAlternative>([
       lodash: '_.padStart(string, length, chars)',
       native: 'string.padStart(length, chars)',
     },
-    safety: {
-      level: SafetyLevel.Safe,
-    },
-    migration: {
-      difficulty: MigrationDifficulty.Easy,
-    },
-  }],
+  })],
 ])

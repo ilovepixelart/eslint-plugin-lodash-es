@@ -1,12 +1,12 @@
 /**
  * Native alternatives for Array functions
  */
-import { FunctionCategory, SafetyLevel, MigrationDifficulty } from '../shared'
+import { FunctionCategory, SafetyLevel, MigrationDifficulty, createAlternative } from '../shared'
 import type { NativeAlternative } from '../shared'
 
 export const arrayAlternatives = new Map<string, NativeAlternative>([
   // Array Methods - Safe and Direct Replacements
-  ['isArray', {
+  ['isArray', createAlternative({
     category: FunctionCategory.Array,
     native: 'Array.isArray',
     description: 'Check if value is an array (reliable & performant)',
@@ -14,15 +14,9 @@ export const arrayAlternatives = new Map<string, NativeAlternative>([
       lodash: '_.isArray(value)',
       native: 'Array.isArray(value)',
     },
-    safety: {
-      level: SafetyLevel.Safe,
-    },
-    migration: {
-      difficulty: MigrationDifficulty.Easy,
-    },
-  }],
+  })],
 
-  ['forEach', {
+  ['forEach', createAlternative({
     category: FunctionCategory.Array,
     native: 'Array.prototype.forEach',
     description: 'Iterate over array elements (native is faster)',
@@ -30,16 +24,10 @@ export const arrayAlternatives = new Map<string, NativeAlternative>([
       lodash: '_.forEach(array, fn)',
       native: 'array.forEach(fn)',
     },
-    safety: {
-      level: SafetyLevel.Safe,
-    },
-    migration: {
-      difficulty: MigrationDifficulty.Easy,
-    },
     related: ['map', 'filter'],
-  }],
+  })],
 
-  ['map', {
+  ['map', createAlternative({
     category: FunctionCategory.Array,
     native: 'Array.prototype.map',
     description: 'Transform array elements using a callback function',
@@ -47,20 +35,16 @@ export const arrayAlternatives = new Map<string, NativeAlternative>([
       lodash: '_.map(array, fn)',
       native: 'array.map(fn)',
     },
-    safety: {
-      level: SafetyLevel.Safe,
-    },
     migration: {
-      difficulty: MigrationDifficulty.Easy,
       steps: [
         'Replace _.map(array, fn) with array.map(fn)',
         'Ensure array is not null/undefined before calling',
       ],
     },
     related: ['filter', 'forEach'],
-  }],
+  })],
 
-  ['filter', {
+  ['filter', createAlternative({
     category: FunctionCategory.Array,
     native: 'Array.prototype.filter',
     description: 'Filter array elements (native is faster)',
@@ -68,16 +52,10 @@ export const arrayAlternatives = new Map<string, NativeAlternative>([
       lodash: '_.filter(array, predicate)',
       native: 'array.filter(predicate)',
     },
-    safety: {
-      level: SafetyLevel.Safe,
-    },
-    migration: {
-      difficulty: MigrationDifficulty.Easy,
-    },
     related: ['map', 'find'],
-  }],
+  })],
 
-  ['find', {
+  ['find', createAlternative({
     category: FunctionCategory.Array,
     native: 'Array.prototype.find',
     description: 'Find first matching element',
@@ -85,16 +63,10 @@ export const arrayAlternatives = new Map<string, NativeAlternative>([
       lodash: '_.find(array, predicate)',
       native: 'array.find(predicate)',
     },
-    safety: {
-      level: SafetyLevel.Safe,
-    },
-    migration: {
-      difficulty: MigrationDifficulty.Easy,
-    },
     related: ['filter', 'findIndex'],
-  }],
+  })],
 
-  ['findIndex', {
+  ['findIndex', createAlternative({
     category: FunctionCategory.Array,
     native: 'Array.prototype.findIndex',
     description: 'Find index of first matching element',
@@ -102,16 +74,10 @@ export const arrayAlternatives = new Map<string, NativeAlternative>([
       lodash: '_.findIndex(array, predicate)',
       native: 'array.findIndex(predicate)',
     },
-    safety: {
-      level: SafetyLevel.Safe,
-    },
-    migration: {
-      difficulty: MigrationDifficulty.Easy,
-    },
     related: ['find', 'indexOf'],
-  }],
+  })],
 
-  ['includes', {
+  ['includes', createAlternative({
     category: FunctionCategory.Array,
     native: 'Array.prototype.includes',
     description: 'Check if array includes a value',
@@ -119,16 +85,10 @@ export const arrayAlternatives = new Map<string, NativeAlternative>([
       lodash: '_.includes(array, value)',
       native: 'array.includes(value)',
     },
-    safety: {
-      level: SafetyLevel.Safe,
-    },
-    migration: {
-      difficulty: MigrationDifficulty.Easy,
-    },
     related: ['indexOf', 'find'],
-  }],
+  })],
 
-  ['reduce', {
+  ['reduce', createAlternative({
     category: FunctionCategory.Array,
     native: 'Array.prototype.reduce',
     description: 'Reduce array to single value',
@@ -136,16 +96,10 @@ export const arrayAlternatives = new Map<string, NativeAlternative>([
       lodash: '_.reduce(array, fn, initial)',
       native: 'array.reduce(fn, initial)',
     },
-    safety: {
-      level: SafetyLevel.Safe,
-    },
-    migration: {
-      difficulty: MigrationDifficulty.Easy,
-    },
     related: ['map', 'filter'],
-  }],
+  })],
 
-  ['some', {
+  ['some', createAlternative({
     category: FunctionCategory.Array,
     native: 'Array.prototype.some',
     description: 'Test if some elements match predicate',
@@ -153,16 +107,10 @@ export const arrayAlternatives = new Map<string, NativeAlternative>([
       lodash: '_.some(array, predicate)',
       native: 'array.some(predicate)',
     },
-    safety: {
-      level: SafetyLevel.Safe,
-    },
-    migration: {
-      difficulty: MigrationDifficulty.Easy,
-    },
     related: ['every', 'find'],
-  }],
+  })],
 
-  ['every', {
+  ['every', createAlternative({
     category: FunctionCategory.Array,
     native: 'Array.prototype.every',
     description: 'Test if all elements match predicate',
@@ -170,16 +118,10 @@ export const arrayAlternatives = new Map<string, NativeAlternative>([
       lodash: '_.every(array, predicate)',
       native: 'array.every(predicate)',
     },
-    safety: {
-      level: SafetyLevel.Safe,
-    },
-    migration: {
-      difficulty: MigrationDifficulty.Easy,
-    },
     related: ['some', 'filter'],
-  }],
+  })],
 
-  ['slice', {
+  ['slice', createAlternative({
     category: FunctionCategory.Array,
     native: 'Array.prototype.slice',
     description: 'Extract section of array',
@@ -187,15 +129,9 @@ export const arrayAlternatives = new Map<string, NativeAlternative>([
       lodash: '_.slice(array, start, end)',
       native: 'array.slice(start, end)',
     },
-    safety: {
-      level: SafetyLevel.Safe,
-    },
-    migration: {
-      difficulty: MigrationDifficulty.Easy,
-    },
-  }],
+  })],
 
-  ['concat', {
+  ['concat', createAlternative({
     category: FunctionCategory.Array,
     native: 'Array.prototype.concat',
     description: 'Concatenate arrays',
@@ -203,15 +139,9 @@ export const arrayAlternatives = new Map<string, NativeAlternative>([
       lodash: '_.concat(array, ...values)',
       native: 'array.concat(...values)',
     },
-    safety: {
-      level: SafetyLevel.Safe,
-    },
-    migration: {
-      difficulty: MigrationDifficulty.Easy,
-    },
-  }],
+  })],
 
-  ['join', {
+  ['join', createAlternative({
     category: FunctionCategory.Array,
     native: 'Array.prototype.join',
     description: 'Join array elements into string',
@@ -219,16 +149,10 @@ export const arrayAlternatives = new Map<string, NativeAlternative>([
       lodash: '_.join(array, separator)',
       native: 'array.join(separator)',
     },
-    safety: {
-      level: SafetyLevel.Safe,
-    },
-    migration: {
-      difficulty: MigrationDifficulty.Easy,
-    },
-  }],
+  })],
 
   // Array Methods - With Behavioral Differences
-  ['reverse', {
+  ['reverse', createAlternative({
     category: FunctionCategory.Array,
     native: 'Array.prototype.reverse',
     description: 'Reverse array elements in place',
@@ -252,5 +176,5 @@ export const arrayAlternatives = new Map<string, NativeAlternative>([
     },
     excludeByDefault: true,
     related: ['sort'],
-  }],
+  })],
 ])

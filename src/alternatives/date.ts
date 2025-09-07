@@ -1,12 +1,12 @@
 /**
  * Native alternatives for Date functions
  */
-import { FunctionCategory, SafetyLevel, MigrationDifficulty } from '../shared'
+import { FunctionCategory, createAlternative } from '../shared'
 import type { NativeAlternative } from '../shared'
 
 export const dateAlternatives = new Map<string, NativeAlternative>([
   // Utility
-  ['now', {
+  ['now', createAlternative({
     category: FunctionCategory.Date,
     native: 'Date.now',
     description: 'Get current timestamp',
@@ -14,11 +14,5 @@ export const dateAlternatives = new Map<string, NativeAlternative>([
       lodash: '_.now()',
       native: 'Date.now()',
     },
-    safety: {
-      level: SafetyLevel.Safe,
-    },
-    migration: {
-      difficulty: MigrationDifficulty.Easy,
-    },
-  }],
+  })],
 ])

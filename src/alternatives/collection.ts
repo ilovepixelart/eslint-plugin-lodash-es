@@ -1,12 +1,12 @@
 /**
  * Native alternatives for Collection functions
  */
-import { FunctionCategory, SafetyLevel, MigrationDifficulty } from '../shared'
+import { FunctionCategory, SafetyLevel, MigrationDifficulty, createAlternative } from '../shared'
 import type { NativeAlternative } from '../shared'
 
 export const collectionAlternatives = new Map<string, NativeAlternative>([
   // More Complex Cases
-  ['isEmpty', {
+  ['isEmpty', createAlternative({
     category: FunctionCategory.Collection,
     native: 'Various approaches',
     description: 'Check if collection is empty',
@@ -42,5 +42,5 @@ export const collectionAlternatives = new Map<string, NativeAlternative>([
       'lodash isEmpty handles many edge cases',
       'Consider if you really need such generic empty checking',
     ],
-  }],
+  })],
 ])

@@ -1,12 +1,12 @@
 /**
  * Native alternatives for Object functions
  */
-import { FunctionCategory, SafetyLevel, MigrationDifficulty } from '../shared'
+import { FunctionCategory, SafetyLevel, MigrationDifficulty, createAlternative } from '../shared'
 import type { NativeAlternative } from '../shared'
 
 export const objectAlternatives = new Map<string, NativeAlternative>([
   // Object Methods - With Null Safety Issues
-  ['keys', {
+  ['keys', createAlternative({
     category: FunctionCategory.Object,
     native: 'Object.keys',
     description: 'Get enumerable property names of object',
@@ -29,9 +29,9 @@ export const objectAlternatives = new Map<string, NativeAlternative>([
       ],
     },
     notes: ['Lodash version handles null/undefined gracefully'],
-  }],
+  })],
 
-  ['values', {
+  ['values', createAlternative({
     category: FunctionCategory.Object,
     native: 'Object.values',
     description: 'Get object values as array',
@@ -52,9 +52,9 @@ export const objectAlternatives = new Map<string, NativeAlternative>([
         'Test with null/undefined values',
       ],
     },
-  }],
+  })],
 
-  ['entries', {
+  ['entries', createAlternative({
     category: FunctionCategory.Object,
     native: 'Object.entries',
     description: 'Get object key-value pairs as array',
@@ -75,9 +75,9 @@ export const objectAlternatives = new Map<string, NativeAlternative>([
         'Test with null/undefined values',
       ],
     },
-  }],
+  })],
 
-  ['assign', {
+  ['assign', createAlternative({
     category: FunctionCategory.Object,
     native: 'Object.assign',
     description: 'Copy properties to target object',
@@ -85,11 +85,5 @@ export const objectAlternatives = new Map<string, NativeAlternative>([
       lodash: '_.assign(target, ...sources)',
       native: 'Object.assign(target, ...sources)',
     },
-    safety: {
-      level: SafetyLevel.Safe,
-    },
-    migration: {
-      difficulty: MigrationDifficulty.Easy,
-    },
-  }],
+  })],
 ])

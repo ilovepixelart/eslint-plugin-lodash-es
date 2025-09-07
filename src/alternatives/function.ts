@@ -1,12 +1,12 @@
 /**
  * Native alternatives for Function/Type checking functions
  */
-import { FunctionCategory, SafetyLevel, MigrationDifficulty } from '../shared'
+import { FunctionCategory, SafetyLevel, MigrationDifficulty, createAlternative } from '../shared'
 import type { NativeAlternative } from '../shared'
 
 export const functionAlternatives = new Map<string, NativeAlternative>([
   // Type checking methods
-  ['isNull', {
+  ['isNull', createAlternative({
     category: FunctionCategory.Function,
     native: 'value === null',
     description: 'Check if value is null',
@@ -14,15 +14,9 @@ export const functionAlternatives = new Map<string, NativeAlternative>([
       lodash: '_.isNull(value)',
       native: 'value === null',
     },
-    safety: {
-      level: SafetyLevel.Safe,
-    },
-    migration: {
-      difficulty: MigrationDifficulty.Easy,
-    },
-  }],
+  })],
 
-  ['isUndefined', {
+  ['isUndefined', createAlternative({
     category: FunctionCategory.Function,
     native: 'value === undefined',
     description: 'Check if value is undefined',
@@ -30,15 +24,9 @@ export const functionAlternatives = new Map<string, NativeAlternative>([
       lodash: '_.isUndefined(value)',
       native: 'value === undefined',
     },
-    safety: {
-      level: SafetyLevel.Safe,
-    },
-    migration: {
-      difficulty: MigrationDifficulty.Easy,
-    },
-  }],
+  })],
 
-  ['isNil', {
+  ['isNil', createAlternative({
     category: FunctionCategory.Function,
     native: 'value == null',
     description: 'Check if value is null or undefined',
@@ -46,15 +34,9 @@ export const functionAlternatives = new Map<string, NativeAlternative>([
       lodash: '_.isNil(value)',
       native: 'value == null',
     },
-    safety: {
-      level: SafetyLevel.Safe,
-    },
-    migration: {
-      difficulty: MigrationDifficulty.Easy,
-    },
-  }],
+  })],
 
-  ['isBoolean', {
+  ['isBoolean', createAlternative({
     category: FunctionCategory.Function,
     native: 'typeof value === "boolean"',
     description: 'Check if value is boolean',
@@ -62,15 +44,9 @@ export const functionAlternatives = new Map<string, NativeAlternative>([
       lodash: '_.isBoolean(value)',
       native: 'typeof value === "boolean"',
     },
-    safety: {
-      level: SafetyLevel.Safe,
-    },
-    migration: {
-      difficulty: MigrationDifficulty.Easy,
-    },
-  }],
+  })],
 
-  ['isNumber', {
+  ['isNumber', createAlternative({
     category: FunctionCategory.Function,
     native: 'typeof value === "number"',
     description: 'Check if value is number',
@@ -78,16 +54,10 @@ export const functionAlternatives = new Map<string, NativeAlternative>([
       lodash: '_.isNumber(value)',
       native: 'typeof value === "number"',
     },
-    safety: {
-      level: SafetyLevel.Safe,
-    },
-    migration: {
-      difficulty: MigrationDifficulty.Easy,
-    },
     notes: ['Consider Number.isFinite() for finite numbers'],
-  }],
+  })],
 
-  ['isString', {
+  ['isString', createAlternative({
     category: FunctionCategory.Function,
     native: 'typeof value === "string"',
     description: 'Check if value is string',
@@ -95,15 +65,9 @@ export const functionAlternatives = new Map<string, NativeAlternative>([
       lodash: '_.isString(value)',
       native: 'typeof value === "string"',
     },
-    safety: {
-      level: SafetyLevel.Safe,
-    },
-    migration: {
-      difficulty: MigrationDifficulty.Easy,
-    },
-  }],
+  })],
 
-  ['isFunction', {
+  ['isFunction', createAlternative({
     category: FunctionCategory.Function,
     native: 'typeof value === "function"',
     description: 'Check if value is function',
@@ -111,15 +75,9 @@ export const functionAlternatives = new Map<string, NativeAlternative>([
       lodash: '_.isFunction(value)',
       native: 'typeof value === "function"',
     },
-    safety: {
-      level: SafetyLevel.Safe,
-    },
-    migration: {
-      difficulty: MigrationDifficulty.Easy,
-    },
-  }],
+  })],
 
-  ['isObject', {
+  ['isObject', createAlternative({
     category: FunctionCategory.Function,
     native: 'typeof value === "object" && value !== null',
     description: 'Check if value is object',
@@ -137,9 +95,9 @@ export const functionAlternatives = new Map<string, NativeAlternative>([
       challenges: ['Behavioral difference with functions'],
     },
     notes: ['Lodash isObject also returns true for functions'],
-  }],
+  })],
 
-  ['toNumber', {
+  ['toNumber', createAlternative({
     category: FunctionCategory.Function,
     native: 'Number',
     description: 'Convert value to number',
@@ -147,16 +105,10 @@ export const functionAlternatives = new Map<string, NativeAlternative>([
       lodash: '_.toNumber(value)',
       native: 'Number(value)',
     },
-    safety: {
-      level: SafetyLevel.Safe,
-    },
-    migration: {
-      difficulty: MigrationDifficulty.Easy,
-    },
     notes: ['Consider parseFloat() or parseInt() for strings'],
-  }],
+  })],
 
-  ['toString', {
+  ['toString', createAlternative({
     category: FunctionCategory.Function,
     native: 'String',
     description: 'Convert value to string',
@@ -164,12 +116,6 @@ export const functionAlternatives = new Map<string, NativeAlternative>([
       lodash: '_.toString(value)',
       native: 'String(value)',
     },
-    safety: {
-      level: SafetyLevel.Safe,
-    },
-    migration: {
-      difficulty: MigrationDifficulty.Easy,
-    },
     notes: ['Consider .toString() method for objects'],
-  }],
+  })],
 ])
