@@ -1,3 +1,18 @@
+<a id="v1.0.0"></a>
+# [v1.0.0](https://github.com/ilovepixelart/eslint-plugin-lodash-es/releases/tag/v1.0.0) - 2025-09-07
+
+- Lock  b270941
+- Merge pull request [#6](https://github.com/ilovepixelart/eslint-plugin-lodash-es/issues/6) from ilovepixelart/feature/no-chaining-no-method-imports  dea7c9f
+- No chaining, no method imports  d3c8f86
+- Update changelog for v0.3.0  173baa3
+
+---
+
+https://github.com/ilovepixelart/eslint-plugin-lodash-es/compare/v0.3.0...v1.0.0
+
+[Changes][v1.0.0]
+
+
 <a id="v0.3.0"></a>
 # [v0.3.0](https://github.com/ilovepixelart/eslint-plugin-lodash-es/releases/tag/v0.3.0) - 2025-09-06
 
@@ -75,6 +90,7 @@ https://github.com/ilovepixelart/eslint-plugin-lodash-es/compare/62ffd58aa10c5f1
 [Changes][v0.1.1]
 
 
+[v1.0.0]: https://github.com/ilovepixelart/eslint-plugin-lodash-es/compare/v0.3.0...v1.0.0
 [v0.3.0]: https://github.com/ilovepixelart/eslint-plugin-lodash-es/compare/v0.2.0...v0.3.0
 [v0.2.0]: https://github.com/ilovepixelart/eslint-plugin-lodash-es/compare/v0.1.2...v0.2.0
 [v0.1.2]: https://github.com/ilovepixelart/eslint-plugin-lodash-es/compare/v0.1.1...v0.1.2
