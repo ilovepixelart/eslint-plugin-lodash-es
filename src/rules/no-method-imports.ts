@@ -57,8 +57,7 @@ function analyzePerMethodImports(
   for (const { source, functionName } of perMethodImports) {
     if (isLodashFunction(functionName)) {
       functions.push(functionName)
-    }
-    else {
+    } else {
       invalidSources.push(source)
     }
   }

@@ -2,6 +2,7 @@
  * ESLint rule to enforce specific lodash-es function usage policies
  */
 import { getSourceCode, isLodashModule, findLodashUsages, findDestructuredLodashUsages, getNativeAlternative } from '../utils'
+import { createDestructuredFix, createNamespaceFix } from '../autofix'
 
 import type {
   ImportDeclaration,
@@ -39,6 +40,8 @@ function handleDefaultOrNamespaceImports(
   const reason = getReason(options)
 
   for (const usage of blockedUsages) {
+    const fix = createNamespaceFix(sourceCode, usage, usage.functionName)
+
     context.report({
       node,
       loc: {
@@ -46,6 +49,7 @@ function handleDefaultOrNamespaceImports(
         end: sourceCode.getLocFromIndex(usage.end),
       },
       message: createErrorMessage(usage.functionName, reason),
+      fix: fix ? (fixer): Rule.Fix => fixer.replaceTextRange(fix.range, fix.text) : undefined,
     })
   }
 }
@@ -57,25 +61,37 @@ function handleDestructuredImports(
   options: EnforceFunctionsRuleOptions,
   context: Rule.RuleContext,
 ): void {
-  const destructuredFunctions = destructuredSpecifiers.map((spec) => {
-    return spec.imported.type === 'Identifier' ? spec.imported.name : ''
-  }).filter(name => name !== '') as LodashFunctionName[]
-  const blockedFunctions = findBlockedDestructuredFunctions(destructuredFunctions, options)
-  const reason = getReason(options)
+  // Map each import specifier to both original and local names
+  const destructuredMappings = destructuredSpecifiers.map((spec) => {
+    const originalName = spec.imported.type === 'Identifier' ? spec.imported.name : ''
+    const localName = spec.local.name
+    return { originalName, localName }
+  }).filter(mapping => mapping.originalName !== '')
 
-  // Report blocked usage of destructured functions
+  const reason = getReason(options)
   const fullSourceCode = sourceCode.getText()
-  for (const { functionName, isBlocked } of blockedFunctions) {
+
+  // Check each import mapping
+  for (const { originalName, localName } of destructuredMappings) {
+    const isBlocked = (options.include && !options.include.includes(originalName as LodashFunctionName))
+      || (options.exclude?.includes(originalName as LodashFunctionName))
+
     if (isBlocked) {
-      const usages = findDestructuredLodashUsages(fullSourceCode, functionName)
+      // Search for usages of the LOCAL name (what it's actually called in the code)
+      // but validate against the ORIGINAL lodash function name
+      const usages = findDestructuredLodashUsages(fullSourceCode, localName, originalName)
       for (const usage of usages) {
+        // But use the ORIGINAL name for the fix and error message
+        const fix = createDestructuredFix(sourceCode, usage, originalName)
+
         context.report({
           node,
           loc: {
             start: sourceCode.getLocFromIndex(usage.start),
             end: sourceCode.getLocFromIndex(usage.end),
           },
-          message: createErrorMessage(functionName, reason),
+          message: createErrorMessage(originalName as LodashFunctionName, reason),
+          fix: fix ? (fixer): Rule.Fix => fixer.replaceTextRange(fix.range, fix.text) : undefined,
         })
       }
     }
@@ -92,18 +108,6 @@ function findBlockedFunctions(sourceCode: string, importName: string, options: E
   })
 }
 
-function findBlockedDestructuredFunctions(
-  destructuredFunctions: LodashFunctionName[],
-  options: EnforceFunctionsRuleOptions,
-): { functionName: LodashFunctionName, isBlocked: boolean }[] {
-  return destructuredFunctions.map((functionName) => {
-    const isBlocked = Boolean((options.include && !options.include.includes(functionName))
-      || (options.exclude?.includes(functionName)))
-
-    return { functionName, isBlocked }
-  })
-}
-
 const enforceFunctions: Rule.RuleModule = {
   meta: {
     type: 'problem',
@@ -112,6 +116,7 @@ const enforceFunctions: Rule.RuleModule = {
       category: 'Best Practices',
       recommended: false,
     },
+    fixable: 'code',
     schema: [
       {
         type: 'object',
