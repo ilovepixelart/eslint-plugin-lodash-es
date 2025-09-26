@@ -1,7 +1,7 @@
 /**
  * ESLint rule to enforce specific lodash-es function usage policies
  */
-import { getSourceCode, isLodashModule, findLodashUsages, getNativeAlternative } from '../utils'
+import { getSourceCode, isLodashModule, findLodashUsages, findDestructuredLodashUsages, getNativeAlternative } from '../utils'
 
 import type {
   ImportDeclaration,
@@ -51,7 +51,9 @@ function handleDefaultOrNamespaceImports(
 }
 
 function handleDestructuredImports(
+  node: ImportDeclaration,
   destructuredSpecifiers: ImportSpecifier[],
+  sourceCode: ReturnType<typeof getSourceCode>,
   options: EnforceFunctionsRuleOptions,
   context: Rule.RuleContext,
 ): void {
@@ -61,14 +63,18 @@ function handleDestructuredImports(
   const blockedFunctions = findBlockedDestructuredFunctions(destructuredFunctions, options)
   const reason = getReason(options)
 
+  // Report blocked usage of destructured functions
+  const fullSourceCode = sourceCode.getText()
   for (const { functionName, isBlocked } of blockedFunctions) {
     if (isBlocked) {
-      const specifier = destructuredSpecifiers.find(spec =>
-        spec.imported.type === 'Identifier' && spec.imported.name === functionName,
-      )
-      if (specifier) {
+      const usages = findDestructuredLodashUsages(fullSourceCode, functionName)
+      for (const usage of usages) {
         context.report({
-          node: specifier,
+          node,
+          loc: {
+            start: sourceCode.getLocFromIndex(usage.start),
+            end: sourceCode.getLocFromIndex(usage.end),
+          },
           message: createErrorMessage(functionName, reason),
         })
       }
@@ -163,7 +169,7 @@ const enforceFunctions: Rule.RuleModule = {
         )
 
         if (destructuredSpecifiers.length > 0) {
-          handleDestructuredImports(destructuredSpecifiers, options, context)
+          handleDestructuredImports(node, destructuredSpecifiers, sourceCode, options, context)
         }
       },
     }

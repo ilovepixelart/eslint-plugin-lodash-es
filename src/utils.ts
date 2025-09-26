@@ -59,6 +59,30 @@ export function findLodashUsages(sourceCode: string, importName: string): Usage[
 }
 
 /**
+ * Find destructured lodash function usages in source code
+ */
+export function findDestructuredLodashUsages(sourceCode: string, functionName: string): Usage[] {
+  const usages: Usage[] = []
+  // Regex to find function calls like "map(" or "map  ("
+  const regex = new RegExp(`\\b${functionName}\\s*\\(`, 'g')
+  let match
+
+  while ((match = regex.exec(sourceCode)) !== null) {
+    if (isLodashFunction(functionName as LodashFunctionName)) {
+      usages.push({
+        start: match.index,
+        end: match.index + match[0].length - 1, // Don't include the opening paren
+        fullMatch: functionName,
+        functionName: functionName as LodashFunctionName,
+        originalText: functionName,
+      })
+    }
+  }
+
+  return usages
+}
+
+/**
  * Extract unique function names from lodash usage patterns
  */
 export function extractFunctionNames(sourceCode: string, importName: string): LodashFunctionName[] {
