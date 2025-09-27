@@ -48,303 +48,255 @@ export function createZeroParamStaticFix(callInfo: CallInfo, nativeAlternative: 
 }
 
 /**
+ * Handle "has" function: has(object, key) -> key in object
+ */
+function createHasFix(callInfo: CallInfo): FixResult | null {
+  const commaIndex = findFirstTopLevelComma(callInfo.params)
+  if (commaIndex === -1) return null
+
+  const object = callInfo.params.slice(0, commaIndex).trim()
+  const key = callInfo.params.slice(commaIndex + 1).trim()
+
+  const safeObject = needsParentheses(object) ? `(${object})` : object
+  const expression = `${key} in ${safeObject}`
+  const { start, text } = handleNegationOperator(callInfo, expression)
+
+  return { range: [start, callInfo.callEnd], text }
+}
+
+/**
+ * Handle uniq function: uniq(array) -> [...new Set(array)]
+ */
+function createUniqFix(callInfo: CallInfo, nativeAlternative: string): FixResult | null {
+  const expression = nativeAlternative.replaceAll(/array/g, callInfo.params)
+  const { start, text } = handleNegationOperator(callInfo, expression)
+  return { range: [start, callInfo.callEnd], text }
+}
+
+/**
+ * Handle compact function: compact(array) -> array.filter(Boolean)
+ */
+function createCompactFix(callInfo: CallInfo): FixResult | null {
+  const targetParam = needsParentheses(callInfo.params) ? `(${callInfo.params})` : callInfo.params
+  const expression = `${targetParam}.filter(Boolean)`
+  const { start, text } = handleNegationOperator(callInfo, expression)
+  return { range: [start, callInfo.callEnd], text }
+}
+
+/**
+ * Handle pick/omit functions with Object.fromEntries patterns
+ */
+function createPickOmitFix(callInfo: CallInfo, nativeAlternative: string): FixResult | null {
+  const commaIndex = findFirstTopLevelComma(callInfo.params)
+  if (commaIndex === -1) return null
+
+  const obj = callInfo.params.slice(0, commaIndex).trim()
+  const keys = callInfo.params.slice(commaIndex + 1).trim()
+
+  let expression: string
+  if (nativeAlternative.includes('Object.entries(')) {
+    // omit pattern
+    expression = nativeAlternative.replaceAll(/\bobj\b/g, obj).replaceAll(/\bkeys\b/g, keys)
+  } else {
+    // pick pattern
+    const safeObj = needsParentheses(obj) ? `(${obj})` : obj
+    expression = nativeAlternative.replaceAll(/\bkeys\b/g, keys).replaceAll(/\bobj\b/g, safeObj)
+  }
+
+  const { start, text } = handleNegationOperator(callInfo, expression)
+  return { range: [start, callInfo.callEnd], text }
+}
+
+/**
+ * Handle sortBy function with toSorted
+ */
+function createSortByFix(callInfo: CallInfo): FixResult | null {
+  const commaIndex = findFirstTopLevelComma(callInfo.params)
+  const targetParam = commaIndex === -1 ? callInfo.params : callInfo.params.slice(0, commaIndex).trim()
+  const safeTargetParam = needsParentheses(targetParam) ? `(${targetParam})` : targetParam
+
+  let expression: string
+  if (commaIndex === -1) {
+    expression = `${safeTargetParam}.toSorted()`
+  } else {
+    const fn = callInfo.params.slice(commaIndex + 1).trim()
+    if (fn.includes('=>')) {
+      expression = `${safeTargetParam}.toSorted((a, b) => (${fn})(a) - (${fn})(b))`
+    } else {
+      expression = `${safeTargetParam}.toSorted((a, b) => ${fn}(a) - ${fn}(b))`
+    }
+  }
+
+  const { start, text } = handleNegationOperator(callInfo, expression)
+  return { range: [start, callInfo.callEnd], text }
+}
+
+/**
+ * Handle merge function: merge(target, ...sources) -> Object.assign({}, target, ...sources)
+ */
+function createMergeFix(callInfo: CallInfo): FixResult | null {
+  const expression = `Object.assign({}, ${callInfo.params})`
+  const { start, text } = handleNegationOperator(callInfo, expression)
+  return { range: [start, callInfo.callEnd], text }
+}
+
+/**
+ * Handle get function with optional chaining
+ */
+function createGetFix(callInfo: CallInfo): FixResult | null {
+  const commaIndex = findFirstTopLevelComma(callInfo.params)
+  if (commaIndex === -1) return null
+
+  const obj = callInfo.params.slice(0, commaIndex).trim()
+  const path = callInfo.params.slice(commaIndex + 1).trim()
+
+  // Simple path conversion for common cases like "a.b.c"
+  if ((path.startsWith('"') && path.endsWith('"')) || (path.startsWith('\'') && path.endsWith('\''))) {
+    const pathStr = path.slice(1, -1)
+    if (/^[a-zA-Z_$][a-zA-Z0-9_$]*(\.[a-zA-Z_$][a-zA-Z0-9_$]*)*$/.test(pathStr)) {
+      const optionalChainPath = pathStr.replaceAll(/\./g, '?.')
+      const safeObj = needsParentheses(obj) ? `(${obj})` : obj
+      const expression = `${safeObj}?.${optionalChainPath}`
+      const { start, text } = handleNegationOperator(callInfo, expression)
+      return { range: [start, callInfo.callEnd], text }
+    }
+  }
+  return null
+}
+
+/**
+ * Handle clone function: clone(obj) -> {...obj}
+ */
+function createCloneFix(callInfo: CallInfo): FixResult | null {
+  const targetParam = needsParentheses(callInfo.params) ? `(${callInfo.params})` : callInfo.params
+  const expression = `{...${targetParam}}`
+  const { start, text } = handleNegationOperator(callInfo, expression)
+  return { range: [start, callInfo.callEnd], text }
+}
+
+/**
+ * Handle cloneDeep function: cloneDeep(obj) -> structuredClone(obj)
+ */
+function createCloneDeepFix(callInfo: CallInfo): FixResult | null {
+  const expression = `structuredClone(${callInfo.params})`
+  const { start, text } = handleNegationOperator(callInfo, expression)
+  return { range: [start, callInfo.callEnd], text }
+}
+
+/**
+ * Handle groupBy function with Object.groupBy
+ */
+function createGroupByFix(callInfo: CallInfo): FixResult | null {
+  const commaIndex = findFirstTopLevelComma(callInfo.params)
+  if (commaIndex === -1) return null
+
+  const array = callInfo.params.slice(0, commaIndex).trim()
+  const keyFn = callInfo.params.slice(commaIndex + 1).trim()
+
+  // Convert string path to function if needed
+  let actualKeyFn = keyFn
+  if ((keyFn.startsWith('"') && keyFn.endsWith('"')) || (keyFn.startsWith('\'') && keyFn.endsWith('\''))) {
+    const propPath = keyFn.slice(1, -1)
+    actualKeyFn = `item => item.${propPath}`
+  }
+
+  const expression = `Object.groupBy(${array}, ${actualKeyFn})`
+  const { start, text } = handleNegationOperator(callInfo, expression)
+  return { range: [start, callInfo.callEnd], text }
+}
+
+/**
+ * Handle countBy function with reduce pattern
+ */
+function createCountByFix(callInfo: CallInfo): FixResult | null {
+  const commaIndex = findFirstTopLevelComma(callInfo.params)
+  if (commaIndex === -1) return null
+
+  const array = callInfo.params.slice(0, commaIndex).trim()
+  const keyFn = callInfo.params.slice(commaIndex + 1).trim()
+
+  // Convert string path to function if needed
+  let actualKeyFn = keyFn
+  if ((keyFn.startsWith('"') && keyFn.endsWith('"')) || (keyFn.startsWith('\'') && keyFn.endsWith('\''))) {
+    const propPath = keyFn.slice(1, -1)
+    actualKeyFn = `item => item.${propPath}`
+  }
+
+  const safeArray = needsParentheses(array) ? `(${array})` : array
+  const expression = `${safeArray}.reduce((acc, item) => { const key = (${actualKeyFn})(item); acc[key] = (acc[key] || 0) + 1; return acc; }, {})`
+  const { start, text } = handleNegationOperator(callInfo, expression)
+  return { range: [start, callInfo.callEnd], text }
+}
+
+/**
+ * Handle chunk function with Array.from pattern
+ */
+function createChunkFix(callInfo: CallInfo): FixResult | null {
+  const commaIndex = findFirstTopLevelComma(callInfo.params)
+  if (commaIndex === -1) return null
+
+  const array = callInfo.params.slice(0, commaIndex).trim()
+  const size = callInfo.params.slice(commaIndex + 1).trim()
+
+  const safeArray = needsParentheses(array) ? `(${array})` : array
+  const expression = `Array.from({length: Math.ceil(${safeArray}.length / ${size})}, (_, i) => ${safeArray}.slice(i * ${size}, (i + 1) * ${size}))`
+  const { start, text } = handleNegationOperator(callInfo, expression)
+  return { range: [start, callInfo.callEnd], text }
+}
+
+/**
+ * Get specialized handler result for specific patterns
+ */
+function trySpecializedHandlers(callInfo: CallInfo, nativeAlternative: string): FixResult | null {
+  // Pattern inclusion matches
+  if (nativeAlternative.includes('[...new Set(')) return createUniqFix(callInfo, nativeAlternative)
+  if (nativeAlternative.includes('.filter(Boolean)')) return createCompactFix(callInfo)
+  if (nativeAlternative.includes('Object.fromEntries(') && nativeAlternative.includes('.map(')) return createPickOmitFix(callInfo, nativeAlternative)
+  if (nativeAlternative.includes('.toSorted(')) return createSortByFix(callInfo)
+  if (nativeAlternative.includes('Object.assign({}, ')) return createMergeFix(callInfo)
+  if (nativeAlternative.includes('?.')) return createGetFix(callInfo)
+  if (nativeAlternative.includes('{...')) return createCloneFix(callInfo)
+  if (nativeAlternative.includes('structuredClone(')) return createCloneDeepFix(callInfo)
+  if (nativeAlternative.includes('Object.groupBy(')) return createGroupByFix(callInfo)
+  if (nativeAlternative.includes('.reduce((acc, item)')) return createCountByFix(callInfo)
+  if (nativeAlternative.includes('Array.from({length:')) return createChunkFix(callInfo)
+
+  return null
+}
+
+/**
+ * Create standard single-parameter expression fix
+ */
+function createStandardExpressionFix(callInfo: CallInfo, nativeAlternative: string): FixResult {
+  const safeParam = needsParentheses(callInfo.params) ? `(${callInfo.params})` : callInfo.params
+  const expression = nativeAlternative.replaceAll(/\bvalue\b/g, safeParam)
+  const { start, text } = handleNegationOperator(callInfo, expression)
+  return { range: [start, callInfo.callEnd], text }
+}
+
+/**
  * Create fix for expression alternatives (e.g., isNull -> value === null)
  */
 export function createExpressionFix(callInfo: CallInfo, nativeAlternative: string): FixResult | null {
   if (!callInfo.params) return null
 
-  // Special handling for "has" function: has(object, key) -> key in object
+  // Check for specialized patterns that need specific handling
   if (nativeAlternative === 'key in object') {
-    const commaIndex = findFirstTopLevelComma(callInfo.params)
-    if (commaIndex === -1) return null
-
-    const object = callInfo.params.slice(0, commaIndex).trim()
-    const key = callInfo.params.slice(commaIndex + 1).trim()
-
-    // Handle parameters that might need parentheses
-    let safeObject = object
-    if (needsParentheses(object)) {
-      safeObject = `(${object})`
-    }
-
-    const expression = `${key} in ${safeObject}`
-    const { start, text } = handleNegationOperator(callInfo, expression)
-
-    return {
-      range: [start, callInfo.callEnd],
-      text,
-    }
+    return createHasFix(callInfo)
   }
-
-  // Quick Wins patterns: Handle multi-parameter functions with specific transformations
-  if (nativeAlternative.includes('[...new Set(')) {
-    // uniq(array) -> [...new Set(array)]
-    const expression = nativeAlternative.replace(/array/g, callInfo.params)
-    const { start, text } = handleNegationOperator(callInfo, expression)
-    return {
-      range: [start, callInfo.callEnd],
-      text,
-    }
-  }
-
-  if (nativeAlternative.includes('.filter(Boolean)')) {
-    // compact(array) -> array.filter(Boolean)
-    const targetParam = needsParentheses(callInfo.params) ? `(${callInfo.params})` : callInfo.params
-    const expression = `${targetParam}.filter(Boolean)`
-    const { start, text } = handleNegationOperator(callInfo, expression)
-    return {
-      range: [start, callInfo.callEnd],
-      text,
-    }
-  }
-
-  if (nativeAlternative.includes('Object.fromEntries(') && nativeAlternative.includes('.map(')) {
-    // pick(obj, keys) -> Object.fromEntries(keys.map(k => [k, obj[k]]))
-    // omit(obj, keys) -> Object.fromEntries(Object.entries(obj).filter(([k]) => !keys.includes(k)))
-    const commaIndex = findFirstTopLevelComma(callInfo.params)
-    if (commaIndex === -1) return null
-
-    const obj = callInfo.params.slice(0, commaIndex).trim()
-    const keys = callInfo.params.slice(commaIndex + 1).trim()
-
-    let expression: string
-    if (nativeAlternative.includes('Object.entries(')) {
-      // omit pattern - substitute actual parameters into template
-      expression = nativeAlternative
-        .replace(/\bobj\b/g, obj)
-        .replace(/\bkeys\b/g, keys)
-    } else {
-      // pick pattern - substitute actual parameters into template
-      const safeObj = needsParentheses(obj) ? `(${obj})` : obj
-      expression = nativeAlternative
-        .replace(/\bkeys\b/g, keys)
-        .replace(/\bobj\b/g, safeObj)
-    }
-
-    const { start, text } = handleNegationOperator(callInfo, expression)
-    return {
-      range: [start, callInfo.callEnd],
-      text,
-    }
-  }
-
-  if (nativeAlternative.includes('.toSorted(')) {
-    // sortBy(array, fn) -> array.toSorted((a, b) => fn(a) - fn(b))
-    // sortBy(array) -> array.toSorted()
-    const commaIndex = findFirstTopLevelComma(callInfo.params)
-    const targetParam = commaIndex === -1 ? callInfo.params : callInfo.params.slice(0, commaIndex).trim()
-    const safeTargetParam = needsParentheses(targetParam) ? `(${targetParam})` : targetParam
-
-    let expression: string
-    if (commaIndex === -1) {
-      // No callback function provided
-      expression = `${safeTargetParam}.toSorted()`
-    } else {
-      // Callback function provided
-      const fn = callInfo.params.slice(commaIndex + 1).trim()
-      // Check if fn is an arrow function
-      if (fn.includes('=>')) {
-        expression = `${safeTargetParam}.toSorted((a, b) => (${fn})(a) - (${fn})(b))`
-      } else {
-        expression = `${safeTargetParam}.toSorted((a, b) => ${fn}(a) - ${fn}(b))`
-      }
-    }
-
-    const { start, text } = handleNegationOperator(callInfo, expression)
-    return {
-      range: [start, callInfo.callEnd],
-      text,
-    }
-  }
-
-  // Object Utilities patterns
-  if (nativeAlternative.includes('Object.assign({}, ')) {
-    // merge(target, ...sources) -> Object.assign({}, target, ...sources)
-    const expression = `Object.assign({}, ${callInfo.params})`
-    const { start, text } = handleNegationOperator(callInfo, expression)
-    return {
-      range: [start, callInfo.callEnd],
-      text,
-    }
-  }
-
-  if (nativeAlternative.includes('?.')) {
-    // get(obj, path) -> obj?.path (simplified for common cases)
-    // This is a complex transformation, for now we'll handle simple cases
-    const commaIndex = findFirstTopLevelComma(callInfo.params)
-    if (commaIndex === -1) return null
-
-    const obj = callInfo.params.slice(0, commaIndex).trim()
-    const path = callInfo.params.slice(commaIndex + 1).trim()
-
-    // Simple path conversion for common cases like "a.b.c"
-    if ((path.startsWith('"') && path.endsWith('"')) || (path.startsWith('\'') && path.endsWith('\''))) {
-      const pathStr = path.slice(1, -1) // Remove quotes
-      if (/^[a-zA-Z_$][a-zA-Z0-9_$]*(\.[a-zA-Z_$][a-zA-Z0-9_$]*)*$/.test(pathStr)) {
-        // Simple dot notation path
-        const optionalChainPath = pathStr.replace(/\./g, '?.')
-        const safeObj = needsParentheses(obj) ? `(${obj})` : obj
-        const expression = `${safeObj}?.${optionalChainPath}`
-        const { start, text } = handleNegationOperator(callInfo, expression)
-        return {
-          range: [start, callInfo.callEnd],
-          text,
-        }
-      }
-    }
-    // For complex paths, fall back to no transformation for now
-    return null
-  }
-
-  if (nativeAlternative.includes('{...')) {
-    // clone(obj) -> {...obj}
-    const targetParam = needsParentheses(callInfo.params) ? `(${callInfo.params})` : callInfo.params
-    const expression = `{...${targetParam}}`
-    const { start, text } = handleNegationOperator(callInfo, expression)
-    return {
-      range: [start, callInfo.callEnd],
-      text,
-    }
-  }
-
-  if (nativeAlternative.includes('structuredClone(')) {
-    // cloneDeep(obj) -> structuredClone(obj)
-    const expression = `structuredClone(${callInfo.params})`
-    const { start, text } = handleNegationOperator(callInfo, expression)
-    return {
-      range: [start, callInfo.callEnd],
-      text,
-    }
-  }
-
-  // Collection Processing patterns (ES2024+ Modern Features)
-  if (nativeAlternative.includes('Object.groupBy(')) {
-    // groupBy(array, keyFn) -> Object.groupBy(array, keyFn)
-    // Handle string paths: groupBy(array, 'prop') -> Object.groupBy(array, item => item.prop)
-    const commaIndex = findFirstTopLevelComma(callInfo.params)
-    if (commaIndex === -1) return null
-
-    const array = callInfo.params.slice(0, commaIndex).trim()
-    const keyFn = callInfo.params.slice(commaIndex + 1).trim()
-
-    // Convert string path to function if needed
-    let actualKeyFn = keyFn
-    if ((keyFn.startsWith('"') && keyFn.endsWith('"')) || (keyFn.startsWith('\'') && keyFn.endsWith('\''))) {
-      const propPath = keyFn.slice(1, -1)
-      actualKeyFn = `item => item.${propPath}`
-    }
-
-    const expression = `Object.groupBy(${array}, ${actualKeyFn})`
-    const { start, text } = handleNegationOperator(callInfo, expression)
-    return {
-      range: [start, callInfo.callEnd],
-      text,
-    }
-  }
-
-  if (nativeAlternative.includes('.reduce((acc, item)')) {
-    // countBy(array, keyFn) -> array.reduce((acc, item) => { const key = keyFn(item); acc[key] = (acc[key] || 0) + 1; return acc; }, {})
-    const commaIndex = findFirstTopLevelComma(callInfo.params)
-    if (commaIndex === -1) return null
-
-    const array = callInfo.params.slice(0, commaIndex).trim()
-    const keyFn = callInfo.params.slice(commaIndex + 1).trim()
-
-    // Convert string path to function if needed
-    let actualKeyFn = keyFn
-    if ((keyFn.startsWith('"') && keyFn.endsWith('"')) || (keyFn.startsWith('\'') && keyFn.endsWith('\''))) {
-      const propPath = keyFn.slice(1, -1)
-      actualKeyFn = `item => item.${propPath}`
-    }
-
-    const safeArray = needsParentheses(array) ? `(${array})` : array
-    const expression = `${safeArray}.reduce((acc, item) => { const key = (${actualKeyFn})(item); acc[key] = (acc[key] || 0) + 1; return acc; }, {})`
-    const { start, text } = handleNegationOperator(callInfo, expression)
-    return {
-      range: [start, callInfo.callEnd],
-      text,
-    }
-  }
-
-  if (nativeAlternative.includes('Array.from({length:')) {
-    // chunk(array, size) -> Array.from({length: Math.ceil(array.length / size)}, (_, i) => array.slice(i * size, (i + 1) * size))
-    const commaIndex = findFirstTopLevelComma(callInfo.params)
-    if (commaIndex === -1) return null
-
-    const array = callInfo.params.slice(0, commaIndex).trim()
-    const size = callInfo.params.slice(commaIndex + 1).trim()
-
-    const safeArray = needsParentheses(array) ? `(${array})` : array
-    const expression = `Array.from({length: Math.ceil(${safeArray}.length / ${size})}, (_, i) => ${safeArray}.slice(i * ${size}, (i + 1) * ${size}))`
-    const { start, text } = handleNegationOperator(callInfo, expression)
-    return {
-      range: [start, callInfo.callEnd],
-      text,
-    }
-  }
-
-  // Handle orderBy pattern specifically: value.toSorted((a, b) => iteratee(a) - iteratee(b))
   if (nativeAlternative === 'value.toSorted((a, b) => iteratee(a) - iteratee(b))') {
-    const commaIndex = findFirstTopLevelComma(callInfo.params)
-    if (commaIndex === -1) return null
-
-    const array = callInfo.params.slice(0, commaIndex).trim()
-    const iterateeFn = callInfo.params.slice(commaIndex + 1).trim()
-
-    // Convert string path to function if needed
-    let actualIteratee = iterateeFn
-    if ((iterateeFn.startsWith('"') && iterateeFn.endsWith('"')) || (iterateeFn.startsWith('\'') && iterateeFn.endsWith('\''))) {
-      const propPath = iterateeFn.slice(1, -1)
-      actualIteratee = `item => item.${propPath}`
-    }
-
-    const expression = `${array}.toSorted((a, b) => (${actualIteratee})(a) - (${actualIteratee})(b))`
-    const { start, text } = handleNegationOperator(callInfo, expression)
-    return {
-      range: [start, callInfo.callEnd],
-      text,
-    }
+    return createOrderByFix(callInfo)
   }
-
-  // Handle keyBy pattern specifically: Object.fromEntries(value.map(item => [iteratee(item), item]))
   if (nativeAlternative === 'Object.fromEntries(value.map(item => [iteratee(item), item]))') {
-    const commaIndex = findFirstTopLevelComma(callInfo.params)
-    if (commaIndex === -1) return null
-
-    const array = callInfo.params.slice(0, commaIndex).trim()
-    const keyFn = callInfo.params.slice(commaIndex + 1).trim()
-
-    // Convert string path to function if needed
-    let actualKeyFn = keyFn
-    if ((keyFn.startsWith('"') && keyFn.endsWith('"')) || (keyFn.startsWith('\'') && keyFn.endsWith('\''))) {
-      const propPath = keyFn.slice(1, -1)
-      actualKeyFn = `item => item.${propPath}`
-    }
-
-    const expression = `Object.fromEntries(${array}.map(item => [(${actualKeyFn})(item), item]))`
-    const { start, text } = handleNegationOperator(callInfo, expression)
-    return {
-      range: [start, callInfo.callEnd],
-      text,
-    }
+    return createKeyByFix(callInfo)
   }
 
-  // Handle standard single-parameter expression alternatives
-  let safeParam = callInfo.params
-  if (needsParentheses(callInfo.params)) {
-    safeParam = `(${callInfo.params})`
+  const specializedResult = trySpecializedHandlers(callInfo, nativeAlternative)
+  if (specializedResult) {
+    return specializedResult
   }
 
-  // Replace "value" placeholder with actual parameter
-  const expression = nativeAlternative.replace(/\bvalue\b/g, safeParam)
-
-  // Handle negation operator
-  const { start, text } = handleNegationOperator(callInfo, expression)
-
-  return {
-    range: [start, callInfo.callEnd],
-    text,
-  }
+  return createStandardExpressionFix(callInfo, nativeAlternative)
 }
 
 /**
@@ -462,7 +414,7 @@ export function isFixedParamPrototypeMethod(nativeAlternative: string): boolean 
  * Extract fixed parameters from encoded native alternative
  */
 export function extractFixedParams(nativeAlternative: string): string | null {
-  const match = RegExp(/\[([^\]]+)\]$/).exec(nativeAlternative)
+  const match = new RegExp(/\[([^\]]+)\]$/).exec(nativeAlternative)
   return match ? match[1] ?? null : null
 }
 

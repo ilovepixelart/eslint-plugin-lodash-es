@@ -119,7 +119,7 @@ export function extractMethodName(nativeAlternative: string): string | null {
   // Handle cases like "array.map(fn)" -> "map"
   if (nativeAlternative.includes('.')) {
     const parts = nativeAlternative.split('.')
-    const methodPart = parts[parts.length - 1]
+    const methodPart = parts.at(-1)
     // Remove any parentheses
     return methodPart?.split('(')[0] || null
   }
@@ -325,7 +325,7 @@ export function isArrayLikeObject(expression: string): boolean {
   // Check for common DOM patterns
   if (trimmed.includes('.')) {
     const parts = trimmed.split('.')
-    const lastPart = parts[parts.length - 1]
+    const lastPart = parts.at(-1)
 
     // Fast checks for property access patterns
     if (lastPart && ['children', 'childNodes', 'classList', 'style', 'files'].includes(lastPart)) {
