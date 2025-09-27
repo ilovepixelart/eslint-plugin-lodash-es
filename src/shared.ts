@@ -440,9 +440,19 @@ export function createObjectPropertyMethod(
     nativeExpression,
     description,
     {
-      migration: { difficulty, ...options?.migration },
-      safety: safetyConfigs.safe,
-      related: [...relatedFunctions.objectManipulation],
+      migration: {
+        difficulty,
+        challenges: ['Property access patterns vs lodash string paths', ...options?.migration?.challenges || []],
+        ...options?.migration,
+      },
+      safety: {
+        level: SafetyLevel.Caution,
+        concerns: ['Optional chaining requires ES2020+'],
+        mitigation: 'Use babel-plugin-proposal-optional-chaining for legacy support',
+        ...options?.safety,
+      },
+      related: ['get', 'has', 'set'] as const,
+      notes: ['Uses modern optional chaining syntax', 'Consider polyfills for older browsers', ...options?.notes || []],
       ...options,
     },
   )
