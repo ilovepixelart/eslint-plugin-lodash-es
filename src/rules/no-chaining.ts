@@ -105,7 +105,7 @@ const noChaining: Rule.RuleModule = {
                   const chainText = sourceCode.getText(node)
 
                   // Look for common pattern: chain(data).method1().method2().value()
-                  const chainPattern = /chain\(([^)]+)\)((?:\.[a-zA-Z]+\([^)]*\))*?)\.value\(\)/
+                  const chainPattern = /chain\(([^)]{1,200})\)((?:\.[a-zA-Z]{1,50}\([^)]{0,100}\)){0,10}?)\.value\(\)/
                   const chainMatch = chainPattern.exec(chainText)
 
                   if (chainMatch) {

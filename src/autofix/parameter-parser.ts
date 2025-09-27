@@ -341,9 +341,9 @@ export function isArrayLikeObject(expression: string): boolean {
 
   // Fallback to regex for complex patterns (only if simple checks fail)
   const complexPatterns = [
-    /^document\.getElementsBy\w+\(/,
-    /^element\.getElementsBy\w+\(/,
-    /^\w+\.getElementsBy\w+\(/,
+    /^document\.getElementsBy\w{1,50}\(/,
+    /^element\.getElementsBy\w{1,50}\(/,
+    /^\w{1,50}\.getElementsBy\w{1,50}\(/,
   ]
 
   return complexPatterns.some(pattern => pattern.test(trimmed))
