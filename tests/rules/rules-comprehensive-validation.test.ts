@@ -111,8 +111,8 @@ describe('Rules comprehensive validation', () => {
                 message: /Lodash chain.*prevents tree-shaking/,
                 suggestions: [{
                   desc: 'Remove chain import and use native array methods',
-                  output: ''
-                }]
+                  output: '',
+                }],
               }],
             },
           ],
@@ -150,8 +150,8 @@ describe('Rules comprehensive validation', () => {
                 message: /Per-method lodash imports are deprecated/,
                 suggestions: [{
                   desc: 'Convert to destructured lodash-es import',
-                  output: 'import { map } from \'lodash-es\';'
-                }]
+                  output: 'import { map } from \'lodash-es\';',
+                }],
               }],
             },
           ],
@@ -175,22 +175,22 @@ describe('Rules comprehensive validation', () => {
                   message: /Per-method lodash imports are deprecated/,
                   suggestions: [{
                     desc: 'Convert to destructured lodash-es import',
-                    output: 'import { map } from \'lodash-es\'; import filter from "lodash/filter";'
-                  }]
+                    output: 'import { map } from \'lodash-es\'; import filter from "lodash/filter";',
+                  }],
                 },
                 {
                   message: /Replace with.*import.*from 'lodash-es'/,
                   suggestions: [{
                     desc: 'Consolidate 2 per-method imports into single destructured import',
-                    output: 'import { filter, map } from \'lodash-es\'; '
-                  }]
+                    output: 'import { filter, map } from \'lodash-es\'; ',
+                  }],
                 },
                 {
                   message: /Per-method lodash imports are deprecated/,
                   suggestions: [{
                     desc: 'Convert to destructured lodash-es import',
-                    output: 'import map from "lodash/map"; import { filter } from \'lodash-es\';'
-                  }]
+                    output: 'import map from "lodash/map"; import { filter } from \'lodash-es\';',
+                  }],
                 },
               ],
             },
@@ -290,22 +290,22 @@ describe('Rules comprehensive validation', () => {
                   message: /Per-method lodash imports are deprecated/,
                   suggestions: [{
                     desc: 'Convert to destructured lodash-es import',
-                    output: 'import { map } from \'lodash-es\'; import filter from "lodash/filter";'
-                  }]
+                    output: 'import { map } from \'lodash-es\'; import filter from "lodash/filter";',
+                  }],
                 },
                 {
                   message: /Replace with.*import.*from 'lodash-es'/,
                   suggestions: [{
                     desc: 'Consolidate 2 per-method imports into single destructured import',
-                    output: 'import { filter, map } from \'lodash-es\'; '
-                  }]
+                    output: 'import { filter, map } from \'lodash-es\'; ',
+                  }],
                 },
                 {
                   message: /Per-method lodash imports are deprecated/,
                   suggestions: [{
                     desc: 'Convert to destructured lodash-es import',
-                    output: 'import map from "lodash/map"; import { filter } from \'lodash-es\';'
-                  }]
+                    output: 'import map from "lodash/map"; import { filter } from \'lodash-es\';',
+                  }],
                 },
               ],
             },
