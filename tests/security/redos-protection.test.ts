@@ -164,7 +164,7 @@ describe('ReDoS Protection', () => {
         expect(result).toBe(false)
       }
 
-      const avgTime = times.reduce((a, b) => a + b) / times.length
+      const avgTime = times.reduce((a, b) => a + b, 0) / times.length
       const maxTime = Math.max(...times)
 
       // All executions should be fast and consistent
