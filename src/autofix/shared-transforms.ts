@@ -2,6 +2,8 @@
  * Shared transformation utilities for both destructured and namespace autofix
  */
 import { findFirstTopLevelComma, extractMethodName, needsParentheses, isArrayLikeObject, extractStaticMethodInfo, isZeroParamStaticMethod, isExpressionAlternative, isConstructorCall, isStaticMethod } from './parameter-parser'
+import { createPatternBasedTransform } from './transform-patterns'
+import { RegexCache } from '../regex-cache'
 
 export interface FixResult {
   range: [number, number]
@@ -153,7 +155,7 @@ function createGetFix(callInfo: CallInfo): FixResult | null {
   // Simple path conversion for common cases like "a.b.c"
   if ((path.startsWith('"') && path.endsWith('"')) || (path.startsWith('\'') && path.endsWith('\''))) {
     const pathStr = path.slice(1, -1)
-    if (/^[a-zA-Z_$][a-zA-Z0-9_$]*(\.[a-zA-Z_$][a-zA-Z0-9_$]*)*$/.test(pathStr)) {
+    if (RegexCache.getSimplePropertyPathRegex().test(pathStr)) {
       const optionalChainPath = pathStr.replaceAll('.', '?.')
       const safeObj = needsParentheses(obj) ? `(${obj})` : obj
       const expression = `${safeObj}?.${optionalChainPath}`
@@ -245,10 +247,14 @@ function createChunkFix(callInfo: CallInfo): FixResult | null {
 }
 
 /**
- * Get specialized handler result for specific patterns
+ * Get specialized handler result using elegant pattern system
  */
 function trySpecializedHandlers(callInfo: CallInfo, nativeAlternative: string): FixResult | null {
-  // Pattern inclusion matches
+  // Try the new pattern-based system first
+  const patternResult = createPatternBasedTransform(callInfo, nativeAlternative)
+  if (patternResult) return patternResult
+
+  // Fallback to legacy handlers for any patterns not yet migrated
   if (nativeAlternative.includes('[...new Set(')) return createUniqFix(callInfo, nativeAlternative)
   if (nativeAlternative.includes('.filter(Boolean)')) return createCompactFix(callInfo)
   if (nativeAlternative.includes('Object.fromEntries(') && nativeAlternative.includes('.map(')) return createPickOmitFix(callInfo, nativeAlternative)
@@ -316,7 +322,7 @@ export function createConstructorFix(callInfo: CallInfo, nativeAlternative: stri
  * Check if native alternative is a fixed-parameter prototype method
  */
 export function isFixedParamPrototypeMethod(nativeAlternative: string): boolean {
-  return /^\w{1,50}\.prototype\.\w{1,50}\[[^\]]{1,20}\]$/.test(nativeAlternative)
+  return RegexCache.getFixedParamPrototypeRegex().test(nativeAlternative)
 }
 
 /**

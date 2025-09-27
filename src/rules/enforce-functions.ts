@@ -3,6 +3,7 @@
  */
 import { getSourceCode, isLodashModule, findLodashUsages, findDestructuredLodashUsages, getNativeAlternative } from '../utils'
 import { createDestructuredFix, createNamespaceFix } from '../autofix'
+import { EnforceFunctionsConfig } from '../config/enforce-functions-config'
 
 import type {
   ImportDeclaration,
@@ -11,7 +12,7 @@ import type {
   ImportSpecifier,
 } from 'estree'
 import type { Rule } from 'eslint'
-import type { Usage, EnforceFunctionsRuleOptions, LodashFunctionName, LodashModuleName } from '../types'
+import type { Usage, LodashFunctionName, LodashModuleName } from '../types'
 
 function createErrorMessage(functionName: LodashFunctionName, reason: string): string {
   const nativeAlternative = getNativeAlternative(functionName)
@@ -22,18 +23,12 @@ function createErrorMessage(functionName: LodashFunctionName, reason: string): s
     : `Lodash function '${functionName}' is ${reason}.`
 }
 
-function getReason(options: EnforceFunctionsRuleOptions): string {
-  return options.exclude
-    ? 'excluded by configuration'
-    : 'not in the allowed functions list'
-}
-
 function reportUsage(
   node: ImportDeclaration,
   sourceCode: ReturnType<typeof getSourceCode>,
   usage: Usage,
   functionName: string,
-  reason: string,
+  config: EnforceFunctionsConfig,
   context: Rule.RuleContext,
 ): void {
   const fix = createDestructuredFix(sourceCode, usage, functionName)
@@ -44,7 +39,7 @@ function reportUsage(
       start: sourceCode.getLocFromIndex(usage.start),
       end: sourceCode.getLocFromIndex(usage.end),
     },
-    message: createErrorMessage(functionName as LodashFunctionName, reason),
+    message: createErrorMessage(functionName as LodashFunctionName, config.getReason()),
     fix: fix ? (fixer): Rule.Fix => fixer.replaceTextRange(fix.range, fix.text) : undefined,
   })
 }
@@ -53,12 +48,11 @@ function handleDefaultOrNamespaceImports(
   node: ImportDeclaration,
   defaultOrNamespaceSpecifier: ImportDefaultSpecifier | ImportNamespaceSpecifier,
   sourceCode: ReturnType<typeof getSourceCode>,
-  options: EnforceFunctionsRuleOptions,
+  config: EnforceFunctionsConfig,
   context: Rule.RuleContext,
 ): void {
   const fullSourceCode = sourceCode.getText()
-  const blockedUsages = findBlockedFunctions(fullSourceCode, defaultOrNamespaceSpecifier.local.name, options)
-  const reason = getReason(options)
+  const blockedUsages = findBlockedFunctions(fullSourceCode, defaultOrNamespaceSpecifier.local.name, config)
 
   for (const usage of blockedUsages) {
     const fix = createNamespaceFix(sourceCode, usage, usage.functionName)
@@ -69,7 +63,7 @@ function handleDefaultOrNamespaceImports(
         start: sourceCode.getLocFromIndex(usage.start),
         end: sourceCode.getLocFromIndex(usage.end),
       },
-      message: createErrorMessage(usage.functionName, reason),
+      message: createErrorMessage(usage.functionName, config.getReason()),
       fix: fix ? (fixer): Rule.Fix => fixer.replaceTextRange(fix.range, fix.text) : undefined,
     })
   }
@@ -79,7 +73,7 @@ function handleDestructuredImports(
   node: ImportDeclaration,
   destructuredSpecifiers: ImportSpecifier[],
   sourceCode: ReturnType<typeof getSourceCode>,
-  options: EnforceFunctionsRuleOptions,
+  config: EnforceFunctionsConfig,
   context: Rule.RuleContext,
 ): void {
   // Map each import specifier to both original and local names
@@ -89,13 +83,11 @@ function handleDestructuredImports(
     return { originalName, localName }
   }).filter(mapping => mapping.originalName !== '')
 
-  const reason = getReason(options)
   const fullSourceCode = sourceCode.getText()
 
   // Check each import mapping
   for (const { originalName, localName } of destructuredMappings) {
-    const isBlocked = (options.include && !options.include.includes(originalName as LodashFunctionName))
-      || (options.exclude?.includes(originalName as LodashFunctionName))
+    const isBlocked = config.isBlocked(originalName as LodashFunctionName)
 
     if (!isBlocked) continue
 
@@ -103,18 +95,16 @@ function handleDestructuredImports(
     // but validate against the ORIGINAL lodash function name
     const usages = findDestructuredLodashUsages(fullSourceCode, localName, originalName)
     for (const usage of usages) {
-      reportUsage(node, sourceCode, usage, originalName, reason, context)
+      reportUsage(node, sourceCode, usage, originalName, config, context)
     }
   }
 }
 
-function findBlockedFunctions(sourceCode: string, importName: string, options: EnforceFunctionsRuleOptions): Usage[] {
+function findBlockedFunctions(sourceCode: string, importName: string, config: EnforceFunctionsConfig): Usage[] {
   const allUsages = findLodashUsages(sourceCode, importName)
 
   return allUsages.filter((usage) => {
-    const functionName = usage.functionName
-    return (options.include && !options.include.includes(functionName))
-      || (options.exclude?.includes(functionName))
+    return config.isBlocked(usage.functionName)
   })
 }
 
@@ -153,12 +143,7 @@ const enforceFunctions: Rule.RuleModule = {
 
   create(context: Rule.RuleContext) {
     const sourceCode = getSourceCode(context)
-    const options: EnforceFunctionsRuleOptions = context.options[0] || {}
-
-    // Validate that only include OR exclude is used, not both
-    if (options.include && options.exclude) {
-      throw new Error('Cannot specify both "include" and "exclude" options. Use only one.')
-    }
+    const config = EnforceFunctionsConfig.fromRuleOptions(context.options[0])
 
     return {
       ImportDeclaration(node: ImportDeclaration): void {
@@ -175,7 +160,7 @@ const enforceFunctions: Rule.RuleModule = {
         ) as ImportDefaultSpecifier | ImportNamespaceSpecifier | undefined
 
         if (defaultOrNamespaceSpecifier) {
-          handleDefaultOrNamespaceImports(node, defaultOrNamespaceSpecifier, sourceCode, options, context)
+          handleDefaultOrNamespaceImports(node, defaultOrNamespaceSpecifier, sourceCode, config, context)
         }
 
         // Check destructured imports: import { map, filter } from 'lodash-es'
@@ -184,7 +169,7 @@ const enforceFunctions: Rule.RuleModule = {
         )
 
         if (destructuredSpecifiers.length > 0) {
-          handleDestructuredImports(node, destructuredSpecifiers, sourceCode, options, context)
+          handleDestructuredImports(node, destructuredSpecifiers, sourceCode, config, context)
         }
       },
     }

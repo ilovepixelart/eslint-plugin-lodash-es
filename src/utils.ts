@@ -2,6 +2,7 @@
  * Shared utility functions for lodash-es ESLint rules
  */
 import { lodashModules, lodashFunctions, nativeAlternatives, SafetyLevel, MigrationDifficulty, FunctionCategory } from './constants'
+import { RegexCache } from './regex-cache'
 
 import type { Rule, SourceCode } from 'eslint'
 import type { Usage, NativeAlternative, AlternativeFilterConfig, LodashFunctionName, LodashModuleName, LodashAlternativeFunctionName } from './types'
@@ -31,7 +32,7 @@ export function isLodashFunction(functionName: LodashFunctionName): boolean {
  * Create regex pattern for finding lodash member expressions
  */
 export function createLodashMemberRegex(importName: string): RegExp {
-  return new RegExp(`\\b${importName}\\.(\\w+)`, 'g')
+  return RegexCache.getMemberRegex(importName)
 }
 
 /**
@@ -71,8 +72,8 @@ export function findDestructuredLodashUsages(sourceCode: string, localName: stri
   }
 
   // Regex to find standalone function calls like "map(" but not ".map("
-  // Use negative lookbehind to exclude method calls
-  const regex = new RegExp(`(?<!\\.)\\b${localName}\\s*\\(`, 'g')
+  // Use negative lookbehind to exclude method calls - now cached for performance
+  const regex = RegexCache.getDestructuredRegex(localName)
   let match
 
   while ((match = regex.exec(sourceCode)) !== null) {

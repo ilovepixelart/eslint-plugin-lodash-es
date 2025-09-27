@@ -4,6 +4,7 @@
 import type { SourceCode } from 'eslint'
 import type { Usage, LodashFunctionName } from '../types'
 import { getNativeAlternative } from '../utils'
+import { RegexCache } from '../regex-cache'
 import { findClosingParenthesis } from './parameter-parser'
 import {
   type FixResult,
@@ -52,17 +53,17 @@ export function createCommonAutofix(
 /**
  * Create regex for destructured function calls
  * @param functionName Name of the function
- * @returns Regex pattern for extracting parameters
+ * @returns Cached regex pattern for extracting parameters
  */
 export function createDestructuredRegex(functionName: string): RegExp {
-  return new RegExp(`^${functionName}\\s*\\((.*)\\)$`, 's')
+  return RegexCache.getFunctionCallRegex(functionName)
 }
 
 /**
  * Create regex for namespace function calls (_.func or lodash.func)
  * @param functionName Name of the function
- * @returns Regex pattern for extracting parameters
+ * @returns Cached regex pattern for extracting parameters
  */
 export function createNamespaceRegex(functionName: string): RegExp {
-  return new RegExp(`^[\\w$]+\\.${functionName}\\s*\\((.*)\\)$`, 's')
+  return RegexCache.getNamespaceFunctionRegex(functionName)
 }
