@@ -16,8 +16,9 @@ ESLint plugin that enforces destructured imports from lodash-es with auto-fixing
 **Key Benefits:**
 
 - 🔧 Auto-fixes imports for better tree-shaking
-- 📦 Reduces bundle size significantly  
+- 📦 Reduces bundle size significantly
 - 🛡️ Configurable function usage policies
+- 💡 Intelligent suggestions for native alternatives
 - 📝 Full TypeScript support
 
 ## Installation
@@ -151,7 +152,7 @@ const grouped = Object.groupBy(users, user => user.department)
 | [no-chaining](./docs/rules/no-chaining.md) | Prevent chaining that kills tree-shaking | 💡 | 🔧 | ✅ |
 | [no-method-imports](./docs/rules/no-method-imports.md) | Prevent deprecated per-method imports | 💡 | 🔧 | ✅ |
 | [enforce-functions](./docs/rules/enforce-functions.md) | Transform lodash functions to native JavaScript | 💡 | 🔧 | |
-| [suggest-native-alternatives](./docs/rules/suggest-native-alternatives.md) | Suggest native JavaScript alternatives | 💡 | | |
+| [suggest-native-alternatives](./docs/rules/suggest-native-alternatives.md) | Suggest native JavaScript alternatives | 💡 | 🔧 | |
 
 **Legend:** 💡 Suggestions • 🔧 Auto-fixable • ✅ Recommended
 

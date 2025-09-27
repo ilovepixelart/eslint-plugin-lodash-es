@@ -25,6 +25,7 @@ describe('suggest-native-alternatives rule', () => {
       invalid: [
         {
           code: 'import _ from "lodash-es"; const result = _.isArray(value);',
+          output: 'import _ from "lodash-es"; const result = Array.isArray(value);',
           errors: [
             {
               message: 'Consider native \'Array.isArray(value)\' instead of \'_.isArray()\'. Check if value is an array (reliable & performant).',
@@ -34,6 +35,7 @@ describe('suggest-native-alternatives rule', () => {
         },
         {
           code: 'import lodash from "lodash-es"; const result = lodash.map(array, fn);',
+          output: 'import lodash from "lodash-es"; const result = array.map(fn);',
           errors: [
             {
               message: 'Consider native \'array.map(fn)\' instead of \'_.map()\'. Transform array elements using a callback function.',
@@ -43,6 +45,7 @@ describe('suggest-native-alternatives rule', () => {
         },
         {
           code: 'import _ from "lodash-es"; const check = _.isString(value); const nums = _.max(array);',
+          output: 'import _ from "lodash-es"; const check = typeof value === "string"; const nums = Math.max(...array);',
           errors: [
             {
               message: 'Consider native \'typeof value === "string"\' instead of \'_.isString()\'. Check if value is string.',
@@ -65,6 +68,24 @@ describe('suggest-native-alternatives rule', () => {
         'import { debounce, throttle } from "lodash-es"; const fn = debounce(callback, 100);',
       ],
       invalid: [
+        {
+          code: 'import { isArray, map, filter } from "lodash-es"; const check = isArray(value); const result = map(arr, fn);',
+          output: 'import { isArray, map, filter } from "lodash-es"; const check = Array.isArray(value); const result = arr.map(fn);',
+          errors: [
+            {
+              message: 'Consider native \'array.filter(predicate)\' instead of \'_.filter()\'. Filter array elements (native is faster).',
+              type: 'ImportSpecifier',
+            },
+            {
+              message: 'Consider native \'Array.isArray(value)\' instead of \'_.isArray()\'. Check if value is an array (reliable & performant).',
+              type: 'ImportSpecifier',
+            },
+            {
+              message: 'Consider native \'array.map(fn)\' instead of \'_.map()\'. Transform array elements using a callback function.',
+              type: 'ImportSpecifier',
+            },
+          ],
+        },
         {
           code: 'import { isArray, map, filter } from "lodash-es";',
           errors: [
@@ -114,6 +135,7 @@ describe('suggest-native-alternatives rule', () => {
       invalid: [
         {
           code: 'import _ from "lodash-es"; const result = _.reverse(array);',
+          output: 'import _ from "lodash-es"; const result = array.reverse();',
           options: [{ excludeUnsafe: false }],
           errors: [
             {

@@ -1,9 +1,10 @@
 /**
  * ESLint rule to enforce specific lodash-es function usage policies
  */
-import { getSourceCode, isLodashModule, findLodashUsages, findDestructuredLodashUsages, getNativeAlternative } from '../utils'
+import { getSourceCode, findLodashUsages, findDestructuredLodashUsages, getNativeAlternative } from '../utils'
 import { createDestructuredFix, createNamespaceFix } from '../autofix'
 import { EnforceFunctionsConfig } from '../config/enforce-functions-config'
+import { extractImportMappings, validateLodashImport, categorizeImportSpecifiers } from '../utils/import-mapping'
 
 import type {
   ImportDeclaration,
@@ -12,7 +13,7 @@ import type {
   ImportSpecifier,
 } from 'estree'
 import type { Rule } from 'eslint'
-import type { Usage, LodashFunctionName, LodashModuleName } from '../types'
+import type { Usage, LodashFunctionName } from '../types'
 
 function createErrorMessage(functionName: LodashFunctionName, reason: string): string {
   const nativeAlternative = getNativeAlternative(functionName)
@@ -77,11 +78,7 @@ function handleDestructuredImports(
   context: Rule.RuleContext,
 ): void {
   // Map each import specifier to both original and local names
-  const destructuredMappings = destructuredSpecifiers.map((spec) => {
-    const originalName = spec.imported.type === 'Identifier' ? spec.imported.name : ''
-    const localName = spec.local.name
-    return { originalName, localName }
-  }).filter(mapping => mapping.originalName !== '')
+  const destructuredMappings = extractImportMappings(destructuredSpecifiers)
 
   const fullSourceCode = sourceCode.getText()
 
@@ -147,26 +144,13 @@ const enforceFunctions: Rule.RuleModule = {
 
     return {
       ImportDeclaration(node: ImportDeclaration): void {
-        const source = node.source.value as LodashModuleName
-        if (typeof source !== 'string') return
+        if (!validateLodashImport(node)) return
 
-        if (!isLodashModule(source)) {
-          return
-        }
-
-        // Check for default or namespace imports
-        const defaultOrNamespaceSpecifier = node.specifiers.find(spec =>
-          ['ImportDefaultSpecifier', 'ImportNamespaceSpecifier'].includes(spec.type),
-        ) as ImportDefaultSpecifier | ImportNamespaceSpecifier | undefined
+        const { defaultOrNamespaceSpecifier, destructuredSpecifiers } = categorizeImportSpecifiers(node)
 
         if (defaultOrNamespaceSpecifier) {
           handleDefaultOrNamespaceImports(node, defaultOrNamespaceSpecifier, sourceCode, config, context)
         }
-
-        // Check destructured imports: import { map, filter } from 'lodash-es'
-        const destructuredSpecifiers = node.specifiers.filter((spec): spec is ImportSpecifier =>
-          spec.type === 'ImportSpecifier',
-        )
 
         if (destructuredSpecifiers.length > 0) {
           handleDestructuredImports(node, destructuredSpecifiers, sourceCode, config, context)

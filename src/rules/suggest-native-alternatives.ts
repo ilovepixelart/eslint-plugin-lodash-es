@@ -1,12 +1,15 @@
 /**
  * ESLint rule to suggest native JavaScript alternatives to lodash functions
  */
-import { getSourceCode, isLodashModule, findLodashUsages, hasNativeAlternative, getNativeAlternative } from '../utils'
+import { getSourceCode, findLodashUsages, findDestructuredLodashUsages, getNativeAlternative } from '../utils'
 import { functionClassifications } from '../shared'
+import { createDestructuredFix, createNamespaceFix } from '../autofix'
+import { EnforceFunctionsConfig } from '../config/enforce-functions-config'
+import { extractImportMappings, validateLodashImport, categorizeImportSpecifiers } from '../utils/import-mapping'
 
 import type { ImportDeclaration, ImportSpecifier } from 'estree'
 import type { Rule } from 'eslint'
-import type { Usage, SuggestNativeAlternativesRuleOptions, LodashFunctionName, LodashModuleName } from '../types'
+import type { Usage, SuggestNativeAlternativesRuleOptions, LodashFunctionName } from '../types'
 
 /**
  * Create message with null safety warnings and context
@@ -28,50 +31,11 @@ function createMessage(functionName: LodashFunctionName, alternative: { example?
   return `Consider native '${baseExample}' instead of '_.${functionName}()'. ${description}.${nullSafetyWarning}${mutationWarning}${notesText}`
 }
 
-function findNativeAlternativeUsages(sourceCode: string, importName: string, options: SuggestNativeAlternativesRuleOptions): Usage[] {
-  const alternativeUsages: Usage[] = []
+function findNativeAlternativeUsages(sourceCode: string, importName: string, config: EnforceFunctionsConfig): Usage[] {
   const allUsages = findLodashUsages(sourceCode, importName)
 
-  for (const usage of allUsages) {
-    if (hasNativeAlternative(usage.functionName)) {
-      const alternative = getNativeAlternative(usage.functionName)
-
-      if (!alternative) {
-        continue
-      }
-
-      // Skip unsafe alternatives unless explicitly included
-      if (options.excludeUnsafe && alternative.excludeByDefault) {
-        continue
-      }
-
-      alternativeUsages.push(usage)
-    }
-  }
-
-  return alternativeUsages
-}
-
-function findNativeAlternativeDestructuredFunctions(
-  destructuredFunctions: LodashFunctionName[],
-  options: SuggestNativeAlternativesRuleOptions,
-): { functionName: LodashFunctionName, hasAlternative: boolean }[] {
-  return destructuredFunctions.map((functionName) => {
-    const hasAlternative = hasNativeAlternative(functionName)
-
-    if (!hasAlternative) {
-      return { functionName, hasAlternative: false }
-    }
-
-    // Check if we should exclude unsafe alternatives
-    if (options.excludeUnsafe) {
-      const alternative = getNativeAlternative(functionName)
-      if (alternative?.excludeByDefault) {
-        return { functionName, hasAlternative: false }
-      }
-    }
-
-    return { functionName, hasAlternative: true }
+  return allUsages.filter((usage) => {
+    return config.isAllowed(usage.functionName)
   })
 }
 
@@ -83,6 +47,7 @@ const suggestNativeAlternatives: Rule.RuleModule = {
       category: 'Best Practices',
       recommended: false,
     },
+    fixable: 'code',
     schema: [
       {
         type: 'object',
@@ -111,12 +76,15 @@ const suggestNativeAlternatives: Rule.RuleModule = {
       ...context.options[0],
     }
 
+    // Create config that includes all functions with native alternatives
+    const config = EnforceFunctionsConfig.createForNativeAlternatives(options.excludeUnsafe)
+
     /**
      * Handle default/namespace imports reporting
      */
     function handleDefaultImports(node: ImportDeclaration, importName: string): void {
       const fullSourceCode = sourceCode.getText()
-      const alternativeUsages = findNativeAlternativeUsages(fullSourceCode, importName, options)
+      const alternativeUsages = findNativeAlternativeUsages(fullSourceCode, importName, config)
 
       for (const usage of alternativeUsages) {
         const alternative = getNativeAlternative(usage.functionName)
@@ -125,6 +93,8 @@ const suggestNativeAlternatives: Rule.RuleModule = {
           continue
         }
 
+        const fix = createNamespaceFix(sourceCode, usage, usage.functionName)
+
         context.report({
           node,
           loc: {
@@ -132,7 +102,73 @@ const suggestNativeAlternatives: Rule.RuleModule = {
             end: sourceCode.getLocFromIndex(usage.end),
           },
           message: createMessage(usage.functionName, alternative),
+          fix: fix ? (fixer): Rule.Fix => fixer.replaceTextRange(fix.range, fix.text) : undefined,
         })
+      }
+    }
+
+    /**
+     * Check if function should be processed for suggestions
+     */
+    function shouldProcessFunction(originalName: string): boolean {
+      // In suggest-native-alternatives, we want to process functions that are "allowed"
+      // by the config (i.e., functions that have native alternatives)
+      return config.isAllowed(originalName as LodashFunctionName)
+    }
+
+    /**
+     * Report suggestion for import specifier without usage
+     */
+    function reportImportSpecifier(specifier: ImportSpecifier, originalName: string): void {
+      const alternative = getNativeAlternative(originalName as LodashFunctionName)
+      if (!alternative) return
+
+      context.report({
+        node: specifier,
+        message: createMessage(originalName as LodashFunctionName, alternative),
+      })
+    }
+
+    /**
+     * Report suggestion for function usage with autofix
+     */
+    function reportUsageWithFix(specifier: ImportSpecifier, usage: Usage, originalName: string): void {
+      const alternative = getNativeAlternative(originalName as LodashFunctionName)
+      if (!alternative) return
+
+      const fix = createDestructuredFix(sourceCode, usage, originalName)
+
+      context.report({
+        node: specifier,
+        loc: {
+          start: sourceCode.getLocFromIndex(usage.start),
+          end: sourceCode.getLocFromIndex(usage.end),
+        },
+        message: createMessage(originalName as LodashFunctionName, alternative),
+        fix: fix ? (fixer): Rule.Fix => fixer.replaceTextRange(fix.range, fix.text) : undefined,
+      })
+    }
+
+    /**
+     * Process a single destructured import mapping
+     */
+    function processDestructuredMapping(mapping: { originalName: string, localName: string, specifier: ImportSpecifier }, fullSourceCode: string): void {
+      const { originalName, localName, specifier } = mapping
+
+      if (!shouldProcessFunction(originalName)) return
+
+      // Search for usages of the LOCAL name (what it's actually called in the code)
+      // but validate against the ORIGINAL lodash function name
+      const usages = findDestructuredLodashUsages(fullSourceCode, localName, originalName)
+
+      if (usages.length === 0) {
+        // If no usages found, report on the import specifier itself
+        reportImportSpecifier(specifier, originalName)
+      } else {
+        // Report on each usage with autofix
+        for (const usage of usages) {
+          reportUsageWithFix(specifier, usage, originalName)
+        }
       }
     }
 
@@ -140,53 +176,24 @@ const suggestNativeAlternatives: Rule.RuleModule = {
      * Handle destructured imports reporting
      */
     function handleDestructuredImports(destructuredSpecifiers: ImportSpecifier[]): void {
-      const destructuredFunctions = destructuredSpecifiers
-        .map(spec => (spec.imported.type === 'Identifier' ? spec.imported.name : ''))
-        .filter(name => name !== '') as LodashFunctionName[]
+      const destructuredMappings = extractImportMappings(destructuredSpecifiers)
+      const fullSourceCode = sourceCode.getText()
 
-      const alternativeFunctions = findNativeAlternativeDestructuredFunctions(destructuredFunctions, options)
-
-      for (const { functionName, hasAlternative } of alternativeFunctions) {
-        if (!hasAlternative) continue
-
-        const alternative = getNativeAlternative(functionName)
-
-        if (!alternative) {
-          continue
-        }
-
-        const specifier = destructuredSpecifiers.find(spec =>
-          spec.imported.type === 'Identifier' && spec.imported.name === functionName,
-        )
-
-        if (!specifier) continue
-
-        context.report({
-          node: specifier,
-          message: createMessage(functionName, alternative),
-        })
+      // Check each import mapping
+      for (const mapping of destructuredMappings) {
+        processDestructuredMapping(mapping, fullSourceCode)
       }
     }
 
     return {
       ImportDeclaration(node: ImportDeclaration): void {
-        const source = node.source.value as LodashModuleName
-        if (typeof source !== 'string') return
-        if (!isLodashModule(source)) return
+        if (!validateLodashImport(node)) return
 
-        // Check for default or namespace imports
-        const defaultOrNamespaceSpecifier = node.specifiers.find(spec =>
-          ['ImportDefaultSpecifier', 'ImportNamespaceSpecifier'].includes(spec.type),
-        )
+        const { defaultOrNamespaceSpecifier, destructuredSpecifiers } = categorizeImportSpecifiers(node)
 
         if (defaultOrNamespaceSpecifier) {
           handleDefaultImports(node, defaultOrNamespaceSpecifier.local.name)
         }
-
-        // Check destructured imports
-        const destructuredSpecifiers = node.specifiers.filter(spec =>
-          spec.type === 'ImportSpecifier',
-        )
 
         if (destructuredSpecifiers.length > 0) {
           handleDestructuredImports(destructuredSpecifiers)

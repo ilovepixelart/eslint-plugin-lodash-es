@@ -5,12 +5,14 @@ Suggest native JavaScript alternatives to lodash functions when available.
 | | |
 |:---|:---|
 | **Rule type** | suggestion |
-| **Fixable** | No |
+| **Fixable** | Yes |
 | **Recommended** | No |
 
 ## Rule Details
 
 This rule suggests native JavaScript alternatives for lodash functions that have equivalent native implementations. It helps teams migrate away from lodash by highlighting where native JavaScript can be used instead.
+
+**🔧 This rule is fixable** - ESLint can automatically fix many of the problems reported by this rule using `eslint --fix`.
 
 Examples of code that **triggers suggestions** for this rule:
 
@@ -44,6 +46,38 @@ const lastItem = items.at(-1)
 // Modern ES2024 collection functions
 const grouped = Object.groupBy(users, user => user.department)
 const copy = structuredClone(complexObject)
+```
+
+## Autofix Support
+
+When using `eslint --fix`, this rule automatically transforms lodash function calls to their native equivalents:
+
+```typescript
+// Before autofix
+import { map, filter, isArray } from 'lodash-es'
+const result = map(users, u => u.name)
+const active = filter(users, u => u.active)
+const check = isArray(data)
+
+// After autofix (eslint --fix)
+import { map, filter, isArray } from 'lodash-es'
+const result = users.map(u => u.name)
+const active = users.filter(u => u.active)
+const check = Array.isArray(data)
+```
+
+**Namespace imports** are also supported:
+
+```typescript
+// Before autofix
+import _ from 'lodash-es'
+const result = _.map(users, u => u.name)
+const check = _.isString(value)
+
+// After autofix (eslint --fix)
+import _ from 'lodash-es'
+const result = users.map(u => u.name)
+const check = typeof value === "string"
 ```
 
 ## Supported Native Alternatives (67+ Functions)
@@ -225,13 +259,15 @@ Using native alternatives provides several advantages:
 - **Performance**: Native methods are often faster
 - **Standards compliance**: Use established JavaScript APIs
 - **Future-proofing**: Native methods receive browser optimizations
+- **🔧 Automated migration**: Use `eslint --fix` to automatically transform your code
 
 ## Migration Strategy
 
 1. Start with `"warn"` level to identify opportunities
 2. Use default configuration to focus on safe replacements
-3. Gradually replace lodash functions with native alternatives
-4. Use `includeAll: true` for comprehensive migration
+3. **Run `eslint --fix` to automatically apply safe transformations**
+4. Manually review complex transformations and edge cases
+5. Use `includeAll: true` for comprehensive migration
 
 ## When Not To Use It
 
