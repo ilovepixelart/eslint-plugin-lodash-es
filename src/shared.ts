@@ -358,3 +358,44 @@ export function createExpressionAlternative(
     ...options,
   })
 }
+
+/**
+ * Helper function for Object static methods with null safety concerns
+ */
+export function createObjectStaticMethodWithNullSafety(
+  methodName: string,
+  description: string,
+  customParam?: string,
+  options?: Partial<CreateAlternativeOptions>,
+): NativeAlternative {
+  return createStaticMethodAlternative(
+    FunctionCategory.Object,
+    methodName,
+    'Object',
+    description,
+    customParam || 'object || {}',
+    {
+      safety: safetyConfigs.nullUndefinedThrows,
+      migration: migrationConfigs.nullSafetyHandling,
+      ...options,
+    },
+  )
+}
+
+/**
+ * Helper function for simple array prototype methods with standard patterns
+ */
+export function createSimpleArrayMethod(
+  methodName: string,
+  description: string,
+  params: string,
+  relatedGroup: string[],
+): NativeAlternative {
+  return createPrototypeMethodAlternative(
+    FunctionCategory.Array,
+    methodName,
+    description,
+    params,
+    { related: relatedGroup },
+  )
+}

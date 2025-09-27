@@ -1,7 +1,7 @@
 /**
  * Native alternatives for Array functions
  */
-import { FunctionCategory, createPrototypeMethodAlternative, createStaticMethodAlternative, createFixedParamPrototypeMethodAlternative, createExpressionAlternative, safetyConfigs, migrationConfigs, relatedFunctions, descriptions } from '../shared'
+import { FunctionCategory, createPrototypeMethodAlternative, createStaticMethodAlternative, createFixedParamPrototypeMethodAlternative, createExpressionAlternative, createSimpleArrayMethod, safetyConfigs, migrationConfigs, relatedFunctions, descriptions } from '../shared'
 import type { NativeAlternative } from '../shared'
 
 export const arrayAlternatives = new Map<string, NativeAlternative>([
@@ -13,12 +13,11 @@ export const arrayAlternatives = new Map<string, NativeAlternative>([
     descriptions.checkIfArray,
   )],
 
-  ['forEach', createPrototypeMethodAlternative(
-    FunctionCategory.Array,
+  ['forEach', createSimpleArrayMethod(
     'forEach',
     descriptions.iterateElements('array'),
     'fn',
-    { related: [...relatedFunctions.arrayIterators] },
+    [...relatedFunctions.arrayIterators],
   )],
 
   ['map', createPrototypeMethodAlternative(
@@ -37,60 +36,53 @@ export const arrayAlternatives = new Map<string, NativeAlternative>([
     },
   )],
 
-  ['filter', createPrototypeMethodAlternative(
-    FunctionCategory.Array,
+  ['filter', createSimpleArrayMethod(
     'filter',
     descriptions.filterElements('array'),
     'predicate',
-    { related: [...relatedFunctions.arrayIterators] },
+    [...relatedFunctions.arrayIterators],
   )],
 
-  ['find', createPrototypeMethodAlternative(
-    FunctionCategory.Array,
+  ['find', createSimpleArrayMethod(
     'find',
     'Find first matching element',
     'predicate',
-    { related: [...relatedFunctions.arrayFinders] },
+    [...relatedFunctions.arrayFinders],
   )],
 
-  ['findIndex', createPrototypeMethodAlternative(
-    FunctionCategory.Array,
+  ['findIndex', createSimpleArrayMethod(
     'findIndex',
     'Find index of first matching element',
     'predicate',
-    { related: [...relatedFunctions.arrayFinders] },
+    [...relatedFunctions.arrayFinders],
   )],
 
-  ['includes', createPrototypeMethodAlternative(
-    FunctionCategory.Array,
+  ['includes', createSimpleArrayMethod(
     'includes',
     'Check if array includes a value',
     'value',
-    { related: [...relatedFunctions.arrayFinders] },
+    [...relatedFunctions.arrayFinders],
   )],
 
-  ['reduce', createPrototypeMethodAlternative(
-    FunctionCategory.Array,
+  ['reduce', createSimpleArrayMethod(
     'reduce',
     'Reduce array to single value',
     'fn, initial',
-    { related: [...relatedFunctions.arrayReducers] },
+    [...relatedFunctions.arrayReducers],
   )],
 
-  ['some', createPrototypeMethodAlternative(
-    FunctionCategory.Array,
+  ['some', createSimpleArrayMethod(
     'some',
     'Test if some elements match predicate',
     'predicate',
-    { related: [...relatedFunctions.arrayTests] },
+    [...relatedFunctions.arrayTests],
   )],
 
-  ['every', createPrototypeMethodAlternative(
-    FunctionCategory.Array,
+  ['every', createSimpleArrayMethod(
     'every',
     'Test if all elements match predicate',
     'predicate',
-    { related: [...relatedFunctions.arrayTests] },
+    [...relatedFunctions.arrayTests],
   )],
 
   ['slice', createPrototypeMethodAlternative(

@@ -1,19 +1,16 @@
 /**
  * Native alternatives for Object functions
  */
-import { FunctionCategory, SafetyLevel, MigrationDifficulty, createStaticMethodAlternative, createExpressionAlternative, safetyConfigs, migrationConfigs, relatedFunctions } from '../shared'
+import { FunctionCategory, SafetyLevel, MigrationDifficulty, createStaticMethodAlternative, createExpressionAlternative, createObjectStaticMethodWithNullSafety, safetyConfigs, migrationConfigs, relatedFunctions } from '../shared'
 import type { NativeAlternative } from '../shared'
 
 export const objectAlternatives = new Map<string, NativeAlternative>([
   // Object Methods - With Null Safety Issues
-  ['keys', createStaticMethodAlternative(
-    FunctionCategory.Object,
+  ['keys', createObjectStaticMethodWithNullSafety(
     'keys',
-    'Object',
     'Get enumerable property names of object',
     'object',
     {
-      safety: safetyConfigs.nullUndefinedThrows,
       migration: {
         ...migrationConfigs.nullSafetyHandling,
         steps: [
@@ -26,28 +23,14 @@ export const objectAlternatives = new Map<string, NativeAlternative>([
     },
   )],
 
-  ['values', createStaticMethodAlternative(
-    FunctionCategory.Object,
+  ['values', createObjectStaticMethodWithNullSafety(
     'values',
-    'Object',
     'Get object values as array',
-    'object || {}',
-    {
-      safety: safetyConfigs.nullUndefinedThrows,
-      migration: migrationConfigs.nullSafetyHandling,
-    },
   )],
 
-  ['entries', createStaticMethodAlternative(
-    FunctionCategory.Object,
+  ['entries', createObjectStaticMethodWithNullSafety(
     'entries',
-    'Object',
     'Get object key-value pairs as array',
-    'object || {}',
-    {
-      safety: safetyConfigs.nullUndefinedThrows,
-      migration: migrationConfigs.nullSafetyHandling,
-    },
   )],
 
   ['assign', createStaticMethodAlternative(
