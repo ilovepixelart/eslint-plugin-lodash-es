@@ -15,6 +15,41 @@ import {
 } from '../shared'
 import type { NativeAlternative } from '../shared'
 
+// Helper functions to reduce duplication in array method creation
+function createArrayMethods(
+  methods: [string, string, string, string[]][],
+): [string, NativeAlternative][] {
+  return methods.map(([name, description, params, related]) => [
+    name,
+    createSimpleArrayMethod(name, description, params, [...related]),
+  ])
+}
+
+function createBasicArrayMethods(
+  methods: [string, string, string][],
+): [string, NativeAlternative][] {
+  return methods.map(([name, description, params]) => [
+    name,
+    createPrototypeMethodAlternative(FunctionCategory.Array, name, description, params),
+  ])
+}
+
+function createFixedParamMethods(
+  methods: [string, string, string, string, string][],
+): [string, NativeAlternative][] {
+  return methods.map(([name, nativeMethod, params, description, note]) => [
+    name,
+    createFixedParamPrototypeMethodAlternative(
+      FunctionCategory.Array,
+      name,
+      nativeMethod,
+      params,
+      description,
+      { notes: [note] },
+    ),
+  ])
+}
+
 export const arrayAlternatives = new Map<string, NativeAlternative>([
   // Array Methods - Safe and Direct Replacements
   ['isArray', createStaticMethodAlternative(
@@ -24,13 +59,23 @@ export const arrayAlternatives = new Map<string, NativeAlternative>([
     descriptions.checkIfArray,
   )],
 
-  ['forEach', createSimpleArrayMethod(
-    'forEach',
-    descriptions.iterateElements('array'),
-    'fn',
-    [...relatedFunctions.arrayIterators],
-  )],
+  // Core iteration methods
+  ...createArrayMethods([
+    ['forEach', descriptions.iterateElements('array'), 'fn', relatedFunctions.arrayIterators],
+    ['filter', descriptions.filterElements('array'), 'predicate', relatedFunctions.arrayIterators],
+    ['reduce', 'Reduce array to single value', 'fn, initial', relatedFunctions.arrayReducers],
+    ['some', 'Test if some elements match predicate', 'predicate', relatedFunctions.arrayTests],
+    ['every', 'Test if all elements match predicate', 'predicate', relatedFunctions.arrayTests],
+  ]),
 
+  // Finder methods
+  ...createArrayMethods([
+    ['find', 'Find first matching element', 'predicate', relatedFunctions.arrayFinders],
+    ['findIndex', 'Find index of first matching element', 'predicate', relatedFunctions.arrayFinders],
+    ['includes', 'Check if array includes a value', 'value', relatedFunctions.arrayFinders],
+  ]),
+
+  // Special case: map with detailed migration config
   ['map', createPrototypeMethodAlternative(
     FunctionCategory.Array,
     'map',
@@ -47,75 +92,12 @@ export const arrayAlternatives = new Map<string, NativeAlternative>([
     },
   )],
 
-  ['filter', createSimpleArrayMethod(
-    'filter',
-    descriptions.filterElements('array'),
-    'predicate',
-    [...relatedFunctions.arrayIterators],
-  )],
-
-  ['find', createSimpleArrayMethod(
-    'find',
-    'Find first matching element',
-    'predicate',
-    [...relatedFunctions.arrayFinders],
-  )],
-
-  ['findIndex', createSimpleArrayMethod(
-    'findIndex',
-    'Find index of first matching element',
-    'predicate',
-    [...relatedFunctions.arrayFinders],
-  )],
-
-  ['includes', createSimpleArrayMethod(
-    'includes',
-    'Check if array includes a value',
-    'value',
-    [...relatedFunctions.arrayFinders],
-  )],
-
-  ['reduce', createSimpleArrayMethod(
-    'reduce',
-    'Reduce array to single value',
-    'fn, initial',
-    [...relatedFunctions.arrayReducers],
-  )],
-
-  ['some', createSimpleArrayMethod(
-    'some',
-    'Test if some elements match predicate',
-    'predicate',
-    [...relatedFunctions.arrayTests],
-  )],
-
-  ['every', createSimpleArrayMethod(
-    'every',
-    'Test if all elements match predicate',
-    'predicate',
-    [...relatedFunctions.arrayTests],
-  )],
-
-  ['slice', createPrototypeMethodAlternative(
-    FunctionCategory.Array,
-    'slice',
-    'Extract section of array',
-    'start, end',
-  )],
-
-  ['concat', createPrototypeMethodAlternative(
-    FunctionCategory.Array,
-    'concat',
-    'Concatenate arrays',
-    '...values',
-  )],
-
-  ['join', createPrototypeMethodAlternative(
-    FunctionCategory.Array,
-    'join',
-    'Join array elements into string',
-    'separator',
-  )],
+  // Basic array methods
+  ...createBasicArrayMethods([
+    ['slice', 'Extract section of array', 'start, end'],
+    ['concat', 'Concatenate arrays', '...values'],
+    ['join', 'Join array elements into string', 'separator'],
+  ]),
 
   // Array Methods - With Behavioral Differences
   ['reverse', createPrototypeMethodAlternative(
@@ -132,20 +114,12 @@ export const arrayAlternatives = new Map<string, NativeAlternative>([
   )],
 
   // Additional Array Methods - Direct Native Equivalents
-  ['indexOf', createPrototypeMethodAlternative(
-    FunctionCategory.Array,
-    'indexOf',
-    'Find index of first occurrence of value',
-    'value, fromIndex',
-  )],
+  ...createBasicArrayMethods([
+    ['indexOf', 'Find index of first occurrence of value', 'value, fromIndex'],
+    ['lastIndexOf', 'Find index of last occurrence of value', 'value, fromIndex'],
+  ]),
 
-  ['lastIndexOf', createPrototypeMethodAlternative(
-    FunctionCategory.Array,
-    'lastIndexOf',
-    'Find index of last occurrence of value',
-    'value, fromIndex',
-  )],
-
+  // ES2019+ methods with notes
   ['flatten', createPrototypeMethodAlternative(
     FunctionCategory.Array,
     'flat',
@@ -171,50 +145,13 @@ export const arrayAlternatives = new Map<string, NativeAlternative>([
   )],
 
   // Array Access Utilities
-  ['first', createFixedParamPrototypeMethodAlternative(
-    FunctionCategory.Array,
-    'first',
-    'at',
-    '0',
-    'Get first element of array',
-    { notes: ['Modern at() method available since ES2022'] },
-  )],
-
-  ['head', createFixedParamPrototypeMethodAlternative(
-    FunctionCategory.Array,
-    'head',
-    'at',
-    '0',
-    'Get first element of array (alias for first)',
-    { notes: ['Modern at() method available since ES2022'] },
-  )],
-
-  ['last', createFixedParamPrototypeMethodAlternative(
-    FunctionCategory.Array,
-    'last',
-    'at',
-    '-1',
-    'Get last element of array',
-    { notes: ['Modern at() method available since ES2022'] },
-  )],
-
-  ['initial', createFixedParamPrototypeMethodAlternative(
-    FunctionCategory.Array,
-    'initial',
-    'slice',
-    '0, -1',
-    'Get all elements except the last',
-    { notes: ['Returns all but last element using slice(0, -1)'] },
-  )],
-
-  ['tail', createFixedParamPrototypeMethodAlternative(
-    FunctionCategory.Array,
-    'tail',
-    'slice',
-    '1',
-    'Get all elements except the first',
-    { notes: ['Returns all but first element using slice(1)'] },
-  )],
+  ...createFixedParamMethods([
+    ['first', 'at', '0', 'Get first element of array', 'Modern at() method available since ES2022'],
+    ['head', 'at', '0', 'Get first element of array (alias for first)', 'Modern at() method available since ES2022'],
+    ['last', 'at', '-1', 'Get last element of array', 'Modern at() method available since ES2022'],
+    ['initial', 'slice', '0, -1', 'Get all elements except the last', 'Returns all but last element using slice(0, -1)'],
+    ['tail', 'slice', '1', 'Get all elements except the first', 'Returns all but first element using slice(1)'],
+  ]),
 
   // Quick Wins - High Impact Array Functions
   ['uniq', createArrayTransformMethod(

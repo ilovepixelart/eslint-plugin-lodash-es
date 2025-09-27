@@ -5,195 +5,90 @@
 import type { LodashFunctionName, EnforceFunctionsRuleOptions } from '../types'
 
 /* eslint-disable @typescript-eslint/no-extraneous-class */
+
+// Helper type for transformation test cases
+interface TransformationTestCase {
+  function: LodashFunctionName
+  input: string
+  expected: string
+}
+
+// Helper function to create transformation test cases
+function createTransformationTests(
+  cases: [LodashFunctionName, string, string][],
+): TransformationTestCase[] {
+  return cases.map(([functionName, input, expected]) => ({
+    function: functionName,
+    input,
+    expected,
+  }))
+}
+
 export class TestDataFactory {
   /**
    * Generate array method transformation test cases
    */
-  static arrayMethods(): {
-    function: LodashFunctionName
-    input: string
-    expected: string
-  }[] {
-    return [
-      {
-        function: 'map',
-        input: 'const result = map([1, 2, 3], x => x * 2)',
-        expected: 'const result = [1, 2, 3].map(x => x * 2)',
-      },
-      {
-        function: 'filter',
-        input: 'const filtered = filter(users, user => user.active)',
-        expected: 'const filtered = users.filter(user => user.active)',
-      },
-      {
-        function: 'some',
-        input: 'const found = some(items, item => item.id === 1)',
-        expected: 'const found = items.some(item => item.id === 1)',
-      },
-      {
-        function: 'some',
-        input: 'const hasActive = some(users, u => u.active)',
-        expected: 'const hasActive = users.some(u => u.active)',
-      },
-      {
-        function: 'every',
-        input: 'const allActive = every(users, u => u.active)',
-        expected: 'const allActive = users.every(u => u.active)',
-      },
-      {
-        function: 'reduce',
-        input: 'const sum = reduce([1, 2, 3], (acc, val) => acc + val, 0)',
-        expected: 'const sum = [1, 2, 3].reduce((acc, val) => acc + val, 0)',
-      },
-    ]
+  static arrayMethods(): TransformationTestCase[] {
+    return createTransformationTests([
+      ['map', 'const result = map([1, 2, 3], x => x * 2)', 'const result = [1, 2, 3].map(x => x * 2)'],
+      ['filter', 'const filtered = filter(users, user => user.active)', 'const filtered = users.filter(user => user.active)'],
+      ['some', 'const found = some(items, item => item.id === 1)', 'const found = items.some(item => item.id === 1)'],
+      ['some', 'const hasActive = some(users, u => u.active)', 'const hasActive = users.some(u => u.active)'],
+      ['every', 'const allActive = every(users, u => u.active)', 'const allActive = users.every(u => u.active)'],
+      ['reduce', 'const sum = reduce([1, 2, 3], (acc, val) => acc + val, 0)', 'const sum = [1, 2, 3].reduce((acc, val) => acc + val, 0)'],
+    ])
   }
 
   /**
    * Generate string method transformation test cases
    */
-  static stringMethods(): {
-    function: LodashFunctionName
-    input: string
-    expected: string
-  }[] {
-    return [
-      {
-        function: 'trim',
-        input: 'const trimmed = trim("  hello  ")',
-        expected: 'const trimmed = "  hello  ".trim()',
-      },
-      {
-        function: 'toLower',
-        input: 'const lower = toLower("HELLO")',
-        expected: 'const lower = "HELLO".toLowerCase()',
-      },
-      {
-        function: 'toUpper',
-        input: 'const upper = toUpper("hello")',
-        expected: 'const upper = "hello".toUpperCase()',
-      },
-      {
-        function: 'startsWith',
-        input: 'const starts = startsWith(text, "hello")',
-        expected: 'const starts = text.startsWith("hello")',
-      },
-      {
-        function: 'endsWith',
-        input: 'const ends = endsWith(text, "world")',
-        expected: 'const ends = text.endsWith("world")',
-      },
-    ]
+  static stringMethods(): TransformationTestCase[] {
+    return createTransformationTests([
+      ['trim', 'const trimmed = trim("  hello  ")', 'const trimmed = "  hello  ".trim()'],
+      ['toLower', 'const lower = toLower("HELLO")', 'const lower = "HELLO".toLowerCase()'],
+      ['toUpper', 'const upper = toUpper("hello")', 'const upper = "hello".toUpperCase()'],
+      ['startsWith', 'const starts = startsWith(text, "hello")', 'const starts = text.startsWith("hello")'],
+      ['endsWith', 'const ends = endsWith(text, "world")', 'const ends = text.endsWith("world")'],
+    ])
   }
 
   /**
    * Generate type checking transformation test cases
    */
-  static typeChecking(): {
-    function: LodashFunctionName
-    input: string
-    expected: string
-  }[] {
-    return [
-      {
-        function: 'isArray',
-        input: 'const check = isArray(value)',
-        expected: 'const check = Array.isArray(value)',
-      },
-      {
-        function: 'isString',
-        input: 'const check = isString(value)',
-        expected: 'const check = typeof value === "string"',
-      },
-      {
-        function: 'isNumber',
-        input: 'const check = isNumber(value)',
-        expected: 'const check = typeof value === "number"',
-      },
-      {
-        function: 'isBoolean',
-        input: 'const check = isBoolean(value)',
-        expected: 'const check = typeof value === "boolean"',
-      },
-      {
-        function: 'isNull',
-        input: 'const check = isNull(value)',
-        expected: 'const check = value === null',
-      },
-      {
-        function: 'isUndefined',
-        input: 'const check = isUndefined(value)',
-        expected: 'const check = value === undefined',
-      },
-    ]
+  static typeChecking(): TransformationTestCase[] {
+    return createTransformationTests([
+      ['isArray', 'const check = isArray(value)', 'const check = Array.isArray(value)'],
+      ['isString', 'const check = isString(value)', 'const check = typeof value === "string"'],
+      ['isNumber', 'const check = isNumber(value)', 'const check = typeof value === "number"'],
+      ['isBoolean', 'const check = isBoolean(value)', 'const check = typeof value === "boolean"'],
+      ['isNull', 'const check = isNull(value)', 'const check = value === null'],
+      ['isUndefined', 'const check = isUndefined(value)', 'const check = value === undefined'],
+    ])
   }
 
   /**
    * Generate object utility transformation test cases
    */
-  static objectUtilities(): {
-    function: LodashFunctionName
-    input: string
-    expected: string
-  }[] {
-    return [
-      {
-        function: 'keys',
-        input: 'const objKeys = keys(object)',
-        expected: 'const objKeys = Object.keys(object)',
-      },
-      {
-        function: 'values',
-        input: 'const objValues = values(object)',
-        expected: 'const objValues = Object.values(object)',
-      },
-      {
-        function: 'entries',
-        input: 'const objEntries = entries(object)',
-        expected: 'const objEntries = Object.entries(object)',
-      },
-      {
-        function: 'assign',
-        input: 'const merged = assign({}, obj1, obj2)',
-        expected: 'const merged = Object.assign({}, obj1, obj2)',
-      },
-    ]
+  static objectUtilities(): TransformationTestCase[] {
+    return createTransformationTests([
+      ['keys', 'const objKeys = keys(object)', 'const objKeys = Object.keys(object)'],
+      ['values', 'const objValues = values(object)', 'const objValues = Object.values(object)'],
+      ['entries', 'const objEntries = entries(object)', 'const objEntries = Object.entries(object)'],
+      ['assign', 'const merged = assign({}, obj1, obj2)', 'const merged = Object.assign({}, obj1, obj2)'],
+    ])
   }
 
   /**
    * Generate math utility transformation test cases
    */
-  static mathUtilities(): {
-    function: LodashFunctionName
-    input: string
-    expected: string
-  }[] {
-    return [
-      {
-        function: 'max',
-        input: 'const maximum = max([1, 2, 3, 4, 5])',
-        expected: 'const maximum = Math.max(...[1, 2, 3, 4, 5])',
-      },
-      {
-        function: 'min',
-        input: 'const minimum = min([1, 2, 3, 4, 5])',
-        expected: 'const minimum = Math.min(...[1, 2, 3, 4, 5])',
-      },
-      {
-        function: 'ceil',
-        input: 'const rounded = ceil(4.2)',
-        expected: 'const rounded = Math.ceil(4.2)',
-      },
-      {
-        function: 'floor',
-        input: 'const floored = floor(4.8)',
-        expected: 'const floored = Math.floor(4.8)',
-      },
-      {
-        function: 'round',
-        input: 'const rounded = round(4.5)',
-        expected: 'const rounded = Math.round(4.5)',
-      },
-    ]
+  static mathUtilities(): TransformationTestCase[] {
+    return createTransformationTests([
+      ['max', 'const maximum = max([1, 2, 3, 4, 5])', 'const maximum = Math.max(...[1, 2, 3, 4, 5])'],
+      ['min', 'const minimum = min([1, 2, 3, 4, 5])', 'const minimum = Math.min(...[1, 2, 3, 4, 5])'],
+      ['ceil', 'const rounded = ceil(4.2)', 'const rounded = Math.ceil(4.2)'],
+      ['floor', 'const floored = floor(4.8)', 'const floored = Math.floor(4.8)'],
+      ['round', 'const rounded = round(4.5)', 'const rounded = Math.round(4.5)'],
+    ])
   }
 
   /**
@@ -299,11 +194,11 @@ export class TestDataFactory {
    * Generate all test data categories
    */
   static all(): {
-    arrayMethods: { function: LodashFunctionName, input: string, expected: string }[]
-    stringMethods: { function: LodashFunctionName, input: string, expected: string }[]
-    typeChecking: { function: LodashFunctionName, input: string, expected: string }[]
-    objectUtilities: { function: LodashFunctionName, input: string, expected: string }[]
-    mathUtilities: { function: LodashFunctionName, input: string, expected: string }[]
+    arrayMethods: TransformationTestCase[]
+    stringMethods: TransformationTestCase[]
+    typeChecking: TransformationTestCase[]
+    objectUtilities: TransformationTestCase[]
+    mathUtilities: TransformationTestCase[]
     edgeCases: { description: string, function: LodashFunctionName, input: string, expected: string }[]
     configurationScenarios: { description: string, options: EnforceFunctionsRuleOptions, functions: LodashFunctionName[], shouldError: boolean }[]
     performanceScenarios: { description: string, input: string, expected: string, complexity: 'simple' | 'medium' | 'complex' }[]

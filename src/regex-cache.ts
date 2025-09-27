@@ -31,7 +31,7 @@ export class RegexCache {
 
     if (!this.cache.has(key)) {
       this.ensureCacheSpace()
-      this.cache.set(key, new RegExp(`(?<!\\.)\\b${this.escapeRegex(localName)}\\s*\\(`, 'g'))
+      this.cache.set(key, new RegExp(`(?<!\\.)\\b${this.escapeRegex(localName)} {0,10}\\(`, 'g'))
     }
 
     return this.cache.get(key)!
@@ -45,7 +45,7 @@ export class RegexCache {
 
     if (!this.cache.has(key)) {
       this.ensureCacheSpace()
-      this.cache.set(key, new RegExp(`^${this.escapeRegex(functionName)}\\s*\\((.*)\\)$`, 's'))
+      this.cache.set(key, new RegExp(`^${this.escapeRegex(functionName)} {0,10}\\((.*)\\)$`, 's'))
     }
 
     return this.cache.get(key)!
@@ -59,7 +59,7 @@ export class RegexCache {
 
     if (!this.cache.has(key)) {
       this.ensureCacheSpace()
-      this.cache.set(key, new RegExp(`^[\\w$]+\\.${this.escapeRegex(functionName)}\\s*\\((.*)\\)$`, 's'))
+      this.cache.set(key, new RegExp(`^[\\w$]+\\.${this.escapeRegex(functionName)} {0,10}\\((.*)\\)$`, 's'))
     }
 
     return this.cache.get(key)!
@@ -161,7 +161,7 @@ export const RegexPatterns = {
    * Pre-compiled common patterns for maximum performance
    */
   ASSIGNMENT_OPERATORS: /[+\-*/%^&|]?=/,
-  LOGICAL_ASSIGNMENT: /(\|\||&&|\?\?)\s*=/,
+  LOGICAL_ASSIGNMENT: /(\|\||&&|\?\?) {0,10}=/,
   BASIC_ASSIGNMENT: /^[^<>=!]*[+\-*/%^&|]?=(?!=)/,
   WHITESPACE: /\s/,
   STRING_QUOTES: /^["'].*["']$/,

@@ -165,19 +165,19 @@ export class AutofixTestRunner {
    */
   private extractFunctionName(code: string): string | null {
     // Try to extract from destructured import
-    const destructuredMatch = /import\s*{\s*(\w+)\s*}\s*from/.exec(code)
+    const destructuredMatch = /import {0,10}{ {0,10}(\w+) {0,10}} {0,10}from/.exec(code)
     if (destructuredMatch) {
       return destructuredMatch[1] ?? null
     }
 
     // Try to extract from function call
-    const callMatch = /(\w+)\s*\(/.exec(code)
+    const callMatch = /(\w+) {0,10}\(/.exec(code)
     if (callMatch) {
       return callMatch[1] ?? null
     }
 
     // Try to extract from namespace call
-    const namespaceMatch = /\._?(\w+)\s*\(/.exec(code)
+    const namespaceMatch = /\._?(\w+) {0,10}\(/.exec(code)
     if (namespaceMatch) {
       return namespaceMatch[1] ?? null
     }
