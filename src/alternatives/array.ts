@@ -17,7 +17,7 @@ import type { NativeAlternative } from '../shared'
 
 // Helper functions to reduce duplication in array method creation
 function createArrayMethods(
-  methods: [string, string, string, string[]][],
+  methods: [string, string, string, readonly string[]][],
 ): [string, NativeAlternative][] {
   return methods.map(([name, description, params, related]) => [
     name,
