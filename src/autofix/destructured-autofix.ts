@@ -5,20 +5,11 @@
 import type { SourceCode } from 'eslint'
 import type { Usage, LodashFunctionName } from '../types'
 import { getNativeAlternative } from '../utils'
-import { findClosingParenthesis, isStaticMethod, isConstructorCall, isExpressionAlternative, isZeroParamStaticMethod } from './parameter-parser'
+import { findClosingParenthesis } from './parameter-parser'
 import {
   type FixResult,
   type CallInfo,
-  createZeroParamStaticFix,
-  createExpressionFix,
-  createConstructorFix,
-  createStaticMethodFix,
-  createPrototypeMethodFix,
-  isFixedParamPrototypeMethod,
-  createFixedParamPrototypeMethodFix,
-  createKeyByFix,
-  createOrderByFix,
-  createOmitFix,
+  createAutofixRouting,
 } from './shared-transforms'
 
 /**
@@ -52,40 +43,5 @@ export function createDestructuredFix(
 
   const nativeMethod = nativeAlternative.native
 
-  // Route to appropriate fix creator based on alternative type
-  if (isZeroParamStaticMethod(nativeMethod)) {
-    return createZeroParamStaticFix(callInfo, nativeMethod)
-  }
-
-  // Handle specific dual-parameter templates first
-  if (nativeMethod === 'Object.fromEntries(value.map(item => [iteratee(item), item]))') {
-    return createKeyByFix(callInfo)
-  }
-
-  if (nativeMethod === 'value.toSorted((a, b) => iteratee(a) - iteratee(b))') {
-    return createOrderByFix(callInfo)
-  }
-
-  if (nativeMethod === 'Object.fromEntries(Object.entries(obj).filter(([k]) => !keys.includes(k)))') {
-    return createOmitFix(callInfo)
-  }
-
-  if (isExpressionAlternative(nativeMethod)) {
-    return createExpressionFix(callInfo, nativeMethod)
-  }
-
-  if (isConstructorCall(nativeMethod, functionName)) {
-    return createConstructorFix(callInfo, nativeMethod)
-  }
-
-  if (isStaticMethod(nativeMethod)) {
-    return createStaticMethodFix(callInfo, nativeMethod)
-  }
-
-  if (isFixedParamPrototypeMethod(nativeMethod)) {
-    return createFixedParamPrototypeMethodFix(callInfo, nativeMethod)
-  }
-
-  // Default to prototype method
-  return createPrototypeMethodFix(callInfo, nativeMethod, functionName)
+  return createAutofixRouting(callInfo, nativeMethod, functionName)
 }

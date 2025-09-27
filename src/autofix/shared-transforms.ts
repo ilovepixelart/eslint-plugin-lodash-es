@@ -1,7 +1,7 @@
 /**
  * Shared transformation utilities for both destructured and namespace autofix
  */
-import { findFirstTopLevelComma, extractMethodName, needsParentheses, isArrayLikeObject, extractStaticMethodInfo } from './parameter-parser'
+import { findFirstTopLevelComma, extractMethodName, needsParentheses, isArrayLikeObject, extractStaticMethodInfo, isZeroParamStaticMethod, isExpressionAlternative, isConstructorCall, isStaticMethod } from './parameter-parser'
 
 export interface FixResult {
   range: [number, number]
@@ -313,6 +313,13 @@ export function createConstructorFix(callInfo: CallInfo, nativeAlternative: stri
 }
 
 /**
+ * Check if native alternative is a fixed-parameter prototype method
+ */
+export function isFixedParamPrototypeMethod(nativeAlternative: string): boolean {
+  return /\w+\.prototype\.\w+\[[^\]]+\]$/.test(nativeAlternative)
+}
+
+/**
  * Create fix for keyBy function
  */
 export function createKeyByFix(callInfo: CallInfo): FixResult | null {
@@ -401,13 +408,6 @@ export function createStaticMethodFix(callInfo: CallInfo, nativeAlternative: str
     range: [callInfo.callStart, callInfo.callEnd],
     text: `${staticInfo.object}.${staticInfo.method}(${transformedParams})`,
   }
-}
-
-/**
- * Check if native alternative is a fixed-parameter prototype method
- */
-export function isFixedParamPrototypeMethod(nativeAlternative: string): boolean {
-  return /\w+\.prototype\.\w+\[[^\]]+\]$/.test(nativeAlternative)
 }
 
 /**
@@ -502,4 +502,46 @@ export function createPrototypeMethodFix(callInfo: CallInfo, nativeAlternative: 
     range: [callInfo.callStart, callInfo.callEnd],
     text: replacement,
   }
+}
+
+/**
+ * Common autofix routing logic shared between destructured and namespace fixes
+ */
+export function createAutofixRouting(callInfo: CallInfo, nativeMethod: string, functionName: string): FixResult | null {
+  // Route to appropriate fix creator based on alternative type
+  if (isZeroParamStaticMethod(nativeMethod)) {
+    return createZeroParamStaticFix(callInfo, nativeMethod)
+  }
+
+  // Handle specific dual-parameter templates first
+  if (nativeMethod === 'Object.fromEntries(value.map(item => [iteratee(item), item]))') {
+    return createKeyByFix(callInfo)
+  }
+
+  if (nativeMethod === 'value.toSorted((a, b) => iteratee(a) - iteratee(b))') {
+    return createOrderByFix(callInfo)
+  }
+
+  if (nativeMethod === 'Object.fromEntries(Object.entries(obj).filter(([k]) => !keys.includes(k)))') {
+    return createOmitFix(callInfo)
+  }
+
+  if (isExpressionAlternative(nativeMethod)) {
+    return createExpressionFix(callInfo, nativeMethod)
+  }
+
+  if (isConstructorCall(nativeMethod, functionName)) {
+    return createConstructorFix(callInfo, nativeMethod)
+  }
+
+  if (isStaticMethod(nativeMethod)) {
+    return createStaticMethodFix(callInfo, nativeMethod)
+  }
+
+  if (isFixedParamPrototypeMethod(nativeMethod)) {
+    return createFixedParamPrototypeMethodFix(callInfo, nativeMethod)
+  }
+
+  // Default to prototype method
+  return createPrototypeMethodFix(callInfo, nativeMethod, functionName)
 }
