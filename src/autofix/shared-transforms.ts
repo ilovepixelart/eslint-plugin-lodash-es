@@ -68,7 +68,7 @@ function createHasFix(callInfo: CallInfo): FixResult | null {
  * Handle uniq function: uniq(array) -> [...new Set(array)]
  */
 function createUniqFix(callInfo: CallInfo, nativeAlternative: string): FixResult | null {
-  const expression = nativeAlternative.replaceAll(/array/g, callInfo.params)
+  const expression = nativeAlternative.replaceAll('array', callInfo.params)
   const { start, text } = handleNegationOperator(callInfo, expression)
   return { range: [start, callInfo.callEnd], text }
 }
@@ -154,7 +154,7 @@ function createGetFix(callInfo: CallInfo): FixResult | null {
   if ((path.startsWith('"') && path.endsWith('"')) || (path.startsWith('\'') && path.endsWith('\''))) {
     const pathStr = path.slice(1, -1)
     if (/^[a-zA-Z_$][a-zA-Z0-9_$]*(\.[a-zA-Z_$][a-zA-Z0-9_$]*)*$/.test(pathStr)) {
-      const optionalChainPath = pathStr.replaceAll(/\./g, '?.')
+      const optionalChainPath = pathStr.replaceAll('.', '?.')
       const safeObj = needsParentheses(obj) ? `(${obj})` : obj
       const expression = `${safeObj}?.${optionalChainPath}`
       const { start, text } = handleNegationOperator(callInfo, expression)
