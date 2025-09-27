@@ -57,7 +57,6 @@
     "test": "vitest run --coverage",
     "test:watch": "vitest",
     "test:open": "vitest run --coverage && open-cli coverage/lcov-report/index.html",
-    "clean": "rm -rf ./dist",
     "type:check": "tsc --noEmit",
     "build": "pkgroll --clean-dist",
     "release": "npm install && npm run lint && npm run type:check && npm run build && np"
