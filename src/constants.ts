@@ -1,15 +1,8 @@
 /**
  * Shared constants for lodash module detection and function validation
  */
-import {
-  SafetyLevel,
-  safetyLevels,
-  MigrationDifficulty,
-  migrationDifficulties,
-  FunctionCategory,
-  functionCategories,
-} from './shared'
 
+// Use export...from pattern for better consistency and maintainability
 export {
   SafetyLevel,
   safetyLevels,
@@ -17,7 +10,7 @@ export {
   migrationDifficulties,
   FunctionCategory,
   functionCategories,
-}
+} from './shared'
 
 export const lodashModules = new Set([
   'lodash',

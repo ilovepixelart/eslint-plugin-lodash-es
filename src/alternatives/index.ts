@@ -6,7 +6,7 @@
  */
 import type { NativeAlternative } from '../shared'
 
-// Import all category-specific alternatives
+// Import for local usage in combined maps
 import { arrayAlternatives } from './array'
 import { objectAlternatives } from './object'
 import { stringAlternatives } from './string'
@@ -15,16 +15,14 @@ import { dateAlternatives } from './date'
 import { functionAlternatives } from './function'
 import { collectionAlternatives } from './collection'
 
-// Export all category maps for individual access if needed
-export {
-  arrayAlternatives,
-  objectAlternatives,
-  stringAlternatives,
-  numberAlternatives,
-  dateAlternatives,
-  functionAlternatives,
-  collectionAlternatives,
-}
+// Export all category maps for individual access if needed using export...from
+export { arrayAlternatives } from './array'
+export { objectAlternatives } from './object'
+export { stringAlternatives } from './string'
+export { numberAlternatives } from './number'
+export { dateAlternatives } from './date'
+export { functionAlternatives } from './function'
+export { collectionAlternatives } from './collection'
 
 /**
  * Combined map of all native alternatives, organized by function name
