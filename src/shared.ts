@@ -32,6 +32,11 @@ export const functionCategories = Object.values(FunctionCategory)
 
 // Common safety configurations
 export const safetyConfigs = {
+  safe: {
+    level: SafetyLevel.Safe,
+    concerns: [],
+    mitigation: 'Direct replacement with no safety concerns',
+  },
   nullUndefinedThrows: {
     level: SafetyLevel.Caution,
     concerns: ['Throws on null/undefined input'],
@@ -46,6 +51,14 @@ export const safetyConfigs = {
 
 // Common migration configurations
 export const migrationConfigs = {
+  easy: {
+    difficulty: MigrationDifficulty.Easy,
+    challenges: ['Direct replacement'],
+    steps: [
+      'Replace lodash function with native equivalent',
+      'Test functionality',
+    ],
+  },
   nullSafetyHandling: {
     difficulty: MigrationDifficulty.Medium,
     challenges: ['Null safety handling'],
@@ -78,6 +91,10 @@ export const relatedFunctions = {
   arrayTests: ['some', 'every', 'filter'] as const,
   arrayReducers: ['map', 'filter', 'reduce'] as const,
   arrayMutators: ['sort', 'reverse'] as const,
+  arrayDeduplication: ['uniq', 'uniqBy'] as const,
+  arrayFilters: ['filter', 'compact', 'reject'] as const,
+  arraySorting: ['sort', 'sortBy', 'orderBy'] as const,
+  objectManipulation: ['pick', 'omit', 'merge', 'assign'] as const,
 } as const
 
 // Common description templates to reduce duplication

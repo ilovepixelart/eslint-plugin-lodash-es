@@ -1,7 +1,7 @@
 /**
  * Native alternatives for Array functions
  */
-import { FunctionCategory, createPrototypeMethodAlternative, createStaticMethodAlternative, createFixedParamPrototypeMethodAlternative, safetyConfigs, migrationConfigs, relatedFunctions, descriptions } from '../shared'
+import { FunctionCategory, createPrototypeMethodAlternative, createStaticMethodAlternative, createFixedParamPrototypeMethodAlternative, createExpressionAlternative, safetyConfigs, migrationConfigs, relatedFunctions, descriptions } from '../shared'
 import type { NativeAlternative } from '../shared'
 
 export const arrayAlternatives = new Map<string, NativeAlternative>([
@@ -211,5 +211,45 @@ export const arrayAlternatives = new Map<string, NativeAlternative>([
     '1',
     'Get all elements except the first',
     { notes: ['Returns all but first element using slice(1)'] },
+  )],
+
+  // Quick Wins - High Impact Array Functions
+  ['uniq', createExpressionAlternative(
+    FunctionCategory.Array,
+    'uniq',
+    '[...new Set(array)]',
+    'Remove duplicate values from array',
+    {
+      migration: migrationConfigs.easy,
+      safety: safetyConfigs.safe,
+      notes: ['Uses ES6 Set for deduplication', 'Preserves insertion order', 'Works with primitives only'],
+      related: [...relatedFunctions.arrayDeduplication],
+    },
+  )],
+
+  ['compact', createExpressionAlternative(
+    FunctionCategory.Array,
+    'compact',
+    'array.filter(Boolean)',
+    'Remove falsy values from array',
+    {
+      migration: migrationConfigs.easy,
+      safety: safetyConfigs.safe,
+      notes: ['Removes false, null, 0, "", undefined, NaN', 'Uses Boolean constructor as filter predicate'],
+      related: [...relatedFunctions.arrayFilters],
+    },
+  )],
+
+  ['sortBy', createExpressionAlternative(
+    FunctionCategory.Array,
+    'sortBy',
+    'array.toSorted((a, b) => fn(a) - fn(b))',
+    'Sort array by computed values (immutable)',
+    {
+      migration: migrationConfigs.easy,
+      safety: safetyConfigs.safe,
+      notes: ['Uses ES2023 toSorted() method', 'Returns new array (immutable)', 'Assumes numeric sort by default'],
+      related: [...relatedFunctions.arraySorting],
+    },
   )],
 ])

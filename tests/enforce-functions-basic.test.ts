@@ -154,14 +154,14 @@ const result = _.map([1, 2, 3], x => x * 2);
 const sorted = _.sortBy([1, 2, 3]);`,
             output: `import _ from 'lodash-es';
 const result = [1, 2, 3].map(x => x * 2);
-const sorted = _.sortBy([1, 2, 3]);`,
+const sorted = [1, 2, 3].toSorted();`,
             options: [{ include: ['first', 'last'] }],
             errors: [
               {
                 message: 'Lodash function \'map\' is not in the allowed functions list. Consider using native Array.prototype.map: array.map(fn)',
               },
               {
-                message: 'Lodash function \'sortBy\' is not in the allowed functions list.',
+                message: 'Lodash function \'sortBy\' is not in the allowed functions list. Consider using native array.toSorted((a, b) => fn(a) - fn(b)): array.toSorted((a, b) => fn(a) - fn(b))',
               },
             ],
           },

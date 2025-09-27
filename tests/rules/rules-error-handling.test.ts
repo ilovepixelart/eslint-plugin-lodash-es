@@ -101,11 +101,11 @@ describe('rules branch coverage improvements', () => {
           invalid: [
             {
               // Mix functions with and without alternatives
-              code: 'import { map, debounce, filter, throttle, cloneDeep } from \'lodash-es\'; map(arr, fn); debounce(fn, 300); filter(arr, pred);',
+              code: 'import { map, debounce, filter, throttle, template } from \'lodash-es\'; map(arr, fn); debounce(fn, 300); filter(arr, pred);',
               errors: [
                 { message: /Consider native.*map/ },
                 { message: /Consider native.*filter/ },
-                // debounce, throttle, cloneDeep should trigger continue branches (no errors)
+                // debounce, throttle, template should trigger continue branches (no errors)
               ],
             },
           ],
@@ -142,10 +142,10 @@ describe('rules branch coverage improvements', () => {
           ],
           invalid: [
             {
-              code: 'import lodash from \'lodash-es\'; lodash.map(array, fn); lodash.debounce(callback, 300); lodash.cloneDeep(obj);',
+              code: 'import lodash from \'lodash-es\'; lodash.map(array, fn); lodash.debounce(callback, 300); lodash.template(str);',
               errors: [
                 { message: /Consider native.*map/ },
-                // debounce and cloneDeep should trigger continue branches (no errors)
+                // debounce and template should trigger continue branches (no errors)
               ],
             },
           ],
@@ -166,20 +166,20 @@ describe('rules branch coverage improvements', () => {
             {
               // Use a mix of functions - some with alternatives, some without
               code: `
-                import { map, filter, forEach, debounce, throttle, cloneDeep, memoize } from 'lodash-es';
+                import { map, filter, forEach, debounce, throttle, template, memoize } from 'lodash-es';
                 map(array, fn);
                 filter(array, pred);
                 forEach(array, callback);
                 debounce(handler, 300);
                 throttle(scrollHandler, 100);
-                cloneDeep(object);
+                template(str);
                 memoize(expensiveFunction);
               `,
               errors: [
                 { message: /Consider native.*map/ },
                 { message: /Consider native.*filter/ },
                 { message: /Consider native.*forEach/ },
-                // debounce, throttle, cloneDeep, memoize should trigger continue branches (no errors)
+                // debounce, throttle, template, memoize should trigger continue branches (no errors)
               ],
             },
           ],

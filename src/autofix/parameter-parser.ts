@@ -167,6 +167,20 @@ export function isExpressionAlternative(nativeAlternative: string): boolean {
     || nativeAlternative.includes('||')
     || nativeAlternative.includes('value.') // Property access like "value.length"
     || nativeAlternative.includes(' in ') // "in" operator for property existence
+    // Quick Wins expression patterns
+    || nativeAlternative.includes('[...new Set(') // uniq pattern
+    || nativeAlternative.includes('.filter(Boolean)') // compact pattern
+    || nativeAlternative.includes('Object.fromEntries(') // pick/omit patterns
+    || nativeAlternative.includes('.toSorted(') // sortBy pattern
+    // Object Utilities expression patterns
+    || nativeAlternative.includes('Object.assign({}, ') // merge pattern
+    || nativeAlternative.includes('?.') // optional chaining for get pattern
+    || nativeAlternative.includes('{...') // spread operator for clone pattern
+    || nativeAlternative.includes('structuredClone(') // deep clone pattern
+    // Collection Processing expression patterns
+    || nativeAlternative.includes('Object.groupBy(') // ES2024 groupBy pattern
+    || nativeAlternative.includes('.reduce((acc, item)') // countBy pattern
+    || nativeAlternative.includes('Array.from({length:') // chunk pattern
 }
 
 /**

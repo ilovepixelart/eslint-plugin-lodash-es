@@ -17,6 +17,9 @@ import {
   createPrototypeMethodFix,
   isFixedParamPrototypeMethod,
   createFixedParamPrototypeMethodFix,
+  createKeyByFix,
+  createOrderByFix,
+  createOmitFix,
 } from './shared-transforms'
 
 /**
@@ -54,6 +57,19 @@ export function createNamespaceFix(
   // Route to appropriate fix creator based on alternative type
   if (isZeroParamStaticMethod(nativeMethod)) {
     return createZeroParamStaticFix(callInfo, nativeMethod)
+  }
+
+  // Handle specific dual-parameter templates first
+  if (nativeMethod === 'Object.fromEntries(value.map(item => [iteratee(item), item]))') {
+    return createKeyByFix(callInfo)
+  }
+
+  if (nativeMethod === 'value.toSorted((a, b) => iteratee(a) - iteratee(b))') {
+    return createOrderByFix(callInfo)
+  }
+
+  if (nativeMethod === 'Object.fromEntries(Object.entries(obj).filter(([k]) => !keys.includes(k)))') {
+    return createOmitFix(callInfo)
   }
 
   if (isExpressionAlternative(nativeMethod)) {
