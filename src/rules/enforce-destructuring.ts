@@ -42,7 +42,7 @@ const enforceLodashDestructuring: Rule.RuleModule = {
 
         if (hasDefaultImport || hasNamespaceImport) {
           const importSpecifier = node.specifiers.find(spec =>
-            spec.type === 'ImportDefaultSpecifier' || spec.type === 'ImportNamespaceSpecifier',
+            ['ImportDefaultSpecifier', 'ImportNamespaceSpecifier'].includes(spec.type),
           )
           if (!importSpecifier) return
 

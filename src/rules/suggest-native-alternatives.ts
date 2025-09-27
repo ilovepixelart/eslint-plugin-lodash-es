@@ -176,7 +176,7 @@ const suggestNativeAlternatives: Rule.RuleModule = {
 
         // Check for default or namespace imports
         const defaultOrNamespaceSpecifier = node.specifiers.find(spec =>
-          spec.type === 'ImportDefaultSpecifier' || spec.type === 'ImportNamespaceSpecifier',
+          ['ImportDefaultSpecifier', 'ImportNamespaceSpecifier'].includes(spec.type),
         )
 
         if (defaultOrNamespaceSpecifier) {

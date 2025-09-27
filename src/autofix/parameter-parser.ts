@@ -2,10 +2,7 @@
  * Parameter parsing utilities for autofix functionality
  */
 
-/**
- * Common state for tracking string/template literals and nesting levels
- */
-interface CommonState {
+interface ParseState {
   parenLevel: number
   braceLevel: number
   bracketLevel: number
@@ -15,25 +12,7 @@ interface CommonState {
   templateLevel: number
 }
 
-/**
- * Create initial common state
- */
-function createCommonState(): CommonState {
-  return {
-    parenLevel: 0,
-    braceLevel: 0,
-    bracketLevel: 0,
-    inString: false,
-    stringChar: '',
-    inTemplate: false,
-    templateLevel: 0,
-  }
-}
-
-/**
- * Handle template literal state changes
- */
-function handleTemplateLiteral(state: CommonState, char: string, prevChar: string): void {
+function handleTemplateLiteral(char: string, prevChar: string | undefined, state: ParseState): void {
   if (!state.inString && char === '`') {
     if (!state.inTemplate) {
       state.inTemplate = true
@@ -48,11 +27,8 @@ function handleTemplateLiteral(state: CommonState, char: string, prevChar: strin
   }
 }
 
-/**
- * Handle string literal state changes
- */
-function handleStringLiteral(state: CommonState, char: string, prevChar: string): void {
-  if (!state.inTemplate && !state.inString && (char === '"' || char === '\'')) {
+function handleStringLiteral(char: string, prevChar: string | undefined, state: ParseState): void {
+  if (!state.inTemplate && !state.inString && ['"', '\''].includes(char)) {
     state.inString = true
     state.stringChar = char
   } else if (!state.inTemplate && state.inString && char === state.stringChar && prevChar !== '\\') {
@@ -61,53 +37,61 @@ function handleStringLiteral(state: CommonState, char: string, prevChar: string)
   }
 }
 
-/**
- * Handle nesting level changes (parentheses, braces, brackets)
- */
-function handleNestingLevels(state: CommonState, char: string): void {
-  if (state.inString || state.inTemplate) return
-
-  if (char === '(') state.parenLevel++
-  else if (char === ')') state.parenLevel--
-  else if (char === '{') state.braceLevel++
-  else if (char === '}') state.braceLevel--
-  else if (char === '[') state.bracketLevel++
-  else if (char === ']') state.bracketLevel--
-}
-
-/**
- * Check if we're at the top level (not inside any nesting)
- */
-function isAtTopLevel(state: CommonState): boolean {
-  return !state.inString && !state.inTemplate
-    && state.parenLevel === 0 && state.braceLevel === 0 && state.bracketLevel === 0
-}
-
-/**
- * Process character and update parser state
- */
-function processCharacter(state: CommonState, char: string, prevChar: string): void {
-  handleTemplateLiteral(state, char, prevChar)
-  handleStringLiteral(state, char, prevChar)
-  handleNestingLevels(state, char)
+function handleNestingLevels(char: string, state: ParseState): boolean {
+  switch (char) {
+    case '(':
+      state.parenLevel++
+      break
+    case ')':
+      state.parenLevel--
+      break
+    case '{':
+      state.braceLevel++
+      break
+    case '}':
+      state.braceLevel--
+      break
+    case '[':
+      state.bracketLevel++
+      break
+    case ']':
+      state.bracketLevel--
+      break
+    case ',':
+      return state.parenLevel === 0 && state.braceLevel === 0 && state.bracketLevel === 0
+  }
+  return false
 }
 
 /**
  * Find the first comma at the top level (not inside parentheses, brackets, or braces)
+ * Refactored to reduce cognitive complexity
  */
 export function findFirstTopLevelComma(text: string): number {
-  const state = createCommonState()
+  if (!text) return -1
+
+  const state: ParseState = {
+    parenLevel: 0,
+    braceLevel: 0,
+    bracketLevel: 0,
+    inString: false,
+    stringChar: '',
+    inTemplate: false,
+    templateLevel: 0,
+  }
 
   for (let i = 0; i < text.length; i++) {
     const char = text[i]
-    if (!char) continue // Skip if undefined
+    if (!char) continue
+    const prevChar = i > 0 ? text[i - 1] : undefined
 
-    const prevChar = i > 0 ? text[i - 1] || '' : ''
+    handleTemplateLiteral(char, prevChar, state)
+    handleStringLiteral(char, prevChar, state)
 
-    processCharacter(state, char, prevChar)
-
-    if (char === ',' && isAtTopLevel(state)) {
-      return i
+    if (!state.inString && !state.inTemplate) {
+      if (handleNestingLevels(char, state)) {
+        return i
+      }
     }
   }
 
@@ -156,12 +140,35 @@ export function isStaticMethod(nativeAlternative: string): boolean {
  * Check if a native alternative is a constructor call (e.g., "Number.toNumber" should be "Number")
  */
 export function isConstructorCall(nativeAlternative: string, functionName: string): boolean {
-  // Special case: toNumber -> Number constructor
-  if (functionName === 'toNumber' && nativeAlternative === 'Number.toNumber') {
-    return true
-  }
-  // Add other constructor cases as needed
-  return false
+  // Constructor cases where the "static method" should actually be a constructor call
+  const constructorCases = [
+    { functionName: 'toNumber', alternative: 'Number.toNumber' },
+  ]
+
+  return constructorCases.some(({ functionName: fn, alternative }) =>
+    functionName === fn && nativeAlternative === alternative,
+  )
+}
+
+/**
+ * Check if a native alternative is an expression (e.g., "value === null", "typeof value === 'string'")
+ */
+export function isExpressionAlternative(nativeAlternative: string): boolean {
+  // Expression alternatives contain operators or keywords like typeof
+  return nativeAlternative.includes('===')
+    || nativeAlternative.includes('==')
+    || nativeAlternative.includes('typeof')
+    || nativeAlternative.includes('&&')
+    || nativeAlternative.includes('||')
+}
+
+/**
+ * Check if a native alternative is a zero-parameter static method (e.g., "Date.now")
+ */
+export function isZeroParamStaticMethod(nativeAlternative: string): boolean {
+  // These are static methods that take no parameters
+  const zeroParamMethods = ['Date.now']
+  return zeroParamMethods.includes(nativeAlternative)
 }
 
 /**
@@ -211,27 +218,29 @@ export function findClosingParenthesis(text: string, startIndex: number): number
   return startIndex
 }
 
-/**
- * Process character for operator checking and update state
- */
-function processOperatorCharacter(state: CommonState, char: string, prevChar: string): void {
-  handleTemplateLiteral(state, char, prevChar)
-  handleStringLiteral(state, char, prevChar)
+function processCharacter(char: string, prevChar: string | undefined, nextChar: string | undefined, state: ParseState): boolean {
+  handleTemplateLiteral(char, prevChar, state)
+  handleStringLiteral(char, prevChar, state)
 
   if (!state.inString && !state.inTemplate) {
-    if (char === '(') state.parenLevel++
-    else if (char === ')') state.parenLevel--
+    if (char === '(') {
+      state.parenLevel++
+    } else if (char === ')') {
+      state.parenLevel--
+    } else if (state.parenLevel === 0) {
+      return hasLowPrecedenceOperator(char, prevChar, nextChar)
+    }
   }
+  return false
 }
 
-/**
- * Check for operators that require parentheses
- */
-function hasLowPrecedenceOperator(char: string, nextChar: string, prevChar: string): boolean {
+function hasLowPrecedenceOperator(char: string, prevChar: string | undefined, nextChar: string | undefined): boolean {
   // Two-character operators with lower precedence than method call
-  const twoChar = char + nextChar
-  if (['||', '&&', '??'].includes(twoChar)) {
-    return true
+  if (nextChar) {
+    const twoChar = char + nextChar
+    if (['||', '&&', '??'].includes(twoChar)) {
+      return true
+    }
   }
 
   // Ternary operator (but not optional chaining or nullish coalescing)
@@ -251,25 +260,30 @@ function hasLowPrecedenceOperator(char: string, nextChar: string, prevChar: stri
 /**
  * Check if expression needs parentheses to maintain operator precedence
  * when used as receiver of method call
+ * Refactored to reduce cognitive complexity
  */
 export function needsParentheses(expression: string): boolean {
   const trimmed = expression.trim()
-  const state = createCommonState()
+  if (!trimmed) return false
+
+  const state: ParseState = {
+    parenLevel: 0,
+    braceLevel: 0,
+    bracketLevel: 0,
+    inString: false,
+    stringChar: '',
+    inTemplate: false,
+    templateLevel: 0,
+  }
 
   for (let i = 0; i < trimmed.length; i++) {
     const char = trimmed[i]
-    if (!char) continue // Skip if undefined
+    if (!char) continue
+    const prevChar = i > 0 ? trimmed[i - 1] : undefined
+    const nextChar = i < trimmed.length - 1 ? trimmed[i + 1] : undefined
 
-    const prevChar = i > 0 ? trimmed[i - 1] || '' : ''
-    const nextChar = i < trimmed.length - 1 ? trimmed[i + 1] || '' : ''
-
-    processOperatorCharacter(state, char, prevChar)
-
-    // Only check operators at top level (not inside parentheses or strings)
-    if (!state.inString && !state.inTemplate && state.parenLevel === 0) {
-      if (hasLowPrecedenceOperator(char, nextChar, prevChar)) {
-        return true
-      }
+    if (processCharacter(char, prevChar, nextChar, state)) {
+      return true
     }
   }
 
@@ -278,25 +292,38 @@ export function needsParentheses(expression: string): boolean {
 
 /**
  * Check if an expression represents an array-like object that doesn't have native array methods
+ * Optimized version with string matching for common cases
  */
 export function isArrayLikeObject(expression: string): boolean {
   const trimmed = expression.trim()
+  if (!trimmed) return false
 
-  // Known array-like objects that don't have native array methods
-  const arrayLikePatterns = [
-    /^arguments$/, // arguments object
-    /^document\.querySelectorAll\(/, // NodeList
-    /^element\.children$/, // HTMLCollection
-    /^element\.childNodes$/, // NodeList
-    /^document\.getElementsBy\w+\(/, // HTMLCollection
-    /^element\.getElementsBy\w+\(/, // HTMLCollection
-    /^input\.files$/, // FileList
-    /^element\.classList$/, // DOMTokenList
-    /^element\.style$/, // CSSStyleDeclaration
-    /^\w+\.querySelectorAll\(/, // NodeList from any element
-    /^\w+\.children$/, // HTMLCollection from any element
-    /^\w+\.childNodes$/, // NodeList from any element
+  // Fast string-based checks for most common cases
+  if (trimmed === 'arguments') return true
+
+  // Check for common DOM patterns
+  if (trimmed.includes('.')) {
+    const parts = trimmed.split('.')
+    const lastPart = parts[parts.length - 1]
+
+    // Fast checks for property access patterns
+    if (lastPart && ['children', 'childNodes', 'classList', 'style', 'files'].includes(lastPart)) {
+      return true
+    }
+
+    // Method call patterns
+    if (lastPart && (lastPart.startsWith('querySelectorAll(')
+      || lastPart.startsWith('getElementsBy'))) {
+      return true
+    }
+  }
+
+  // Fallback to regex for complex patterns (only if simple checks fail)
+  const complexPatterns = [
+    /^document\.getElementsBy\w+\(/,
+    /^element\.getElementsBy\w+\(/,
+    /^\w+\.getElementsBy\w+\(/,
   ]
 
-  return arrayLikePatterns.some(pattern => pattern.test(trimmed))
+  return complexPatterns.some(pattern => pattern.test(trimmed))
 }

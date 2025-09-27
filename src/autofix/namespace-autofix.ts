@@ -6,7 +6,16 @@
 import type { SourceCode } from 'eslint'
 import type { Usage, LodashFunctionName } from '../types'
 import { getNativeAlternative } from '../utils'
-import { findFirstTopLevelComma, extractMethodName, findClosingParenthesis, needsParentheses, isArrayLikeObject, isStaticMethod, extractStaticMethodInfo, isConstructorCall } from './parameter-parser'
+import { findClosingParenthesis, isStaticMethod, isConstructorCall, isExpressionAlternative, isZeroParamStaticMethod } from './parameter-parser'
+import {
+  type FixResult,
+  type CallInfo,
+  createZeroParamStaticFix,
+  createExpressionFix,
+  createConstructorFix,
+  createStaticMethodFix,
+  createPrototypeMethodFix,
+} from './shared-transforms'
 
 /**
  * Create a fix for namespace/default lodash function calls
@@ -17,13 +26,10 @@ export function createNamespaceFix(
   sourceCode: SourceCode,
   usage: Usage,
   functionName: string,
-): { range: [number, number], text: string } | null {
+): FixResult | null {
   const fullText = sourceCode.getText()
-
-  // Find the full function call including parameters
   const callStart = usage.start
   const callEnd = findClosingParenthesis(fullText, usage.end)
-
   const fullCall = fullText.slice(callStart, callEnd)
 
   // Extract parameters from namespace call: _.map(array, fn) or lodash.map(array, fn)
@@ -31,85 +37,35 @@ export function createNamespaceFix(
   const match = regex.exec(fullCall)
   if (!match) return null
 
-  const params = match[1]?.trim()
-  if (!params) return null
+  const callInfo: CallInfo = {
+    fullText,
+    callStart,
+    callEnd,
+    params: match[1]?.trim() || '',
+  }
 
   const nativeAlternative = getNativeAlternative(functionName as LodashFunctionName)
   if (!nativeAlternative) return null
 
-  // Check if this is a constructor call (e.g., _.toNumber -> Number)
-  if (isConstructorCall(nativeAlternative.native, functionName)) {
-    // For constructor calls: _.toNumber(str) -> Number(str)
-    const constructorName = nativeAlternative.native.split('.')[0] // Extract "Number" from "Number.toNumber"
-    const replacement = `${constructorName}(${params})`
-    return {
-      range: [callStart, callEnd],
-      text: replacement,
-    }
+  const nativeMethod = nativeAlternative.native
+
+  // Route to appropriate fix creator based on alternative type
+  if (isZeroParamStaticMethod(nativeMethod)) {
+    return createZeroParamStaticFix(callInfo, nativeMethod)
   }
 
-  // Check if this is a static method (e.g., Object.keys, Math.max)
-  if (isStaticMethod(nativeAlternative.native)) {
-    const staticInfo = extractStaticMethodInfo(nativeAlternative.native)
-    if (!staticInfo) return null
-
-    // For static methods, all parameters are arguments to the static method
-    // Transform: _.keys(obj) -> Object.keys(obj)
-    // Transform: _.max(numbers) -> Math.max(...numbers) (special case for Math functions)
-    let transformedParams = params
-
-    // Special handling for Math functions that need spread operator
-    if (staticInfo.object === 'Math' && ['max', 'min'].includes(staticInfo.method)) {
-      // Check if the parameter looks like an array that should be spread
-      const trimmedParams = params.trim()
-      if (!trimmedParams.startsWith('...')) {
-        transformedParams = `...${trimmedParams}`
-      }
-    }
-
-    const replacement = `${staticInfo.object}.${staticInfo.method}(${transformedParams})`
-    return {
-      range: [callStart, callEnd],
-      text: replacement,
-    }
+  if (isExpressionAlternative(nativeMethod)) {
+    return createExpressionFix(callInfo, nativeMethod)
   }
 
-  // Handle prototype methods (existing logic)
-  const nativeMethod = extractMethodName(nativeAlternative.native)
-  if (!nativeMethod) return null
-
-  // Handle both single and multi-parameter functions
-  const firstCommaIndex = findFirstTopLevelComma(params)
-
-  let targetParam: string
-  let restParams: string
-
-  if (firstCommaIndex === -1) {
-    // Single parameter function (e.g., trim(string))
-    targetParam = params
-    restParams = ''
-  } else {
-    // Multi-parameter function (e.g., map(array, fn))
-    targetParam = params.slice(0, firstCommaIndex).trim()
-    restParams = params.slice(firstCommaIndex + 1).trim()
+  if (isConstructorCall(nativeMethod, functionName)) {
+    return createConstructorFix(callInfo, nativeMethod)
   }
 
-  // Handle array-like objects that don't have native array methods
-  let safeTargetParam: string
-  if (isArrayLikeObject(targetParam)) {
-    // Transform array-like objects to Array.from(arrayLike)
-    safeTargetParam = `Array.from(${targetParam})`
-  } else {
-    // Wrap target parameter in parentheses if it contains operators that need precedence protection
-    safeTargetParam = needsParentheses(targetParam) ? `(${targetParam})` : targetParam
+  if (isStaticMethod(nativeMethod)) {
+    return createStaticMethodFix(callInfo, nativeMethod)
   }
 
-  const replacement = restParams
-    ? `${safeTargetParam}.${nativeMethod}(${restParams})`
-    : `${safeTargetParam}.${nativeMethod}()`
-
-  return {
-    range: [callStart, callEnd],
-    text: replacement,
-  }
+  // Default to prototype method
+  return createPrototypeMethodFix(callInfo, nativeMethod)
 }

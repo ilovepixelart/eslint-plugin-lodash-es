@@ -28,6 +28,27 @@ function getReason(options: EnforceFunctionsRuleOptions): string {
     : 'not in the allowed functions list'
 }
 
+function reportUsage(
+  node: ImportDeclaration,
+  sourceCode: ReturnType<typeof getSourceCode>,
+  usage: Usage,
+  functionName: string,
+  reason: string,
+  context: Rule.RuleContext,
+): void {
+  const fix = createDestructuredFix(sourceCode, usage, functionName)
+
+  context.report({
+    node,
+    loc: {
+      start: sourceCode.getLocFromIndex(usage.start),
+      end: sourceCode.getLocFromIndex(usage.end),
+    },
+    message: createErrorMessage(functionName as LodashFunctionName, reason),
+    fix: fix ? (fixer): Rule.Fix => fixer.replaceTextRange(fix.range, fix.text) : undefined,
+  })
+}
+
 function handleDefaultOrNamespaceImports(
   node: ImportDeclaration,
   defaultOrNamespaceSpecifier: ImportDefaultSpecifier | ImportNamespaceSpecifier,
@@ -76,24 +97,13 @@ function handleDestructuredImports(
     const isBlocked = (options.include && !options.include.includes(originalName as LodashFunctionName))
       || (options.exclude?.includes(originalName as LodashFunctionName))
 
-    if (isBlocked) {
-      // Search for usages of the LOCAL name (what it's actually called in the code)
-      // but validate against the ORIGINAL lodash function name
-      const usages = findDestructuredLodashUsages(fullSourceCode, localName, originalName)
-      for (const usage of usages) {
-        // But use the ORIGINAL name for the fix and error message
-        const fix = createDestructuredFix(sourceCode, usage, originalName)
+    if (!isBlocked) continue
 
-        context.report({
-          node,
-          loc: {
-            start: sourceCode.getLocFromIndex(usage.start),
-            end: sourceCode.getLocFromIndex(usage.end),
-          },
-          message: createErrorMessage(originalName as LodashFunctionName, reason),
-          fix: fix ? (fixer): Rule.Fix => fixer.replaceTextRange(fix.range, fix.text) : undefined,
-        })
-      }
+    // Search for usages of the LOCAL name (what it's actually called in the code)
+    // but validate against the ORIGINAL lodash function name
+    const usages = findDestructuredLodashUsages(fullSourceCode, localName, originalName)
+    for (const usage of usages) {
+      reportUsage(node, sourceCode, usage, originalName, reason, context)
     }
   }
 }
@@ -161,7 +171,7 @@ const enforceFunctions: Rule.RuleModule = {
 
         // Check for default or namespace imports
         const defaultOrNamespaceSpecifier = node.specifiers.find(spec =>
-          spec.type === 'ImportDefaultSpecifier' || spec.type === 'ImportNamespaceSpecifier',
+          ['ImportDefaultSpecifier', 'ImportNamespaceSpecifier'].includes(spec.type),
         )
 
         if (defaultOrNamespaceSpecifier) {
