@@ -455,14 +455,14 @@ export function createStaticMethodFix(callInfo: CallInfo, nativeAlternative: str
  * Check if native alternative is a fixed-parameter prototype method
  */
 export function isFixedParamPrototypeMethod(nativeAlternative: string): boolean {
-  return /\w+\.prototype\.\w+\[.+\]$/.test(nativeAlternative)
+  return /\w+\.prototype\.\w+\[[^\]]+\]$/.test(nativeAlternative)
 }
 
 /**
  * Extract fixed parameters from encoded native alternative
  */
 export function extractFixedParams(nativeAlternative: string): string | null {
-  const match = RegExp(/\[(.+)\]$/).exec(nativeAlternative)
+  const match = RegExp(/\[([^\]]+)\]$/).exec(nativeAlternative)
   return match ? match[1] ?? null : null
 }
 
