@@ -399,3 +399,75 @@ export function createSimpleArrayMethod(
     { related: relatedGroup },
   )
 }
+
+/**
+ * Helper function for Object manipulation methods that return new objects
+ */
+export function createObjectManipulationMethod(
+  methodName: string,
+  nativeExpression: string,
+  description: string,
+  difficulty: MigrationDifficulty = MigrationDifficulty.Easy,
+  options?: Partial<CreateAlternativeOptions>,
+): NativeAlternative {
+  return createExpressionAlternative(
+    FunctionCategory.Object,
+    methodName,
+    nativeExpression,
+    description,
+    {
+      migration: { difficulty, ...options?.migration },
+      safety: safetyConfigs.safe,
+      related: [...relatedFunctions.objectManipulation],
+      ...options,
+    },
+  )
+}
+
+/**
+ * Helper function for object property access methods
+ */
+export function createObjectPropertyMethod(
+  methodName: string,
+  nativeExpression: string,
+  description: string,
+  difficulty: MigrationDifficulty = MigrationDifficulty.Medium,
+  options?: Partial<CreateAlternativeOptions>,
+): NativeAlternative {
+  return createExpressionAlternative(
+    FunctionCategory.Object,
+    methodName,
+    nativeExpression,
+    description,
+    {
+      migration: { difficulty, ...options?.migration },
+      safety: safetyConfigs.safe,
+      related: [...relatedFunctions.objectManipulation],
+      ...options,
+    },
+  )
+}
+
+/**
+ * Helper function for array deduplication and filtering methods
+ */
+export function createArrayTransformMethod(
+  methodName: string,
+  nativeExpression: string,
+  description: string,
+  relatedGroup: readonly string[],
+  options?: Partial<CreateAlternativeOptions>,
+): NativeAlternative {
+  return createExpressionAlternative(
+    FunctionCategory.Array,
+    methodName,
+    nativeExpression,
+    description,
+    {
+      migration: migrationConfigs.easy,
+      safety: safetyConfigs.safe,
+      related: [...relatedGroup],
+      ...options,
+    },
+  )
+}

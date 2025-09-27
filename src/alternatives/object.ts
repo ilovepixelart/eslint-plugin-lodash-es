@@ -1,7 +1,17 @@
 /**
  * Native alternatives for Object functions
  */
-import { FunctionCategory, SafetyLevel, MigrationDifficulty, createStaticMethodAlternative, createExpressionAlternative, createObjectStaticMethodWithNullSafety, safetyConfigs, migrationConfigs, relatedFunctions } from '../shared'
+import {
+  FunctionCategory,
+  SafetyLevel,
+  MigrationDifficulty,
+  createStaticMethodAlternative,
+  createObjectStaticMethodWithNullSafety,
+  createObjectManipulationMethod,
+  createObjectPropertyMethod,
+  safetyConfigs,
+  migrationConfigs,
+} from '../shared'
 import type { NativeAlternative } from '../shared'
 
 export const objectAlternatives = new Map<string, NativeAlternative>([
@@ -56,41 +66,34 @@ export const objectAlternatives = new Map<string, NativeAlternative>([
   } as NativeAlternative],
 
   // Quick Wins - High Impact Object Functions
-  ['pick', createExpressionAlternative(
-    FunctionCategory.Object,
+  ['pick', createObjectManipulationMethod(
     'pick',
     'Object.fromEntries(keys.map(k => [k, obj[k]]))',
     'Create object with only specified keys',
+    MigrationDifficulty.Easy,
     {
-      migration: migrationConfigs.easy,
-      safety: safetyConfigs.safe,
       notes: ['Uses Object.fromEntries and array mapping', 'Includes undefined values for missing keys'],
-      related: [...relatedFunctions.objectManipulation],
     },
   )],
 
-  ['omit', createExpressionAlternative(
-    FunctionCategory.Object,
+  ['omit', createObjectManipulationMethod(
     'omit',
     'Object.fromEntries(Object.entries(obj).filter(([k]) => !keys.includes(k)))',
     'Create object without specified keys',
+    MigrationDifficulty.Easy,
     {
-      migration: migrationConfigs.easy,
-      safety: safetyConfigs.safe,
       notes: ['Uses Object.entries, filter, and Object.fromEntries', 'Preserves all other properties'],
-      related: [...relatedFunctions.objectManipulation],
     },
   )],
 
   // Object Utilities - Enterprise Critical Functions
-  ['merge', createExpressionAlternative(
-    FunctionCategory.Object,
+  ['merge', createObjectManipulationMethod(
     'merge',
     'Object.assign({}, target, ...sources)',
     'Merge multiple objects (shallow merge)',
+    MigrationDifficulty.Medium,
     {
       migration: {
-        difficulty: MigrationDifficulty.Medium,
         challenges: ['Lodash merge is deep, Object.assign is shallow'],
         steps: [
           'Replace with Object.assign for shallow merge',
@@ -108,18 +111,16 @@ export const objectAlternatives = new Map<string, NativeAlternative>([
         'Lodash merge performs deep merge',
         'Consider {...target, ...source} for simple cases',
       ],
-      related: [...relatedFunctions.objectManipulation],
     },
   )],
 
-  ['get', createExpressionAlternative(
-    FunctionCategory.Object,
+  ['get', createObjectPropertyMethod(
     'get',
     'obj?.path?.to?.property',
     'Get nested object property safely',
+    MigrationDifficulty.Medium,
     {
       migration: {
-        difficulty: MigrationDifficulty.Medium,
         challenges: ['String path notation vs object property access'],
         steps: [
           'Convert string paths to optional chaining',
@@ -127,23 +128,20 @@ export const objectAlternatives = new Map<string, NativeAlternative>([
           'Handle array notation: get(obj, "a[0].b") → obj?.a?.[0]?.b',
         ],
       },
-      safety: safetyConfigs.safe,
       notes: [
         'Optional chaining provides null safety',
         'Works with nested objects and arrays',
         'ES2020+ feature with excellent browser support',
       ],
-      related: [...relatedFunctions.objectManipulation],
     },
   )],
 
-  ['clone', createExpressionAlternative(
-    FunctionCategory.Object,
+  ['clone', createObjectManipulationMethod(
     'clone',
     '{...obj}',
     'Shallow clone object using spread syntax',
+    MigrationDifficulty.Easy,
     {
-      migration: migrationConfigs.easy,
       safety: {
         level: SafetyLevel.Caution,
         concerns: ['Lodash clone is shallow, same as spread operator'],
@@ -154,18 +152,16 @@ export const objectAlternatives = new Map<string, NativeAlternative>([
         'For deep cloning, use structuredClone() (modern) or JSON.parse(JSON.stringify())',
         'Spread syntax is the most concise and performant for shallow cloning',
       ],
-      related: [...relatedFunctions.objectManipulation],
     },
   )],
 
-  ['cloneDeep', createExpressionAlternative(
-    FunctionCategory.Object,
+  ['cloneDeep', createObjectManipulationMethod(
     'cloneDeep',
     'structuredClone(obj)',
     'Deep clone object using structured clone algorithm',
+    MigrationDifficulty.Medium,
     {
       migration: {
-        difficulty: MigrationDifficulty.Medium,
         challenges: ['Browser support considerations for structuredClone'],
         steps: [
           'Replace with structuredClone() for modern environments',
@@ -183,7 +179,6 @@ export const objectAlternatives = new Map<string, NativeAlternative>([
         'Supports complex objects including Date, RegExp, etc.',
         'For legacy browsers, use JSON.parse(JSON.stringify()) with limitations',
       ],
-      related: [...relatedFunctions.objectManipulation],
     },
   )],
 ])

@@ -3,14 +3,9 @@
  * Transforms: map(array, fn) -> array.map(fn)
  */
 import type { SourceCode } from 'eslint'
-import type { Usage, LodashFunctionName } from '../types'
-import { getNativeAlternative } from '../utils'
-import { findClosingParenthesis } from './parameter-parser'
-import {
-  type FixResult,
-  type CallInfo,
-  createAutofixRouting,
-} from './shared-transforms'
+import type { Usage } from '../types'
+import type { FixResult } from './shared-transforms'
+import { createCommonAutofix, createDestructuredRegex } from './common-autofix'
 
 /**
  * Create a fix for destructured lodash function calls
@@ -21,27 +16,6 @@ export function createDestructuredFix(
   usage: Usage,
   functionName: string,
 ): FixResult | null {
-  const fullText = sourceCode.getText()
-  const callStart = usage.start
-  const callEnd = findClosingParenthesis(fullText, usage.end)
-  const fullCall = fullText.slice(callStart, callEnd)
-
-  // Extract parameters using regex
-  const regex = new RegExp(`^${functionName}\\s*\\((.*)\\)$`, 's')
-  const match = regex.exec(fullCall)
-  if (!match) return null
-
-  const callInfo: CallInfo = {
-    fullText,
-    callStart,
-    callEnd,
-    params: match[1]?.trim() || '',
-  }
-
-  const nativeAlternative = getNativeAlternative(functionName as LodashFunctionName)
-  if (!nativeAlternative) return null
-
-  const nativeMethod = nativeAlternative.native
-
-  return createAutofixRouting(callInfo, nativeMethod, functionName)
+  const regex = createDestructuredRegex(functionName)
+  return createCommonAutofix(sourceCode, usage, functionName, regex)
 }
