@@ -387,3 +387,55 @@ describe('prototype method autofixes', () => {
     })
   })
 })
+
+describe('newly added object expression alternatives', () => {
+  describe('has expression alternatives', () => {
+    it('should autofix has calls', () => {
+      expect(() => {
+        ruleTester.run('enforce-functions', enforceFunctions, {
+          valid: [],
+          invalid: [
+            {
+              code: 'import { has } from \'lodash-es\'; const result = has(obj, "prop");',
+              output: 'import { has } from \'lodash-es\'; const result = "prop" in obj;',
+              options: [{ exclude: ['has'] }],
+              errors: [{ message: /Lodash function 'has' is excluded/ }],
+            },
+          ],
+        })
+      }).not.toThrow()
+    })
+
+    it('should autofix namespace has calls', () => {
+      expect(() => {
+        ruleTester.run('enforce-functions', enforceFunctions, {
+          valid: [],
+          invalid: [
+            {
+              code: 'import _ from \'lodash-es\'; const result = _.has(user, "name");',
+              output: 'import _ from \'lodash-es\'; const result = "name" in user;',
+              options: [{ exclude: ['has'] }],
+              errors: [{ message: /Lodash function 'has' is excluded/ }],
+            },
+          ],
+        })
+      }).not.toThrow()
+    })
+
+    it('should handle complex object expressions', () => {
+      expect(() => {
+        ruleTester.run('enforce-functions', enforceFunctions, {
+          valid: [],
+          invalid: [
+            {
+              code: 'import { has } from \'lodash-es\'; const result = has(data.user || {}, "active");',
+              output: 'import { has } from \'lodash-es\'; const result = "active" in (data.user || {});',
+              options: [{ exclude: ['has'] }],
+              errors: [{ message: /Lodash function 'has' is excluded/ }],
+            },
+          ],
+        })
+      }).not.toThrow()
+    })
+  })
+})

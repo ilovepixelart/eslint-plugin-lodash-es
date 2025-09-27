@@ -15,6 +15,8 @@ import {
   createConstructorFix,
   createStaticMethodFix,
   createPrototypeMethodFix,
+  isFixedParamPrototypeMethod,
+  createFixedParamPrototypeMethodFix,
 } from './shared-transforms'
 
 /**
@@ -66,6 +68,10 @@ export function createNamespaceFix(
     return createStaticMethodFix(callInfo, nativeMethod)
   }
 
+  if (isFixedParamPrototypeMethod(nativeMethod)) {
+    return createFixedParamPrototypeMethodFix(callInfo, nativeMethod)
+  }
+
   // Default to prototype method
-  return createPrototypeMethodFix(callInfo, nativeMethod)
+  return createPrototypeMethodFix(callInfo, nativeMethod, functionName)
 }

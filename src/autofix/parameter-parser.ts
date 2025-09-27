@@ -106,9 +106,14 @@ export function findFirstTopLevelComma(text: string): number {
  */
 export function extractMethodName(nativeAlternative: string): string | null {
   // Handle cases like "Array.prototype.map" -> "map"
+  // Also handle "Array.prototype.at[0]" -> "at"
   if (nativeAlternative.includes('.prototype.')) {
     const parts = nativeAlternative.split('.prototype.')
-    return parts[1] || null
+    const methodPart = parts[1] || null
+    if (!methodPart) return null
+
+    // Remove fixed parameters in brackets (e.g., "at[0]" -> "at")
+    return methodPart.split('[')[0] || null
   }
 
   // Handle cases like "array.map(fn)" -> "map"
@@ -160,6 +165,8 @@ export function isExpressionAlternative(nativeAlternative: string): boolean {
     || nativeAlternative.includes('typeof')
     || nativeAlternative.includes('&&')
     || nativeAlternative.includes('||')
+    || nativeAlternative.includes('value.') // Property access like "value.length"
+    || nativeAlternative.includes(' in ') // "in" operator for property existence
 }
 
 /**

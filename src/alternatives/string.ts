@@ -71,6 +71,13 @@ export const stringAlternatives = new Map<string, NativeAlternative>([
     'separator',
   )],
 
+  ['padStart', createPrototypeMethodAlternative(
+    FunctionCategory.String,
+    'padStart',
+    descriptions.padString('start'),
+    'length, chars',
+  )],
+
   ['padEnd', createPrototypeMethodAlternative(
     FunctionCategory.String,
     'padEnd',

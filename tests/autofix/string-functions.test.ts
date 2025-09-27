@@ -384,4 +384,38 @@ describe('comprehensive string function autofixes', () => {
       }).not.toThrow()
     })
   })
+
+  describe('newly added string functions', () => {
+    it('should autofix padStart calls', () => {
+      expect(() => {
+        ruleTester.run('enforce-functions', enforceFunctions, {
+          valid: [],
+          invalid: [
+            {
+              code: 'import { padStart } from \'lodash-es\'; const result = padStart("hello", 10, " ");',
+              output: 'import { padStart } from \'lodash-es\'; const result = "hello".padStart(10, " ");',
+              options: [{ exclude: ['padStart'] }],
+              errors: [{ message: /Lodash function 'padStart' is excluded/ }],
+            },
+          ],
+        })
+      }).not.toThrow()
+    })
+
+    it('should autofix namespace padStart calls', () => {
+      expect(() => {
+        ruleTester.run('enforce-functions', enforceFunctions, {
+          valid: [],
+          invalid: [
+            {
+              code: 'import _ from \'lodash-es\'; const result = _.padStart("test", 8, "0");',
+              output: 'import _ from \'lodash-es\'; const result = "test".padStart(8, "0");',
+              options: [{ exclude: ['padStart'] }],
+              errors: [{ message: /Lodash function 'padStart' is excluded/ }],
+            },
+          ],
+        })
+      }).not.toThrow()
+    })
+  })
 })

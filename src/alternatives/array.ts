@@ -1,7 +1,7 @@
 /**
  * Native alternatives for Array functions
  */
-import { FunctionCategory, createPrototypeMethodAlternative, createStaticMethodAlternative, safetyConfigs, migrationConfigs, relatedFunctions, descriptions } from '../shared'
+import { FunctionCategory, createPrototypeMethodAlternative, createStaticMethodAlternative, createFixedParamPrototypeMethodAlternative, safetyConfigs, migrationConfigs, relatedFunctions, descriptions } from '../shared'
 import type { NativeAlternative } from '../shared'
 
 export const arrayAlternatives = new Map<string, NativeAlternative>([
@@ -126,5 +126,90 @@ export const arrayAlternatives = new Map<string, NativeAlternative>([
       excludeByDefault: true,
       related: [...relatedFunctions.arrayMutators],
     },
+  )],
+
+  // Additional Array Methods - Direct Native Equivalents
+  ['indexOf', createPrototypeMethodAlternative(
+    FunctionCategory.Array,
+    'indexOf',
+    'Find index of first occurrence of value',
+    'value, fromIndex',
+  )],
+
+  ['lastIndexOf', createPrototypeMethodAlternative(
+    FunctionCategory.Array,
+    'lastIndexOf',
+    'Find index of last occurrence of value',
+    'value, fromIndex',
+  )],
+
+  ['flatten', createPrototypeMethodAlternative(
+    FunctionCategory.Array,
+    'flat',
+    'Flatten array one level deep',
+    undefined,
+    { notes: ['Native flat() method available since ES2019'] },
+  )],
+
+  ['flatMap', createPrototypeMethodAlternative(
+    FunctionCategory.Array,
+    'flatMap',
+    'Map and flatten array',
+    'fn',
+    { notes: ['Native flatMap() method available since ES2019'] },
+  )],
+
+  ['reduceRight', createPrototypeMethodAlternative(
+    FunctionCategory.Array,
+    'reduceRight',
+    'Reduce array from right to left',
+    'fn, initial',
+    { related: [...relatedFunctions.arrayReducers] },
+  )],
+
+  // Array Access Utilities
+  ['first', createFixedParamPrototypeMethodAlternative(
+    FunctionCategory.Array,
+    'first',
+    'at',
+    '0',
+    'Get first element of array',
+    { notes: ['Modern at() method available since ES2022'] },
+  )],
+
+  ['head', createFixedParamPrototypeMethodAlternative(
+    FunctionCategory.Array,
+    'head',
+    'at',
+    '0',
+    'Get first element of array (alias for first)',
+    { notes: ['Modern at() method available since ES2022'] },
+  )],
+
+  ['last', createFixedParamPrototypeMethodAlternative(
+    FunctionCategory.Array,
+    'last',
+    'at',
+    '-1',
+    'Get last element of array',
+    { notes: ['Modern at() method available since ES2022'] },
+  )],
+
+  ['initial', createFixedParamPrototypeMethodAlternative(
+    FunctionCategory.Array,
+    'initial',
+    'slice',
+    '0, -1',
+    'Get all elements except the last',
+    { notes: ['Returns all but last element using slice(0, -1)'] },
+  )],
+
+  ['tail', createFixedParamPrototypeMethodAlternative(
+    FunctionCategory.Array,
+    'tail',
+    'slice',
+    '1',
+    'Get all elements except the first',
+    { notes: ['Returns all but first element using slice(1)'] },
   )],
 ])

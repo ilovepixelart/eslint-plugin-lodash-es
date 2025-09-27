@@ -53,7 +53,30 @@ export function createZeroParamStaticFix(callInfo: CallInfo, nativeAlternative: 
 export function createExpressionFix(callInfo: CallInfo, nativeAlternative: string): FixResult | null {
   if (!callInfo.params) return null
 
-  // Handle parameters that might need parentheses for operator precedence
+  // Special handling for "has" function: has(object, key) -> key in object
+  if (nativeAlternative === 'key in object') {
+    const commaIndex = findFirstTopLevelComma(callInfo.params)
+    if (commaIndex === -1) return null
+
+    const object = callInfo.params.slice(0, commaIndex).trim()
+    const key = callInfo.params.slice(commaIndex + 1).trim()
+
+    // Handle parameters that might need parentheses
+    let safeObject = object
+    if (needsParentheses(object)) {
+      safeObject = `(${object})`
+    }
+
+    const expression = `${key} in ${safeObject}`
+    const { start, text } = handleNegationOperator(callInfo, expression)
+
+    return {
+      range: [start, callInfo.callEnd],
+      text,
+    }
+  }
+
+  // Handle standard single-parameter expression alternatives
   let safeParam = callInfo.params
   if (needsParentheses(callInfo.params)) {
     safeParam = `(${callInfo.params})`
@@ -108,9 +131,53 @@ export function createStaticMethodFix(callInfo: CallInfo, nativeAlternative: str
 }
 
 /**
+ * Check if native alternative is a fixed-parameter prototype method
+ */
+export function isFixedParamPrototypeMethod(nativeAlternative: string): boolean {
+  return /\w+\.prototype\.\w+\[.+\]$/.test(nativeAlternative)
+}
+
+/**
+ * Extract fixed parameters from encoded native alternative
+ */
+export function extractFixedParams(nativeAlternative: string): string | null {
+  const match = RegExp(/\[(.+)\]$/).exec(nativeAlternative)
+  return match ? match[1] ?? null : null
+}
+
+/**
+ * Create fix for fixed-parameter prototype methods (e.g., first -> array.at(0))
+ */
+export function createFixedParamPrototypeMethodFix(callInfo: CallInfo, nativeAlternative: string): FixResult | null {
+  const nativeMethod = extractMethodName(nativeAlternative)
+  if (!nativeMethod) return null
+
+  const fixedParams = extractFixedParams(nativeAlternative)
+  if (!fixedParams) return null
+
+  // For fixed-param methods, the entire callInfo.params is the target object
+  const targetParam = callInfo.params
+
+  // Handle array-like objects that don't have native array methods
+  let safeTargetParam: string
+  if (isArrayLikeObject(targetParam)) {
+    safeTargetParam = `Array.from(${targetParam})`
+  } else {
+    safeTargetParam = needsParentheses(targetParam) ? `(${targetParam})` : targetParam
+  }
+
+  const replacement = `${safeTargetParam}.${nativeMethod}(${fixedParams})`
+
+  return {
+    range: [callInfo.callStart, callInfo.callEnd],
+    text: replacement,
+  }
+}
+
+/**
  * Create fix for prototype methods (e.g., map -> array.map)
  */
-export function createPrototypeMethodFix(callInfo: CallInfo, nativeAlternative: string): FixResult | null {
+export function createPrototypeMethodFix(callInfo: CallInfo, nativeAlternative: string, functionName?: string): FixResult | null {
   const nativeMethod = extractMethodName(nativeAlternative)
   if (!nativeMethod) return null
 
@@ -136,6 +203,22 @@ export function createPrototypeMethodFix(callInfo: CallInfo, nativeAlternative: 
     safeTargetParam = `Array.from(${targetParam})`
   } else {
     safeTargetParam = needsParentheses(targetParam) ? `(${targetParam})` : targetParam
+  }
+
+  // Special handling for reject function - needs predicate inversion
+  if (functionName === 'reject' && nativeMethod === 'filter') {
+    if (!restParams) return null
+
+    // Check if predicate is an arrow function - needs special handling
+    const isArrowFunction = restParams.includes('=>')
+    const replacement = isArrowFunction
+      ? `${safeTargetParam}.filter(item => !(${restParams})(item))`
+      : `${safeTargetParam}.filter(item => !${restParams}(item))`
+
+    return {
+      range: [callInfo.callStart, callInfo.callEnd],
+      text: replacement,
+    }
   }
 
   const replacement = restParams

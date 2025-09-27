@@ -57,4 +57,18 @@ export const objectAlternatives = new Map<string, NativeAlternative>([
     'Copy properties to target object',
     'target, ...sources',
   )],
+
+  // Object Property Checking
+  ['has', {
+    category: FunctionCategory.Object,
+    native: 'key in object',
+    description: 'Check if object has property',
+    example: {
+      lodash: '_.has(object, key)',
+      native: 'key in object',
+    },
+    safety: safetyConfigs.nullUndefinedThrows,
+    migration: migrationConfigs.nullSafetyHandling,
+    notes: ['Use "in" operator or Object.prototype.hasOwnProperty.call()'],
+  } as NativeAlternative],
 ])

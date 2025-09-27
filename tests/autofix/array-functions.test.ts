@@ -409,4 +409,166 @@ describe('mixed array function usage', () => {
       })
     }).not.toThrow()
   })
+
+  describe('newly added array functions', () => {
+    it('should autofix indexOf calls', () => {
+      expect(() => {
+        ruleTester.run('enforce-functions', enforceFunctions, {
+          valid: [],
+          invalid: [
+            {
+              code: 'import { indexOf } from \'lodash-es\'; const result = indexOf(array, value);',
+              output: 'import { indexOf } from \'lodash-es\'; const result = array.indexOf(value);',
+              options: [{ exclude: ['indexOf'] }],
+              errors: [{ message: /Lodash function 'indexOf' is excluded/ }],
+            },
+          ],
+        })
+      }).not.toThrow()
+    })
+
+    it('should autofix lastIndexOf calls', () => {
+      expect(() => {
+        ruleTester.run('enforce-functions', enforceFunctions, {
+          valid: [],
+          invalid: [
+            {
+              code: 'import { lastIndexOf } from \'lodash-es\'; const result = lastIndexOf(array, value);',
+              output: 'import { lastIndexOf } from \'lodash-es\'; const result = array.lastIndexOf(value);',
+              options: [{ exclude: ['lastIndexOf'] }],
+              errors: [{ message: /Lodash function 'lastIndexOf' is excluded/ }],
+            },
+          ],
+        })
+      }).not.toThrow()
+    })
+
+    it('should autofix flatten calls', () => {
+      expect(() => {
+        ruleTester.run('enforce-functions', enforceFunctions, {
+          valid: [],
+          invalid: [
+            {
+              code: 'import { flatten } from \'lodash-es\'; const result = flatten(nestedArray);',
+              output: 'import { flatten } from \'lodash-es\'; const result = nestedArray.flat();',
+              options: [{ exclude: ['flatten'] }],
+              errors: [{ message: /Lodash function 'flatten' is excluded/ }],
+            },
+          ],
+        })
+      }).not.toThrow()
+    })
+
+    it('should autofix flatMap calls', () => {
+      expect(() => {
+        ruleTester.run('enforce-functions', enforceFunctions, {
+          valid: [],
+          invalid: [
+            {
+              code: 'import { flatMap } from \'lodash-es\'; const result = flatMap(array, fn);',
+              output: 'import { flatMap } from \'lodash-es\'; const result = array.flatMap(fn);',
+              options: [{ exclude: ['flatMap'] }],
+              errors: [{ message: /Lodash function 'flatMap' is excluded/ }],
+            },
+          ],
+        })
+      }).not.toThrow()
+    })
+
+    it('should autofix reduceRight calls', () => {
+      expect(() => {
+        ruleTester.run('enforce-functions', enforceFunctions, {
+          valid: [],
+          invalid: [
+            {
+              code: 'import { reduceRight } from \'lodash-es\'; const result = reduceRight(array, fn, initial);',
+              output: 'import { reduceRight } from \'lodash-es\'; const result = array.reduceRight(fn, initial);',
+              options: [{ exclude: ['reduceRight'] }],
+              errors: [{ message: /Lodash function 'reduceRight' is excluded/ }],
+            },
+          ],
+        })
+      }).not.toThrow()
+    })
+
+    it('should autofix first calls', () => {
+      expect(() => {
+        ruleTester.run('enforce-functions', enforceFunctions, {
+          valid: [],
+          invalid: [
+            {
+              code: 'import { first } from \'lodash-es\'; const result = first(array);',
+              output: 'import { first } from \'lodash-es\'; const result = array.at(0);',
+              options: [{ exclude: ['first'] }],
+              errors: [{ message: /Lodash function 'first' is excluded/ }],
+            },
+          ],
+        })
+      }).not.toThrow()
+    })
+
+    it('should autofix head calls', () => {
+      expect(() => {
+        ruleTester.run('enforce-functions', enforceFunctions, {
+          valid: [],
+          invalid: [
+            {
+              code: 'import { head } from \'lodash-es\'; const result = head(array);',
+              output: 'import { head } from \'lodash-es\'; const result = array.at(0);',
+              options: [{ exclude: ['head'] }],
+              errors: [{ message: /Lodash function 'head' is excluded/ }],
+            },
+          ],
+        })
+      }).not.toThrow()
+    })
+
+    it('should autofix last calls', () => {
+      expect(() => {
+        ruleTester.run('enforce-functions', enforceFunctions, {
+          valid: [],
+          invalid: [
+            {
+              code: 'import { last } from \'lodash-es\'; const result = last(array);',
+              output: 'import { last } from \'lodash-es\'; const result = array.at(-1);',
+              options: [{ exclude: ['last'] }],
+              errors: [{ message: /Lodash function 'last' is excluded/ }],
+            },
+          ],
+        })
+      }).not.toThrow()
+    })
+
+    it('should autofix initial calls', () => {
+      expect(() => {
+        ruleTester.run('enforce-functions', enforceFunctions, {
+          valid: [],
+          invalid: [
+            {
+              code: 'import { initial } from \'lodash-es\'; const result = initial(array);',
+              output: 'import { initial } from \'lodash-es\'; const result = array.slice(0, -1);',
+              options: [{ exclude: ['initial'] }],
+              errors: [{ message: /Lodash function 'initial' is excluded/ }],
+            },
+          ],
+        })
+      }).not.toThrow()
+    })
+
+    it('should autofix tail calls', () => {
+      expect(() => {
+        ruleTester.run('enforce-functions', enforceFunctions, {
+          valid: [],
+          invalid: [
+            {
+              code: 'import { tail } from \'lodash-es\'; const result = tail(array);',
+              output: 'import { tail } from \'lodash-es\'; const result = array.slice(1);',
+              options: [{ exclude: ['tail'] }],
+              errors: [{ message: /Lodash function 'tail' is excluded/ }],
+            },
+          ],
+        })
+      }).not.toThrow()
+    })
+  })
 })

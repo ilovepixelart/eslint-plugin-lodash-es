@@ -172,7 +172,7 @@ const enforceFunctions: Rule.RuleModule = {
         // Check for default or namespace imports
         const defaultOrNamespaceSpecifier = node.specifiers.find(spec =>
           ['ImportDefaultSpecifier', 'ImportNamespaceSpecifier'].includes(spec.type),
-        )
+        ) as ImportDefaultSpecifier | ImportNamespaceSpecifier | undefined
 
         if (defaultOrNamespaceSpecifier) {
           handleDefaultOrNamespaceImports(node, defaultOrNamespaceSpecifier, sourceCode, options, context)

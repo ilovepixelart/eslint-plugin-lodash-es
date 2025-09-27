@@ -249,6 +249,41 @@ export function createPrototypeMethodAlternative(
 }
 
 /**
+ * Creates alternatives for prototype methods with fixed parameters
+ * Used when lodash function takes only target object but native method needs fixed params
+ *
+ * @example
+ * // Creates: _.first(array) → array.at(0)
+ * createFixedParamPrototypeMethodAlternative(FunctionCategory.Array, 'first', 'at', '0', 'Get first element')
+ *
+ * // Creates: _.last(array) → array.at(-1)
+ * createFixedParamPrototypeMethodAlternative(FunctionCategory.Array, 'last', 'at', '-1', 'Get last element')
+ */
+export function createFixedParamPrototypeMethodAlternative(
+  category: FunctionCategory,
+  lodashName: string,
+  methodName: string,
+  fixedParams: string,
+  description: string,
+  options?: Partial<CreateAlternativeOptions>,
+): NativeAlternative {
+  // Determine object name and prototype prefix based on category
+  const objectName = category === FunctionCategory.Array ? 'array' : 'string'
+  const prototypePrefix = category === FunctionCategory.Array ? 'Array.prototype' : 'String.prototype'
+
+  return createAlternative({
+    category,
+    native: `${prototypePrefix}.${methodName}[${fixedParams}]`, // Encode fixed params in brackets
+    description,
+    example: {
+      lodash: `_.${lodashName}(${objectName})`,
+      native: `${objectName}.${methodName}(${fixedParams})`,
+    },
+    ...options,
+  })
+}
+
+/**
  * Creates alternatives for static methods (Array.isArray(), Object.keys(), Math.max())
  *
  * @example
