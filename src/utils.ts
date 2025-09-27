@@ -2,9 +2,10 @@
  * Shared utility functions for lodash-es ESLint rules
  */
 import { lodashModules, lodashFunctions, nativeAlternatives, SafetyLevel, MigrationDifficulty, FunctionCategory } from './constants'
+import { RegexCache } from './regex-cache'
 
 import type { Rule, SourceCode } from 'eslint'
-import type { Usage, NativeAlternative, AlternativeFilterConfig, LodashFunctionName, LodashModuleName, LodashAlternativeFunctionName } from './types'
+import type { Usage, NativeAlternative, AlternativeFilterConfig, LodashFunctionName, LodashModuleName } from './types'
 
 /**
  * Get source code from ESLint context (handles deprecated API)
@@ -31,7 +32,7 @@ export function isLodashFunction(functionName: LodashFunctionName): boolean {
  * Create regex pattern for finding lodash member expressions
  */
 export function createLodashMemberRegex(importName: string): RegExp {
-  return new RegExp(`\\b${importName}\\.(\\w+)`, 'g')
+  return RegexCache.getMemberRegex(importName)
 }
 
 /**
@@ -53,6 +54,36 @@ export function findLodashUsages(sourceCode: string, importName: string): Usage[
         originalText: match[0],
       })
     }
+  }
+
+  return usages
+}
+
+/**
+ * Find destructured lodash function usages in source code
+ */
+export function findDestructuredLodashUsages(sourceCode: string, localName: string, originalName?: string): Usage[] {
+  const usages: Usage[] = []
+  const lodashFunctionName = originalName || localName
+
+  // Only proceed if the original function is a valid lodash function
+  if (!isLodashFunction(lodashFunctionName as LodashFunctionName)) {
+    return usages
+  }
+
+  // Regex to find standalone function calls like "map(" but not ".map("
+  // Use negative lookbehind to exclude method calls - now cached for performance
+  const regex = RegexCache.getDestructuredRegex(localName)
+  let match
+
+  while ((match = regex.exec(sourceCode)) !== null) {
+    usages.push({
+      start: match.index,
+      end: match.index + match[0].length - 1, // Don't include the opening paren
+      fullMatch: localName,
+      functionName: lodashFunctionName as LodashFunctionName,
+      originalText: localName,
+    })
   }
 
   return usages
@@ -97,8 +128,8 @@ export function hasNativeAlternative(functionName: string): boolean {
 /**
  * Get alternatives by function category (array, object, string, etc.)
  */
-export function getAlternativesByCategory(category: FunctionCategory): Partial<Record<LodashAlternativeFunctionName, NativeAlternative>> {
-  const result: Partial<Record<LodashAlternativeFunctionName, NativeAlternative>> = {}
+export function getAlternativesByCategory(category: FunctionCategory): Partial<Record<string, NativeAlternative>> {
+  const result: Partial<Record<string, NativeAlternative>> = {}
   for (const [key, alt] of nativeAlternatives) {
     if (alt.category === category) {
       result[key] = alt
@@ -110,8 +141,8 @@ export function getAlternativesByCategory(category: FunctionCategory): Partial<R
 /**
  * Get only safe alternatives (no behavioral differences)
  */
-export function getSafeAlternatives(): Partial<Record<LodashAlternativeFunctionName, NativeAlternative>> {
-  const result: Partial<Record<LodashAlternativeFunctionName, NativeAlternative>> = {}
+export function getSafeAlternatives(): Partial<Record<string, NativeAlternative>> {
+  const result: Partial<Record<string, NativeAlternative>> = {}
   for (const [key, alt] of nativeAlternatives) {
     if (alt.safety.level === SafetyLevel.Safe) {
       result[key] = alt
@@ -123,8 +154,8 @@ export function getSafeAlternatives(): Partial<Record<LodashAlternativeFunctionN
 /**
  * Get alternatives by migration difficulty level
  */
-export function getAlternativesByDifficulty(difficulty: MigrationDifficulty): Partial<Record<LodashAlternativeFunctionName, NativeAlternative>> {
-  const result: Partial<Record<LodashAlternativeFunctionName, NativeAlternative>> = {}
+export function getAlternativesByDifficulty(difficulty: MigrationDifficulty): Partial<Record<string, NativeAlternative>> {
+  const result: Partial<Record<string, NativeAlternative>> = {}
   for (const [key, alt] of nativeAlternatives) {
     if (alt.migration.difficulty === difficulty) {
       result[key] = alt

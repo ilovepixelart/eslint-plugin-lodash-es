@@ -32,6 +32,11 @@ export const functionCategories = Object.values(FunctionCategory)
 
 // Common safety configurations
 export const safetyConfigs = {
+  safe: {
+    level: SafetyLevel.Safe,
+    concerns: [],
+    mitigation: 'Direct replacement with no safety concerns',
+  },
   nullUndefinedThrows: {
     level: SafetyLevel.Caution,
     concerns: ['Throws on null/undefined input'],
@@ -46,6 +51,14 @@ export const safetyConfigs = {
 
 // Common migration configurations
 export const migrationConfigs = {
+  easy: {
+    difficulty: MigrationDifficulty.Easy,
+    challenges: ['Direct replacement'],
+    steps: [
+      'Replace lodash function with native equivalent',
+      'Test functionality',
+    ],
+  },
   nullSafetyHandling: {
     difficulty: MigrationDifficulty.Medium,
     challenges: ['Null safety handling'],
@@ -78,6 +91,10 @@ export const relatedFunctions = {
   arrayTests: ['some', 'every', 'filter'] as const,
   arrayReducers: ['map', 'filter', 'reduce'] as const,
   arrayMutators: ['sort', 'reverse'] as const,
+  arrayDeduplication: ['uniq', 'uniqBy'] as const,
+  arrayFilters: ['filter', 'compact', 'reject'] as const,
+  arraySorting: ['sort', 'sortBy', 'orderBy'] as const,
+  objectManipulation: ['pick', 'omit', 'merge', 'assign'] as const,
 } as const
 
 // Common description templates to reduce duplication
@@ -249,6 +266,41 @@ export function createPrototypeMethodAlternative(
 }
 
 /**
+ * Creates alternatives for prototype methods with fixed parameters
+ * Used when lodash function takes only target object but native method needs fixed params
+ *
+ * @example
+ * // Creates: _.first(array) → array.at(0)
+ * createFixedParamPrototypeMethodAlternative(FunctionCategory.Array, 'first', 'at', '0', 'Get first element')
+ *
+ * // Creates: _.last(array) → array.at(-1)
+ * createFixedParamPrototypeMethodAlternative(FunctionCategory.Array, 'last', 'at', '-1', 'Get last element')
+ */
+export function createFixedParamPrototypeMethodAlternative(
+  category: FunctionCategory,
+  lodashName: string,
+  methodName: string,
+  fixedParams: string,
+  description: string,
+  options?: Partial<CreateAlternativeOptions>,
+): NativeAlternative {
+  // Determine object name and prototype prefix based on category
+  const objectName = category === FunctionCategory.Array ? 'array' : 'string'
+  const prototypePrefix = category === FunctionCategory.Array ? 'Array.prototype' : 'String.prototype'
+
+  return createAlternative({
+    category,
+    native: `${prototypePrefix}.${methodName}[${fixedParams}]`, // Encode fixed params in brackets
+    description,
+    example: {
+      lodash: `_.${lodashName}(${objectName})`,
+      native: `${objectName}.${methodName}(${fixedParams})`,
+    },
+    ...options,
+  })
+}
+
+/**
  * Creates alternatives for static methods (Array.isArray(), Object.keys(), Math.max())
  *
  * @example
@@ -305,4 +357,127 @@ export function createExpressionAlternative(
     },
     ...options,
   })
+}
+
+/**
+ * Helper function for Object static methods with null safety concerns
+ */
+export function createObjectStaticMethodWithNullSafety(
+  methodName: string,
+  description: string,
+  customParam?: string,
+  options?: Partial<CreateAlternativeOptions>,
+): NativeAlternative {
+  return createStaticMethodAlternative(
+    FunctionCategory.Object,
+    methodName,
+    'Object',
+    description,
+    customParam || 'object || {}',
+    {
+      safety: safetyConfigs.nullUndefinedThrows,
+      migration: migrationConfigs.nullSafetyHandling,
+      ...options,
+    },
+  )
+}
+
+/**
+ * Helper function for simple array prototype methods with standard patterns
+ */
+export function createSimpleArrayMethod(
+  methodName: string,
+  description: string,
+  params: string,
+  relatedGroup: string[],
+): NativeAlternative {
+  return createPrototypeMethodAlternative(
+    FunctionCategory.Array,
+    methodName,
+    description,
+    params,
+    { related: relatedGroup },
+  )
+}
+
+/**
+ * Helper function for Object manipulation methods that return new objects
+ */
+export function createObjectManipulationMethod(
+  methodName: string,
+  nativeExpression: string,
+  description: string,
+  difficulty: MigrationDifficulty = MigrationDifficulty.Easy,
+  options?: Partial<CreateAlternativeOptions>,
+): NativeAlternative {
+  return createExpressionAlternative(
+    FunctionCategory.Object,
+    methodName,
+    nativeExpression,
+    description,
+    {
+      migration: { difficulty, ...options?.migration },
+      safety: safetyConfigs.safe,
+      related: [...relatedFunctions.objectManipulation],
+      ...options,
+    },
+  )
+}
+
+/**
+ * Helper function for object property access methods
+ */
+export function createObjectPropertyMethod(
+  methodName: string,
+  nativeExpression: string,
+  description: string,
+  difficulty: MigrationDifficulty = MigrationDifficulty.Medium,
+  options?: Partial<CreateAlternativeOptions>,
+): NativeAlternative {
+  return createExpressionAlternative(
+    FunctionCategory.Object,
+    methodName,
+    nativeExpression,
+    description,
+    {
+      migration: {
+        difficulty,
+        challenges: ['Property access patterns vs lodash string paths', ...options?.migration?.challenges || []],
+        ...options?.migration,
+      },
+      safety: {
+        level: SafetyLevel.Caution,
+        concerns: ['Optional chaining requires ES2020+'],
+        mitigation: 'Use babel-plugin-proposal-optional-chaining for legacy support',
+        ...options?.safety,
+      },
+      related: ['get', 'has', 'set'] as const,
+      notes: ['Uses modern optional chaining syntax', 'Consider polyfills for older browsers', ...options?.notes || []],
+      ...options,
+    },
+  )
+}
+
+/**
+ * Helper function for array deduplication and filtering methods
+ */
+export function createArrayTransformMethod(
+  methodName: string,
+  nativeExpression: string,
+  description: string,
+  relatedGroup: readonly string[],
+  options?: Partial<CreateAlternativeOptions>,
+): NativeAlternative {
+  return createExpressionAlternative(
+    FunctionCategory.Array,
+    methodName,
+    nativeExpression,
+    description,
+    {
+      migration: migrationConfigs.easy,
+      safety: safetyConfigs.safe,
+      related: [...relatedGroup],
+      ...options,
+    },
+  )
 }

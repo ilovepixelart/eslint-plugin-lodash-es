@@ -42,7 +42,7 @@ const enforceLodashDestructuring: Rule.RuleModule = {
 
         if (hasDefaultImport || hasNamespaceImport) {
           const importSpecifier = node.specifiers.find(spec =>
-            spec.type === 'ImportDefaultSpecifier' || spec.type === 'ImportNamespaceSpecifier',
+            ['ImportDefaultSpecifier', 'ImportNamespaceSpecifier'].includes(spec.type),
           )
           if (!importSpecifier) return
 
@@ -77,8 +77,7 @@ const enforceLodashDestructuring: Rule.RuleModule = {
                 }
 
                 return fixes
-              }
-              catch (error) {
+              } catch (error) {
                 console.error('Auto-fix error:', error)
                 // Fallback if auto-detection fails
                 return fixer.replaceText(node, `import { /* Add specific functions here */ } from 'lodash-es';`)

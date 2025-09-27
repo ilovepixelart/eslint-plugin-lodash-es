@@ -1,13 +1,32 @@
 /**
- * TypeScript types for the lodash-es ESLint plugin
+ * Simplified TypeScript types for the lodash-es ESLint plugin
+ * Ultra-elegant type definitions with improved developer experience
  */
-import { lodashModules, lodashFunctions, nativeAlternatives } from './constants'
-import type { NativeAlternative } from './shared'
 
-import type { Rule } from 'eslint'
-
-// Re-export commonly used types from shared
+// Import and re-export all core types for convenience
+export type { FixResult, CallInfo } from './autofix/parameter-parser'
 export type {
+  // Core types
+  LodashFunctionName,
+  LodashModuleName,
+
+  // Configuration types
+  EnforceFunctionsRuleOptions,
+  FlatConfig,
+  LegacyConfig,
+  ESLintPlugin,
+  RuleConfig,
+  RuleLevel,
+
+  // Usage and autofix types
+  Usage,
+  TransformPattern,
+
+  // Test utility types
+  TransformTest,
+  TestConfig,
+
+  // Alternative types from shared
   NativeAlternative,
   AlternativeFilterConfig,
   SafetyLevel,
@@ -16,45 +35,7 @@ export type {
   NativeExample,
   SafetyInfo,
   MigrationInfo,
-} from './shared'
-
-export type LodashModuleName = typeof lodashModules extends Set<infer T> ? T : never
-export type LodashFunctionName = typeof lodashFunctions extends Set<infer T> ? T : never
-export type LodashAlternativeFunctionName = typeof nativeAlternatives extends Map<infer K, NativeAlternative> ? K : never
-
-export interface Usage {
-  start: number
-  end: number
-  fullMatch: string
-  functionName: LodashFunctionName
-  originalText: string
-}
-
-export interface FlatConfig {
-  name?: string
-  plugins?: Record<string, ESLintPlugin>
-  rules?: Record<string, string | string[]>
-}
-
-export interface LegacyConfig {
-  plugins: string[]
-  rules: Record<string, string>
-}
-
-export interface ESLintPlugin {
-  rules: Record<string, Rule.RuleModule>
-  configs: {
-    'base': FlatConfig[]
-    'recommended': FlatConfig[]
-    'all': FlatConfig[]
-    'recommended-legacy': LegacyConfig
-  }
-}
-
-export interface EnforceFunctionsRuleOptions {
-  exclude?: LodashFunctionName[]
-  include?: LodashFunctionName[]
-}
+} from './types/core'
 
 export interface SuggestNativeAlternativesRuleOptions {
   includeAll?: boolean

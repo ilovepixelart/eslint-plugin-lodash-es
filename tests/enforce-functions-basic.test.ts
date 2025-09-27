@@ -1,10 +1,7 @@
 import { describe, it, expect } from 'vitest'
-
 import { RuleTester } from 'eslint'
-
 import enforceFunctions from '../src/rules/enforce-functions'
 
-// Create ESLint rule tester
 const ruleTester = new RuleTester({
   languageOptions: {
     ecmaVersion: 2022,
@@ -12,12 +9,11 @@ const ruleTester = new RuleTester({
   },
 })
 
-describe('enforce-functions', () => {
+describe('enforce-functions basic configuration', () => {
   it('should pass when no restrictions are configured', () => {
     expect(() => {
       ruleTester.run('enforce-functions', enforceFunctions, {
         valid: [
-          // No options means no restrictions
           'import _ from \'lodash-es\'; const result = _.map([1, 2, 3], x => x * 2);',
           'import { map, filter } from \'lodash-es\'; map([1, 2, 3], x => x * 2);',
           'import * as lodash from \'lodash-es\'; lodash.filter([1, 2, 3], x => x > 1);',
@@ -31,7 +27,6 @@ describe('enforce-functions', () => {
     expect(() => {
       ruleTester.run('enforce-functions', enforceFunctions, {
         valid: [
-          // Allowed functions should pass
           {
             code: 'import _ from \'lodash-es\'; const result = _.first([1, 2, 3]);',
             options: [{ exclude: ['map'] }],
@@ -40,6 +35,7 @@ describe('enforce-functions', () => {
         invalid: [
           {
             code: 'import _ from \'lodash-es\'; const result = _.map([1, 2, 3], x => x * 2);',
+            output: 'import _ from \'lodash-es\'; const result = [1, 2, 3].map(x => x * 2);',
             options: [{ exclude: ['map'] }],
             errors: [
               {
@@ -51,6 +47,9 @@ describe('enforce-functions', () => {
             code: `import _ from 'lodash-es';
 const result = _.map([1, 2, 3], x => x * 2);
 const filtered = _.filter([1, 2, 3], x => x > 1);`,
+            output: `import _ from 'lodash-es';
+const result = [1, 2, 3].map(x => x * 2);
+const filtered = [1, 2, 3].filter(x => x > 1);`,
             options: [{ exclude: ['map', 'filter'] }],
             errors: [
               {
@@ -78,6 +77,7 @@ const filtered = _.filter([1, 2, 3], x => x > 1);`,
         invalid: [
           {
             code: 'import * as lodash from \'lodash-es\'; const result = lodash.map([1, 2, 3], x => x * 2);',
+            output: 'import * as lodash from \'lodash-es\'; const result = [1, 2, 3].map(x => x * 2);',
             options: [{ exclude: ['map'] }],
             errors: [
               {
@@ -101,7 +101,8 @@ const filtered = _.filter([1, 2, 3], x => x > 1);`,
         ],
         invalid: [
           {
-            code: 'import { map } from \'lodash-es\';',
+            code: 'import { map } from \'lodash-es\'; const result = map([1, 2, 3], x => x * 2);',
+            output: 'import { map } from \'lodash-es\'; const result = [1, 2, 3].map(x => x * 2);',
             options: [{ exclude: ['map'] }],
             errors: [
               {
@@ -110,7 +111,8 @@ const filtered = _.filter([1, 2, 3], x => x > 1);`,
             ],
           },
           {
-            code: 'import { map, filter, first } from \'lodash-es\';',
+            code: 'import { map, filter, first } from \'lodash-es\'; const mapped = map([1, 2, 3], x => x * 2); const filtered = filter([1, 2, 3], x => x > 1);',
+            output: 'import { map, filter, first } from \'lodash-es\'; const mapped = [1, 2, 3].map(x => x * 2); const filtered = [1, 2, 3].filter(x => x > 1);',
             options: [{ exclude: ['map', 'filter'] }],
             errors: [
               {
@@ -138,6 +140,7 @@ const filtered = _.filter([1, 2, 3], x => x > 1);`,
         invalid: [
           {
             code: 'import _ from \'lodash-es\'; const result = _.map([1, 2, 3], x => x * 2);',
+            output: 'import _ from \'lodash-es\'; const result = [1, 2, 3].map(x => x * 2);',
             options: [{ include: ['first', 'last'] }],
             errors: [
               {
@@ -149,13 +152,16 @@ const filtered = _.filter([1, 2, 3], x => x > 1);`,
             code: `import _ from 'lodash-es';
 const result = _.map([1, 2, 3], x => x * 2);
 const sorted = _.sortBy([1, 2, 3]);`,
+            output: `import _ from 'lodash-es';
+const result = [1, 2, 3].map(x => x * 2);
+const sorted = [1, 2, 3].toSorted();`,
             options: [{ include: ['first', 'last'] }],
             errors: [
               {
                 message: 'Lodash function \'map\' is not in the allowed functions list. Consider using native Array.prototype.map: array.map(fn)',
               },
               {
-                message: 'Lodash function \'sortBy\' is not in the allowed functions list.',
+                message: 'Lodash function \'sortBy\' is not in the allowed functions list. Consider using native array.toSorted((a, b) => fn(a) - fn(b)): array.toSorted((a, b) => fn(a) - fn(b))',
               },
             ],
           },
@@ -175,7 +181,8 @@ const sorted = _.sortBy([1, 2, 3]);`,
         ],
         invalid: [
           {
-            code: 'import { map } from \'lodash-es\';',
+            code: 'import { map } from \'lodash-es\'; const result = map([1, 2, 3], x => x * 2);',
+            output: 'import { map } from \'lodash-es\'; const result = [1, 2, 3].map(x => x * 2);',
             options: [{ include: ['first', 'last'] }],
             errors: [
               {
@@ -184,7 +191,8 @@ const sorted = _.sortBy([1, 2, 3]);`,
             ],
           },
           {
-            code: 'import { map, filter, first } from \'lodash-es\';',
+            code: 'import { map, filter, first } from \'lodash-es\'; const mapped = map([1, 2, 3], x => x * 2); const filtered = filter([1, 2, 3], x => x > 1);',
+            output: 'import { map, filter, first } from \'lodash-es\'; const mapped = [1, 2, 3].map(x => x * 2); const filtered = [1, 2, 3].filter(x => x > 1);',
             options: [{ include: ['first', 'last'] }],
             errors: [
               {
@@ -208,14 +216,17 @@ const sorted = _.sortBy([1, 2, 3]);`,
           {
             code: `import _, { filter } from 'lodash-es';
 const result = _.map([1, 2, 3], x => x * 2);
-filter([1, 2, 3], x => x > 1);`,
+const filtered = filter([1, 2, 3], x => x > 1);`,
+            output: `import _, { filter } from 'lodash-es';
+const result = [1, 2, 3].map(x => x * 2);
+const filtered = [1, 2, 3].filter(x => x > 1);`,
             options: [{ exclude: ['map', 'filter'] }],
             errors: [
               {
-                message: 'Lodash function \'filter\' is excluded by configuration. Consider using native Array.prototype.filter: array.filter(predicate)',
+                message: 'Lodash function \'map\' is excluded by configuration. Consider using native Array.prototype.map: array.map(fn)',
               },
               {
-                message: 'Lodash function \'map\' is excluded by configuration. Consider using native Array.prototype.map: array.map(fn)',
+                message: 'Lodash function \'filter\' is excluded by configuration. Consider using native Array.prototype.filter: array.filter(predicate)',
               },
             ],
           },
@@ -228,7 +239,6 @@ filter([1, 2, 3], x => x > 1);`,
     expect(() => {
       ruleTester.run('enforce-functions', enforceFunctions, {
         valid: [
-          // Non-lodash imports should be ignored
           {
             code: 'import { map } from \'ramda\';',
             options: [{ exclude: ['map'] }],
@@ -250,6 +260,7 @@ filter([1, 2, 3], x => x > 1);`,
         invalid: [
           {
             code: 'import _ from \'lodash\'; const result = _.map([1, 2, 3], x => x * 2);',
+            output: 'import _ from \'lodash\'; const result = [1, 2, 3].map(x => x * 2);',
             options: [{ exclude: ['map'] }],
             errors: [
               {

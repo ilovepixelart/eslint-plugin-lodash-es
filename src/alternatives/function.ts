@@ -1,7 +1,7 @@
 /**
  * Native alternatives for Function/Type checking functions
  */
-import { FunctionCategory, createExpressionAlternative, createStaticMethodAlternative } from '../shared'
+import { FunctionCategory, createExpressionAlternative, createStaticMethodAlternative, createPrototypeMethodAlternative } from '../shared'
 import type { NativeAlternative } from '../shared'
 
 export const functionAlternatives = new Map<string, NativeAlternative>([
@@ -74,12 +74,11 @@ export const functionAlternatives = new Map<string, NativeAlternative>([
     { notes: ['Consider parseFloat() or parseInt() for strings'] },
   )],
 
-  ['toString', createStaticMethodAlternative(
+  ['toString', createPrototypeMethodAlternative(
     FunctionCategory.Function,
     'toString',
-    'String',
     'Convert value to string',
-    'value',
-    { notes: ['Consider .toString() method for objects'] },
+    undefined,
+    { notes: ['Note: .toString() may fail on null/undefined values'] },
   )],
 ])

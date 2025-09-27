@@ -12,9 +12,9 @@ import type { LodashFunctionName } from '../types'
  * Patterns that indicate per-method imports (deprecated/being removed)
  */
 const PER_METHOD_PATTERNS = [
-  /^lodash\/[a-zA-Z]+$/, // lodash/map, lodash/filter
-  /^lodash\.[a-zA-Z]+$/, // lodash.map, lodash.filter
-  /^lodash\/fp\/[a-zA-Z]+$/, // lodash/fp/map
+  /^lodash\/[a-zA-Z]{1,50}$/, // lodash/map, lodash/filter
+  /^lodash\.[a-zA-Z]{1,50}$/, // lodash.map, lodash.filter
+  /^lodash\/fp\/[a-zA-Z]{1,50}$/, // lodash/fp/map
 ] as const
 
 /**
@@ -31,8 +31,8 @@ function extractFunctionName(source: string): LodashFunctionName {
   // lodash/map -> map
   // lodash.map -> map
   // lodash/fp/map -> map
-  const slashMatch = /\/([a-zA-Z]+)$/.exec(source)
-  const dotMatch = /\.([a-zA-Z]+)$/.exec(source)
+  const slashMatch = /\/([a-zA-Z]{1,50})$/.exec(source)
+  const dotMatch = /\.([a-zA-Z]{1,50})$/.exec(source)
   const match = slashMatch || dotMatch
   return (match?.[1] || '') as LodashFunctionName
 }
@@ -57,8 +57,7 @@ function analyzePerMethodImports(
   for (const { source, functionName } of perMethodImports) {
     if (isLodashFunction(functionName)) {
       functions.push(functionName)
-    }
-    else {
+    } else {
       invalidSources.push(source)
     }
   }

@@ -29,6 +29,7 @@ export default defineConfig(
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/explicit-function-return-type': 'error',
       '@typescript-eslint/no-explicit-any': 'error',
+      '@stylistic/brace-style': ['error', '1tbs', { allowSingleLine: true }],
     },
   },
 )

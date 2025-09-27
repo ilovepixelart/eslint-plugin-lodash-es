@@ -134,7 +134,7 @@ describe('suggest-native-alternatives rule', () => {
         'import _ from "lodash-es"; const result = _.debounce(fn, 100);',
         'import { debounce, throttle } from "lodash-es"; // No native alternatives',
         // Test import specifier edge cases
-        'import { chunk, compact } from "lodash-es"; // No native alternatives',
+        'import { throttle, isEmpty } from "lodash-es"; // Functions without clean native alternatives',
       ],
       invalid: [
         // Mix of functions with and without alternatives
