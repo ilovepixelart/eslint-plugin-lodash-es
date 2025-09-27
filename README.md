@@ -15,7 +15,7 @@ ESLint plugin that enforces destructured imports from lodash-es with auto-fixing
 
 **Key Benefits:**
 
-- 🔧 Auto-fixes imports and transforms to native alternative
+- 🔧 Auto-fixes imports for better tree-shaking
 - 📦 Reduces bundle size significantly
 - 🛡️ Configurable function usage policies
 - 💡 Intelligent suggestions for native alternatives
