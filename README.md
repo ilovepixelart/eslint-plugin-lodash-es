@@ -84,7 +84,7 @@ export default [
     rules: {
       'lodash-es/enforce-destructuring': 'error',
       'lodash-es/no-chaining': 'error',
-      'lodash-es/no-method-imports': 'error'
+      'lodash-es/no-method-imports': 'error',
       'lodash-es/enforce-functions': ['error', { exclude: ['forEach'] }],
       'lodash-es/suggest-native-alternatives': 'warn',
     }
@@ -103,6 +103,8 @@ module.exports = {
 
 ## What it does
 
+### 1. Enforces Destructured Imports
+
 Transforms this:
 
 ```typescript
@@ -117,6 +119,30 @@ import { first } from 'lodash-es'
 const result = first([1, 2, 3])
 ```
 
+### 2. Transforms to Native JavaScript
+
+Transforms this:
+
+```typescript
+import { map, first, groupBy } from 'lodash-es'
+
+const doubled = map([1, 2, 3], x => x * 2)
+const firstItem = first(items)
+const grouped = groupBy(users, 'department')
+```
+
+Into this (automatically):
+
+```typescript
+import { map, first, groupBy } from 'lodash-es'
+
+const doubled = [1, 2, 3].map(x => x * 2)
+const firstItem = items.at(0)
+const grouped = Object.groupBy(users, user => user.department)
+```
+
+**Supports 67+ lodash functions** with automatic transformation to modern JavaScript equivalents, including ES2022+ features like `Array.at()` and `Object.groupBy()`.
+
 ## Rules
 
 | Rule | Description | 💡 | 🔧 | ✅ |
@@ -124,7 +150,7 @@ const result = first([1, 2, 3])
 | [enforce-destructuring](./docs/rules/enforce-destructuring.md) | Enforce destructured imports from lodash-es | | 🔧 | ✅ |
 | [no-chaining](./docs/rules/no-chaining.md) | Prevent chaining that kills tree-shaking | 💡 | 🔧 | ✅ |
 | [no-method-imports](./docs/rules/no-method-imports.md) | Prevent deprecated per-method imports | 💡 | 🔧 | ✅ |
-| [enforce-functions](./docs/rules/enforce-functions.md) | Control which lodash functions are allowed | 💡 | | |
+| [enforce-functions](./docs/rules/enforce-functions.md) | Transform lodash functions to native JavaScript | 💡 | 🔧 | |
 | [suggest-native-alternatives](./docs/rules/suggest-native-alternatives.md) | Suggest native JavaScript alternatives | 💡 | | |
 
 **Legend:** 💡 Suggestions • 🔧 Auto-fixable • ✅ Recommended

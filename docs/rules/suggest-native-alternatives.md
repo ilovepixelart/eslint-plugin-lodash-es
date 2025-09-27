@@ -15,34 +15,42 @@ This rule suggests native JavaScript alternatives for lodash functions that have
 Examples of code that **triggers suggestions** for this rule:
 
 ```typescript
-import { map, filter, find, forEach } from 'lodash-es'
+import { map, filter, first, last, groupBy, cloneDeep } from 'lodash-es'
 
-// Suggests: Consider using native 'array.map(callback)' instead of lodash 'map'
+// Basic array methods
 const doubled = map([1, 2, 3], x => x * 2)
-
-// Suggests: Consider using native 'array.filter(predicate)' instead of lodash 'filter'  
 const evens = filter([1, 2, 3, 4], x => x % 2 === 0)
 
-// Suggests: Consider using native 'array.find(predicate)' instead of lodash 'find'
-const found = find([1, 2, 3], x => x > 2)
+// Modern array access
+const firstItem = first(items)
+const lastItem = last(items)
 
-// Suggests: Consider using native 'array.forEach(callback)' instead of lodash 'forEach'
-forEach([1, 2, 3], console.log)
+// Advanced collection functions
+const grouped = groupBy(users, 'department')
+const copy = cloneDeep(complexObject)
 ```
 
 Examples of **preferred native alternatives**:
 
 ```typescript
-// Using native alternatives
+// Basic array methods - direct replacements
 const doubled = [1, 2, 3].map(x => x * 2)
-const evens = [1, 2, 3, 4].filter(x => x % 2 === 0)  
-const found = [1, 2, 3].find(x => x > 2)
-[1, 2, 3].forEach(console.log)
+const evens = [1, 2, 3, 4].filter(x => x % 2 === 0)
+
+// Modern ES2022 array access
+const firstItem = items.at(0)
+const lastItem = items.at(-1)
+
+// Modern ES2024 collection functions
+const grouped = Object.groupBy(users, user => user.department)
+const copy = structuredClone(complexObject)
 ```
 
-## Supported Native Alternatives
+## Supported Native Alternatives (67+ Functions)
 
-The rule includes suggestions for lodash functions that have native JavaScript equivalents:
+The rule provides suggestions for lodash functions that have native JavaScript equivalents, organized by category:
+
+### Array Functions (25 functions)
 
 | Lodash Function | Native Alternative | Notes |
 |-----------------|-------------------|--------|
@@ -55,13 +63,107 @@ The rule includes suggestions for lodash functions that have native JavaScript e
 | `reduce` | `Array.prototype.reduce` | Direct replacement |
 | `includes` | `Array.prototype.includes` | Direct replacement |
 | `indexOf` | `Array.prototype.indexOf` | Direct replacement |
-| `reverse` | `Array.prototype.reverse` | Mutates original array |
+| `lastIndexOf` | `Array.prototype.lastIndexOf` | Direct replacement |
+| `flatten` | `Array.prototype.flat` | ES2019+ |
+| `flatMap` | `Array.prototype.flatMap` | ES2019+ |
+| `reduceRight` | `Array.prototype.reduceRight` | Direct replacement |
+| `first` | `Array.prototype.at(0)` | ES2022+ |
+| `head` | `Array.prototype.at(0)` | ES2022+ (alias for first) |
+| `last` | `Array.prototype.at(-1)` | ES2022+ |
+| `initial` | `Array.prototype.slice(0, -1)` | All except last element |
+| `tail` | `Array.prototype.slice(1)` | All except first element |
+| `uniq` | `[...new Set(array)]` | ES6 Set deduplication |
+| `compact` | `array.filter(Boolean)` | Remove falsy values |
+| `sortBy` | `array.toSorted((a, b) => fn(a) - fn(b))` | ES2023+ |
+| `reverse` | `Array.prototype.reverse` | ⚠️ Mutates original array |
 | `concat` | `Array.prototype.concat` | Direct replacement |
 | `slice` | `Array.prototype.slice` | Direct replacement |
 | `join` | `Array.prototype.join` | Direct replacement |
-| `keys` | `Object.keys` | For objects |
-| `values` | `Object.values` | For objects |
-| `assign` | `Object.assign` | For objects |
+| `isArray` | `Array.isArray` | Static method |
+
+### String Functions (12 functions)
+
+| Lodash Function | Native Alternative | Notes |
+|-----------------|-------------------|--------|
+| `startsWith` | `String.prototype.startsWith` | Direct replacement |
+| `endsWith` | `String.prototype.endsWith` | Direct replacement |
+| `repeat` | `String.prototype.repeat` | Direct replacement |
+| `trim` | `String.prototype.trim` | Direct replacement |
+| `trimStart` | `String.prototype.trimStart` | Direct replacement |
+| `trimEnd` | `String.prototype.trimEnd` | Direct replacement |
+| `toLower` | `String.prototype.toLowerCase` | Direct replacement |
+| `toUpper` | `String.prototype.toUpperCase` | Direct replacement |
+| `replace` | `String.prototype.replace` | Direct replacement |
+| `split` | `String.prototype.split` | Direct replacement |
+| `padStart` | `String.prototype.padStart` | ES2017+ |
+| `padEnd` | `String.prototype.padEnd` | ES2017+ |
+
+### Object Functions (4 functions)
+
+| Lodash Function | Native Alternative | Notes |
+|-----------------|-------------------|--------|
+| `keys` | `Object.keys` | ⚠️ Throws on null/undefined |
+| `values` | `Object.values` | ⚠️ Throws on null/undefined |
+| `entries` | `Object.entries` | ⚠️ Throws on null/undefined |
+| `assign` | `Object.assign` | Direct replacement |
+
+### Collection Functions (11 functions)
+
+| Lodash Function | Native Alternative | Notes |
+|-----------------|-------------------|--------|
+| `reject` | `array.filter(item => !predicate(item))` | Inverse filter |
+| `size` | `value.length` | For arrays/strings |
+| `each` | `Array.prototype.forEach` | Alias for forEach |
+| `partition` | `[array.filter(pred), array.filter(item => !pred(item))]` | Split into two arrays |
+| `findLast` | `Array.prototype.findLast` | ES2023+ |
+| `groupBy` | `Object.groupBy(array, fn)` | ES2024+ |
+| `countBy` | `array.reduce((acc, item) => {...}, {})` | Reduce pattern |
+| `keyBy` | `Object.fromEntries(array.map(...))` | Object creation |
+| `chunk` | `Array.from({length: Math.ceil(len/size)}, ...)` | Array chunking |
+| `orderBy` | `array.toSorted((a, b) => fn(a) - fn(b))` | ES2023+ |
+| `isEmpty` | Various approaches | ⚠️ Complex, no single native equivalent |
+
+### Type Checking Functions (11 functions)
+
+| Lodash Function | Native Alternative | Notes |
+|-----------------|-------------------|--------|
+| `isString` | `typeof value === "string"` | Type checking |
+| `isNumber` | `typeof value === "number"` | Type checking |
+| `isBoolean` | `typeof value === "boolean"` | Type checking |
+| `isFunction` | `typeof value === "function"` | Type checking |
+| `isObject` | `typeof value === "object" && value !== null` | Type checking |
+| `isNull` | `value === null` | Direct comparison |
+| `isUndefined` | `value === undefined` | Direct comparison |
+| `isNil` | `value == null` | Null or undefined |
+| `isArray` | `Array.isArray(value)` | Static method |
+| `toString` | `value.toString()` | ⚠️ May fail on null/undefined |
+| `toNumber` | `Number(value)` | Constructor call |
+
+### Math/Number Functions (8 functions)
+
+| Lodash Function | Native Alternative | Notes |
+|-----------------|-------------------|--------|
+| `isFinite` | `Number.isFinite` | Static method |
+| `isInteger` | `Number.isInteger` | Static method |
+| `isNaN` | `Number.isNaN` | Static method |
+| `max` | `Math.max(...array)` | ⚠️ Use spread operator |
+| `min` | `Math.min(...array)` | ⚠️ Use spread operator |
+| `ceil` | `Math.ceil` | Direct replacement |
+| `floor` | `Math.floor` | Direct replacement |
+| `round` | `Math.round` | Direct replacement |
+
+### Advanced Functions (8 functions)
+
+| Lodash Function | Native Alternative | Notes |
+|-----------------|-------------------|--------|
+| `has` | `key in object` | Expression alternative |
+| `pick` | `Object.fromEntries(keys.map(k => [k, obj[k]]))` | Object manipulation |
+| `omit` | `Object.fromEntries(Object.entries(obj).filter(...))` | Object manipulation |
+| `merge` | `Object.assign({}, ...)` | Deep merge pattern |
+| `get` | `obj?.prop?.path` | Optional chaining |
+| `clone` | `{...obj}` | Shallow clone |
+| `cloneDeep` | `structuredClone(obj)` | Native deep clone |
+| `now` | `Date.now()` | Static method |
 
 ## Options
 
