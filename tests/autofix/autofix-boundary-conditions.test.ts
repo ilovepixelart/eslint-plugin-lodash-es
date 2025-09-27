@@ -9,7 +9,7 @@ const ruleTester = new RuleTester({
   },
 })
 
-describe('ultra-extreme edge cases', () => {
+describe('Autofix boundary conditions', () => {
   describe('extreme unicode and special characters', () => {
     it('should handle unicode identifiers', () => {
       expect(() => {
