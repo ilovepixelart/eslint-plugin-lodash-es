@@ -139,6 +139,54 @@ export function extractMethodName(nativeAlternative: string): string | null {
 }
 
 /**
+ * Check if a native alternative is a static method (e.g., "Object.keys", "Math.max")
+ * Excludes prototype methods like "Array.prototype.map"
+ */
+export function isStaticMethod(nativeAlternative: string): boolean {
+  // Exclude prototype methods
+  if (nativeAlternative.includes('.prototype.')) {
+    return false
+  }
+
+  const staticObjectPatterns = /^(Object|Math|Array|Number|Date|JSON|Reflect|Promise|Proxy)\./
+  return staticObjectPatterns.test(nativeAlternative)
+}
+
+/**
+ * Check if a native alternative is a constructor call (e.g., "Number.toNumber" should be "Number")
+ */
+export function isConstructorCall(nativeAlternative: string, functionName: string): boolean {
+  // Special case: toNumber -> Number constructor
+  if (functionName === 'toNumber' && nativeAlternative === 'Number.toNumber') {
+    return true
+  }
+  // Add other constructor cases as needed
+  return false
+}
+
+/**
+ * Extract static object and method from native alternative
+ * Examples:
+ * - "Object.keys" -> { object: "Object", method: "keys" }
+ * - "Math.max" -> { object: "Math", method: "max" }
+ */
+export function extractStaticMethodInfo(nativeAlternative: string): { object: string, method: string } | null {
+  if (!isStaticMethod(nativeAlternative)) return null
+
+  const parts = nativeAlternative.split('.')
+  if (parts.length < 2) return null
+
+  const object = parts[0]
+  const methodPart = parts[1]
+  // Remove any parentheses from method name
+  const method = methodPart?.split('(')[0]
+
+  if (!object || !method) return null
+
+  return { object, method }
+}
+
+/**
  * Find the closing parenthesis of a function call starting from a given position
  */
 export function findClosingParenthesis(text: string, startIndex: number): number {
