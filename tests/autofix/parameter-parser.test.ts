@@ -217,4 +217,52 @@ describe('parameter parser utilities', () => {
       expect(firstParam).toBe('data')
     })
   })
+
+  describe('stress tests', () => {
+    it('should handle extremely nested expressions', () => {
+      const expression = 'data.filter(a => a.items.some(b => b.values.every(c => c.score > data.stats.avg))), item => item.result'
+      const commaIndex = findFirstTopLevelComma(expression)
+      expect(commaIndex).toBe(82)
+
+      const firstParam = expression.slice(0, commaIndex).trim()
+      expect(firstParam).toBe('data.filter(a => a.items.some(b => b.values.every(c => c.score > data.stats.avg)))')
+    })
+
+    it('should handle regex with complex patterns and comma-like characters', () => {
+      const expression = 'strings, s => s.replace(/[\\[\\]{}(),.;:!?]/g, "")'
+      const commaIndex = findFirstTopLevelComma(expression)
+      expect(commaIndex).toBe(7)
+
+      const firstParam = expression.slice(0, commaIndex).trim()
+      expect(firstParam).toBe('strings')
+
+      const secondParam = expression.slice(commaIndex + 1).trim()
+      expect(secondParam).toBe('s => s.replace(/[\\[\\]{}(),.;:!?]/g, "")')
+    })
+
+    it('should handle IIFE (Immediately Invoked Function Expression) as callback', () => {
+      const expression = 'data, (function(multiplier) { return x => x * multiplier; })(2)'
+      const commaIndex = findFirstTopLevelComma(expression)
+      expect(commaIndex).toBe(4)
+
+      const firstParam = expression.slice(0, commaIndex).trim()
+      expect(firstParam).toBe('data')
+
+      const secondParam = expression.slice(commaIndex + 1).trim()
+      expect(secondParam).toBe('(function(multiplier) { return x => x * multiplier; })(2)')
+    })
+
+    it('should handle callbacks with multiple return statements', () => {
+      const expression = `data, item => {
+  if (item.type === 'A') return item.value * 2;
+  if (item.type === 'B') return item.value + 10;
+  return item.value;
+}`
+      const commaIndex = findFirstTopLevelComma(expression)
+      expect(commaIndex).toBe(4)
+
+      const firstParam = expression.slice(0, commaIndex).trim()
+      expect(firstParam).toBe('data')
+    })
+  })
 })

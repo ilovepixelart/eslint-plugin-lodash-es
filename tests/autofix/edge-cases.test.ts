@@ -270,6 +270,102 @@ const result = data.map(x => x * 2);`,
     })
   })
 
+  describe('JavaScript language features', () => {
+    it('should handle async/await in callbacks', () => {
+      expect(() => {
+        ruleTester.run('enforce-functions', enforceFunctions, {
+          valid: [],
+          invalid: [
+            {
+              code: 'import { map } from \'lodash-es\'; const result = map(data, async (item) => await processItem(item));',
+              output: 'import { map } from \'lodash-es\'; const result = data.map(async (item) => await processItem(item));',
+              options: [{ exclude: ['map'] }],
+              errors: [{ message: 'Lodash function \'map\' is excluded by configuration. Consider using native Array.prototype.map: array.map(fn)' }],
+            },
+          ],
+        })
+      }).not.toThrow()
+    })
+
+    it('should handle generator functions as callbacks', () => {
+      expect(() => {
+        ruleTester.run('enforce-functions', enforceFunctions, {
+          valid: [],
+          invalid: [
+            {
+              code: 'import { map } from \'lodash-es\'; const result = map(data, function* (item) { yield item * 2; });',
+              output: 'import { map } from \'lodash-es\'; const result = data.map(function* (item) { yield item * 2; });',
+              options: [{ exclude: ['map'] }],
+              errors: [{ message: 'Lodash function \'map\' is excluded by configuration. Consider using native Array.prototype.map: array.map(fn)' }],
+            },
+          ],
+        })
+      }).not.toThrow()
+    })
+
+    it('should handle try-catch blocks in callbacks', () => {
+      expect(() => {
+        ruleTester.run('enforce-functions', enforceFunctions, {
+          valid: [],
+          invalid: [
+            {
+              code: `import { map } from 'lodash-es';
+const result = map(data, item => {
+  try {
+    return processItem(item);
+  } catch (e) {
+    return null;
+  }
+});`,
+              output: `import { map } from 'lodash-es';
+const result = data.map(item => {
+  try {
+    return processItem(item);
+  } catch (e) {
+    return null;
+  }
+});`,
+              options: [{ exclude: ['map'] }],
+              errors: [{ message: 'Lodash function \'map\' is excluded by configuration. Consider using native Array.prototype.map: array.map(fn)' }],
+            },
+          ],
+        })
+      }).not.toThrow()
+    })
+
+    it('should handle computed property access in callbacks', () => {
+      expect(() => {
+        ruleTester.run('enforce-functions', enforceFunctions, {
+          valid: [],
+          invalid: [
+            {
+              code: 'import { map } from \'lodash-es\'; const prop = "value"; const result = map(data, item => item[prop]);',
+              output: 'import { map } from \'lodash-es\'; const prop = "value"; const result = data.map(item => item[prop]);',
+              options: [{ exclude: ['map'] }],
+              errors: [{ message: 'Lodash function \'map\' is excluded by configuration. Consider using native Array.prototype.map: array.map(fn)' }],
+            },
+          ],
+        })
+      }).not.toThrow()
+    })
+
+    it('should handle Symbol properties', () => {
+      expect(() => {
+        ruleTester.run('enforce-functions', enforceFunctions, {
+          valid: [],
+          invalid: [
+            {
+              code: 'import { map } from \'lodash-es\'; const sym = Symbol("id"); const result = map(data, item => item[sym]);',
+              output: 'import { map } from \'lodash-es\'; const sym = Symbol("id"); const result = data.map(item => item[sym]);',
+              options: [{ exclude: ['map'] }],
+              errors: [{ message: 'Lodash function \'map\' is excluded by configuration. Consider using native Array.prototype.map: array.map(fn)' }],
+            },
+          ],
+        })
+      }).not.toThrow()
+    })
+  })
+
   describe('known limitations', () => {
     it('should document current scope analysis limitations', () => {
       // These scenarios are known limitations that would require advanced scope analysis:
