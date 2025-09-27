@@ -1,3 +1,62 @@
+<a id="v1.1.0"></a>
+# [v1.1.0](https://github.com/ilovepixelart/eslint-plugin-lodash-es/releases/tag/v1.1.0) - 2025-09-27
+
+- Merge pull request [#14](https://github.com/ilovepixelart/eslint-plugin-lodash-es/issues/14) from ilovepixelart/feature/native-alternative-sudgestions  96599c6
+- Flaky  bcc0c19
+- Reuse same functions  cf090a5
+- Doc  4da6455
+- Native alternative suggestions  f1b01d9
+- Docs  e2274bf
+- Remove unused  e0e398e
+- Merge pull request [#13](https://github.com/ilovepixelart/eslint-plugin-lodash-es/issues/13) from ilovepixelart/feature/refactor  97643ca
+- Jiti and more sonar  a83bbce
+- Merge pull request [#12](https://github.com/ilovepixelart/eslint-plugin-lodash-es/issues/12) from ilovepixelart/feature/refactor  d465eaf
+- Default value  17ee652
+- Sonar rules  1a662f7
+- DoS  06963fa
+- Types  7962b06
+- Cleanup  985729c
+- Refactor  6651241
+- Bench  db97c17
+- Alternative  b929981
+- Cleanup  77027ee
+- DoS  1258ca3
+- Dupes  5078e99
+- Dupes cleanup  9ba3867
+- Sonar  b22c008
+- Sonar cleanup  fa5259f
+- DoS  ce29ff7
+- Linting  33fae38
+- More alternatives + autofixes, even more coverage  4b6e492
+- More coverage and some test files rename  851688f
+- More coverage and function coverage  e59904d
+- More coverage and refactor  d0f1b8a
+- More coverage and edge cases  bb92d2d
+- Split  97564f7
+- Autofixable cases  8d12dc7
+- Config  ca10eea
+- Dep  f400cee
+- Highlight usages  4b1e91f
+- Merge pull request [#8](https://github.com/ilovepixelart/eslint-plugin-lodash-es/issues/8) from ilovepixelart/feature/enums  cb5aa3f
+- More consts  1957a4f
+- Update doc  5eed0e9
+- Refactor  4f93337
+- Specialized helper  7076c57
+- Use helper for alternatives  ae1cb7b
+- Fix types  aecdcd5
+- Organize into multiple files  393020f
+- Enums  f681df4
+- Merge pull request [#7](https://github.com/ilovepixelart/eslint-plugin-lodash-es/issues/7) from ilovepixelart/feature/refactor  01395ba
+- Refactor  da0c28e
+- Update changelog for v1.0.0  147e99a
+
+---
+
+https://github.com/ilovepixelart/eslint-plugin-lodash-es/compare/v1.0.0...v1.1.0
+
+[Changes][v1.1.0]
+
+
 <a id="v1.0.0"></a>
 # [v1.0.0](https://github.com/ilovepixelart/eslint-plugin-lodash-es/releases/tag/v1.0.0) - 2025-09-07
 
@@ -90,6 +149,7 @@ https://github.com/ilovepixelart/eslint-plugin-lodash-es/compare/62ffd58aa10c5f1
 [Changes][v0.1.1]
 
 
+[v1.1.0]: https://github.com/ilovepixelart/eslint-plugin-lodash-es/compare/v1.0.0...v1.1.0
 [v1.0.0]: https://github.com/ilovepixelart/eslint-plugin-lodash-es/compare/v0.3.0...v1.0.0
 [v0.3.0]: https://github.com/ilovepixelart/eslint-plugin-lodash-es/compare/v0.2.0...v0.3.0
 [v0.2.0]: https://github.com/ilovepixelart/eslint-plugin-lodash-es/compare/v0.1.2...v0.2.0
