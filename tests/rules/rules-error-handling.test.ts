@@ -102,6 +102,7 @@ describe('rules branch coverage improvements', () => {
             {
               // Mix functions with and without alternatives
               code: 'import { map, debounce, filter, throttle, template } from \'lodash-es\'; map(arr, fn); debounce(fn, 300); filter(arr, pred);',
+              output: 'import { map, debounce, filter, throttle, template } from \'lodash-es\'; arr.map(fn); debounce(fn, 300); arr.filter(pred);',
               errors: [
                 { message: /Consider native.*map/ },
                 { message: /Consider native.*filter/ },
@@ -123,6 +124,7 @@ describe('rules branch coverage improvements', () => {
           invalid: [
             {
               code: 'import _ from \'lodash-es\'; _.map(array, fn); _.debounce(callback, 300); _.throttle(handler, 100);',
+              output: 'import _ from \'lodash-es\'; array.map(fn); _.debounce(callback, 300); _.throttle(handler, 100);',
               errors: [
                 { message: /Consider native.*map/ },
                 // debounce and throttle should trigger continue branches (no errors)
@@ -143,6 +145,7 @@ describe('rules branch coverage improvements', () => {
           invalid: [
             {
               code: 'import lodash from \'lodash-es\'; lodash.map(array, fn); lodash.debounce(callback, 300); lodash.template(str);',
+              output: 'import lodash from \'lodash-es\'; array.map(fn); lodash.debounce(callback, 300); lodash.template(str);',
               errors: [
                 { message: /Consider native.*map/ },
                 // debounce and template should trigger continue branches (no errors)
@@ -170,6 +173,16 @@ describe('rules branch coverage improvements', () => {
                 map(array, fn);
                 filter(array, pred);
                 forEach(array, callback);
+                debounce(handler, 300);
+                throttle(scrollHandler, 100);
+                template(str);
+                memoize(expensiveFunction);
+              `,
+              output: `
+                import { map, filter, forEach, debounce, throttle, template, memoize } from 'lodash-es';
+                array.map(fn);
+                array.filter(pred);
+                array.forEach(callback);
                 debounce(handler, 300);
                 throttle(scrollHandler, 100);
                 template(str);

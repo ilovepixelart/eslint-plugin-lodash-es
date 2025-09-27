@@ -227,6 +227,7 @@ describe('Rules comprehensive validation', () => {
           invalid: [
             {
               code: 'import { map, filter, forEach } from "lodash-es"; map(arr, fn); filter(arr, pred); forEach(arr, callback);',
+              output: 'import { map, filter, forEach } from "lodash-es"; arr.map(fn); arr.filter(pred); arr.forEach(callback);',
               errors: [
                 { message: /Consider native.*map/ },
                 { message: /Consider native.*filter/ },
@@ -246,6 +247,7 @@ describe('Rules comprehensive validation', () => {
           invalid: [
             {
               code: 'import _ from "lodash-es"; _.map(array, fn); _.filter(array, pred);',
+              output: 'import _ from "lodash-es"; array.map(fn); array.filter(pred);',
               errors: [
                 { message: /Consider native.*map/ },
                 { message: /Consider native.*filter/ },
@@ -264,6 +266,7 @@ describe('Rules comprehensive validation', () => {
           invalid: [
             {
               code: 'import { map as mapFunc, filter as filterFunc, some } from "lodash-es"; mapFunc(arr, fn); filterFunc(arr, pred); some(arr, pred);',
+              output: 'import { map as mapFunc, filter as filterFunc, some } from "lodash-es"; mapFunc(arr, fn); filterFunc(arr, pred); arr.some(pred);',
               errors: [
                 { message: /Consider native.*map/ },
                 { message: /Consider native.*filter/ },

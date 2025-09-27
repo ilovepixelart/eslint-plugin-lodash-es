@@ -3,6 +3,7 @@
  * Simplifies rule logic and improves maintainability
  */
 import type { EnforceFunctionsRuleOptions, LodashFunctionName } from '../types'
+import { nativeAlternatives } from '../constants'
 
 export class EnforceFunctionsConfig {
   private readonly options: EnforceFunctionsRuleOptions
@@ -40,6 +41,15 @@ export class EnforceFunctionsConfig {
 
     // No configuration: allow all functions
     return false
+  }
+
+  /**
+   * Check if a function is allowed/should be processed
+   * @param functionName The lodash function name to check
+   * @returns True if the function should be processed
+   */
+  isAllowed(functionName: LodashFunctionName): boolean {
+    return !this.isBlocked(functionName)
   }
 
   /**
@@ -150,5 +160,24 @@ export class EnforceFunctionsConfig {
    */
   static createExcludeOnly(blockedFunctions: LodashFunctionName[]): EnforceFunctionsConfig {
     return new EnforceFunctionsConfig({ exclude: blockedFunctions })
+  }
+
+  /**
+   * Create configuration that includes all functions with native alternatives
+   * @param excludeUnsafe Whether to exclude unsafe alternatives
+   * @returns Configuration for suggest-native-alternatives rule
+   */
+  static createForNativeAlternatives(excludeUnsafe = true): EnforceFunctionsConfig {
+    let functionsWithAlternatives = Array.from(nativeAlternatives.keys()) as LodashFunctionName[]
+
+    // Filter out unsafe alternatives if requested
+    if (excludeUnsafe) {
+      functionsWithAlternatives = functionsWithAlternatives.filter((functionName) => {
+        const alternative = nativeAlternatives.get(functionName)
+        return !alternative?.excludeByDefault
+      })
+    }
+
+    return new EnforceFunctionsConfig({ include: functionsWithAlternatives })
   }
 }
