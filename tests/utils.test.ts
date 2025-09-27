@@ -199,36 +199,36 @@ describe('utils', () => {
       const arrayAlternatives = getAlternativesByCategory(FunctionCategory.Array)
 
       expect(Object.keys(arrayAlternatives).length).toBeGreaterThan(0)
-      Object.values(arrayAlternatives).forEach((alt) => {
+      for (const alt of Object.values(arrayAlternatives)) {
         expect(alt?.category).toBe(FunctionCategory.Array)
-      })
+      }
     })
 
     it('should return alternatives for object category', () => {
       const objectAlternatives = getAlternativesByCategory(FunctionCategory.Object)
 
       expect(Object.keys(objectAlternatives).length).toBeGreaterThan(0)
-      Object.values(objectAlternatives).forEach((alt) => {
+      for (const alt of Object.values(objectAlternatives)) {
         expect(alt?.category).toBe(FunctionCategory.Object)
-      })
+      }
     })
 
     it('should return alternatives for string category', () => {
       const stringAlternatives = getAlternativesByCategory(FunctionCategory.String)
 
       expect(Object.keys(stringAlternatives).length).toBeGreaterThan(0)
-      Object.values(stringAlternatives).forEach((alt) => {
+      for (const alt of Object.values(stringAlternatives)) {
         expect(alt?.category).toBe(FunctionCategory.String)
-      })
+      }
     })
 
     it('should return alternatives for collection category', () => {
       const collectionAlternatives = getAlternativesByCategory(FunctionCategory.Collection)
 
       expect(Object.keys(collectionAlternatives).length).toBeGreaterThan(0)
-      Object.values(collectionAlternatives).forEach((alt) => {
+      for (const alt of Object.values(collectionAlternatives)) {
         expect(alt?.category).toBe(FunctionCategory.Collection)
-      })
+      }
     })
   })
 
@@ -237,18 +237,18 @@ describe('utils', () => {
       const safeAlternatives = getSafeAlternatives()
 
       expect(Object.keys(safeAlternatives).length).toBeGreaterThan(0)
-      Object.values(safeAlternatives).forEach((alt) => {
+      for (const alt of Object.values(safeAlternatives)) {
         expect(alt?.safety.level).toBe(SafetyLevel.Safe)
-      })
+      }
     })
 
     it('should exclude caution and unsafe alternatives', () => {
       const safeAlternatives = getSafeAlternatives()
 
-      Object.values(safeAlternatives).forEach((alt) => {
+      for (const alt of Object.values(safeAlternatives)) {
         expect(alt?.safety.level).not.toBe(SafetyLevel.Caution)
         expect(alt?.safety.level).not.toBe(SafetyLevel.Unsafe)
-      })
+      }
     })
   })
 
@@ -257,26 +257,26 @@ describe('utils', () => {
       const easyAlternatives = getAlternativesByDifficulty(MigrationDifficulty.Easy)
 
       expect(Object.keys(easyAlternatives).length).toBeGreaterThan(0)
-      Object.values(easyAlternatives).forEach((alt) => {
+      for (const alt of Object.values(easyAlternatives)) {
         expect(alt?.migration.difficulty).toBe(MigrationDifficulty.Easy)
-      })
+      }
     })
 
     it('should return alternatives with medium difficulty', () => {
       const mediumAlternatives = getAlternativesByDifficulty(MigrationDifficulty.Medium)
 
       expect(Object.keys(mediumAlternatives).length).toBeGreaterThan(0)
-      Object.values(mediumAlternatives).forEach((alt) => {
+      for (const alt of Object.values(mediumAlternatives)) {
         expect(alt?.migration.difficulty).toBe(MigrationDifficulty.Medium)
-      })
+      }
     })
 
     it('should return alternatives with hard difficulty', () => {
       const hardAlternatives = getAlternativesByDifficulty(MigrationDifficulty.Hard)
 
-      Object.values(hardAlternatives).forEach((alt) => {
+      for (const alt of Object.values(hardAlternatives)) {
         expect(alt?.migration.difficulty).toBe(MigrationDifficulty.Hard)
-      })
+      }
     })
   })
 
@@ -287,9 +287,9 @@ describe('utils', () => {
       }
       const filteredAlternatives = getFilteredAlternatives(config)
 
-      Object.values(filteredAlternatives).forEach((alt) => {
+      for (const alt of Object.values(filteredAlternatives)) {
         expect(alt?.category).toBe(FunctionCategory.Array)
-      })
+      }
     })
 
     it('should filter by safety levels', () => {
@@ -298,9 +298,9 @@ describe('utils', () => {
       }
       const filteredAlternatives = getFilteredAlternatives(config)
 
-      Object.values(filteredAlternatives).forEach((alt) => {
+      for (const alt of Object.values(filteredAlternatives)) {
         expect(alt?.safety.level).toBe(SafetyLevel.Safe)
-      })
+      }
     })
 
     it('should exclude functions marked as excludeByDefault when excludeByDefault is false', () => {
@@ -309,9 +309,9 @@ describe('utils', () => {
       }
       const filteredAlternatives = getFilteredAlternatives(config)
 
-      Object.values(filteredAlternatives).forEach((alt) => {
+      for (const alt of Object.values(filteredAlternatives)) {
         expect(alt?.excludeByDefault).not.toBe(true)
-      })
+      }
     })
 
     it('should filter by maximum difficulty', () => {
@@ -320,9 +320,9 @@ describe('utils', () => {
       }
       const filteredAlternatives = getFilteredAlternatives(config)
 
-      Object.values(filteredAlternatives).forEach((alt) => {
+      for (const alt of Object.values(filteredAlternatives)) {
         expect(alt?.migration.difficulty).toBe(MigrationDifficulty.Easy)
-      })
+      }
     })
 
     it('should filter by maximum difficulty allowing medium and easy', () => {
@@ -331,9 +331,9 @@ describe('utils', () => {
       }
       const filteredAlternatives = getFilteredAlternatives(config)
 
-      Object.values(filteredAlternatives).forEach((alt) => {
+      for (const alt of Object.values(filteredAlternatives)) {
         expect([MigrationDifficulty.Easy, MigrationDifficulty.Medium]).toContain(alt?.migration.difficulty)
-      })
+      }
     })
 
     it('should apply multiple filters simultaneously', () => {
@@ -344,11 +344,11 @@ describe('utils', () => {
       }
       const filteredAlternatives = getFilteredAlternatives(config)
 
-      Object.values(filteredAlternatives).forEach((alt) => {
+      for (const alt of Object.values(filteredAlternatives)) {
         expect(alt?.category).toBe(FunctionCategory.Array)
         expect(alt?.safety.level).toBe(SafetyLevel.Safe)
         expect(alt?.migration.difficulty).toBe(MigrationDifficulty.Easy)
-      })
+      }
     })
 
     it('should return empty object when no alternatives match filters', () => {

@@ -5,7 +5,7 @@ import { lodashModules, lodashFunctions, nativeAlternatives, SafetyLevel, Migrat
 import { RegexCache } from './regex-cache'
 
 import type { Rule, SourceCode } from 'eslint'
-import type { Usage, NativeAlternative, AlternativeFilterConfig, LodashFunctionName, LodashModuleName, LodashAlternativeFunctionName } from './types'
+import type { Usage, NativeAlternative, AlternativeFilterConfig, LodashFunctionName, LodashModuleName } from './types'
 
 /**
  * Get source code from ESLint context (handles deprecated API)
@@ -128,8 +128,8 @@ export function hasNativeAlternative(functionName: string): boolean {
 /**
  * Get alternatives by function category (array, object, string, etc.)
  */
-export function getAlternativesByCategory(category: FunctionCategory): Partial<Record<LodashAlternativeFunctionName, NativeAlternative>> {
-  const result: Partial<Record<LodashAlternativeFunctionName, NativeAlternative>> = {}
+export function getAlternativesByCategory(category: FunctionCategory): Partial<Record<string, NativeAlternative>> {
+  const result: Partial<Record<string, NativeAlternative>> = {}
   for (const [key, alt] of nativeAlternatives) {
     if (alt.category === category) {
       result[key] = alt
@@ -141,8 +141,8 @@ export function getAlternativesByCategory(category: FunctionCategory): Partial<R
 /**
  * Get only safe alternatives (no behavioral differences)
  */
-export function getSafeAlternatives(): Partial<Record<LodashAlternativeFunctionName, NativeAlternative>> {
-  const result: Partial<Record<LodashAlternativeFunctionName, NativeAlternative>> = {}
+export function getSafeAlternatives(): Partial<Record<string, NativeAlternative>> {
+  const result: Partial<Record<string, NativeAlternative>> = {}
   for (const [key, alt] of nativeAlternatives) {
     if (alt.safety.level === SafetyLevel.Safe) {
       result[key] = alt
@@ -154,8 +154,8 @@ export function getSafeAlternatives(): Partial<Record<LodashAlternativeFunctionN
 /**
  * Get alternatives by migration difficulty level
  */
-export function getAlternativesByDifficulty(difficulty: MigrationDifficulty): Partial<Record<LodashAlternativeFunctionName, NativeAlternative>> {
-  const result: Partial<Record<LodashAlternativeFunctionName, NativeAlternative>> = {}
+export function getAlternativesByDifficulty(difficulty: MigrationDifficulty): Partial<Record<string, NativeAlternative>> {
+  const result: Partial<Record<string, NativeAlternative>> = {}
   for (const [key, alt] of nativeAlternatives) {
     if (alt.migration.difficulty === difficulty) {
       result[key] = alt

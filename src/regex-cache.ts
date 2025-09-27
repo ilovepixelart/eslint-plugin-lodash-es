@@ -136,7 +136,7 @@ export class RegexCache {
    * Escape special regex characters in strings
    */
   private static escapeRegex(str: string): string {
-    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    return str.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`)
   }
 
   /**

@@ -5,10 +5,8 @@ import type { SourceCode } from 'eslint'
 import type { Usage, LodashFunctionName } from '../types'
 import { getNativeAlternative } from '../utils'
 import { RegexCache } from '../regex-cache'
-import { findClosingParenthesis } from './parameter-parser'
+import { findClosingParenthesis, CallInfo, FixResult } from './parameter-parser'
 import {
-  type FixResult,
-  type CallInfo,
   createAutofixRouting,
 } from './shared-transforms'
 

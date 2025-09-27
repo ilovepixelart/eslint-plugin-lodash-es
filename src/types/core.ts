@@ -126,29 +126,7 @@ export type RuleConfig
 
 export type RuleLevel = 'off' | 'warn' | 'error' | 0 | 1 | 2
 
-/**
- * Autofix result structure
- */
-export interface FixResult {
-  /** Text range to replace [start, end] */
-  range: [number, number]
-  /** Replacement text */
-  text: string
-}
-
-/**
- * Information about a function call for autofix
- */
-export interface CallInfo {
-  /** Full source code text */
-  fullText: string
-  /** Start position of the call */
-  callStart: number
-  /** End position of the call */
-  callEnd: number
-  /** Parameters of the function call */
-  params: string
-}
+import type { CallInfo, FixResult } from '../autofix/parameter-parser'
 
 /**
  * Transform pattern for pattern-based autofix system
@@ -187,8 +165,3 @@ export interface TestConfig {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   rule?: any
 }
-
-/**
- * Utility type for extracting function names from alternatives map
- */
-export type LodashAlternativeFunctionName = string

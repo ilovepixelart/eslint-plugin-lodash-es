@@ -23,10 +23,10 @@ export class CommonTestPatterns {
     describe(`${category} autofix transformations`, () => {
       const runner = new AutofixTestRunner()
 
-      transformations.forEach((transformation) => {
+      for (const transformation of transformations) {
         const testCase = this.createTransformationTest(transformation, runner)
         it(`should transform ${transformation.function} correctly`, testCase)
-      })
+      }
     })
   }
 
@@ -52,7 +52,7 @@ export class CommonTestPatterns {
     describe(`${configName} configuration`, () => {
       const runner = new AutofixTestRunner()
 
-      testCases.forEach((testCase) => {
+      for (const testCase of testCases) {
         const { function: fnName, code, shouldError } = testCase
 
         if (shouldError) {
@@ -62,7 +62,7 @@ export class CommonTestPatterns {
           const validTest = this.createValidTest(fnName, code, runner)
           it(`should allow ${fnName}`, validTest)
         }
-      })
+      }
     })
   }
 
@@ -110,10 +110,10 @@ export class CommonTestPatterns {
     describe(`${category} edge cases`, () => {
       const runner = new AutofixTestRunner()
 
-      edgeCases.forEach((edgeCase) => {
+      for (const edgeCase of edgeCases) {
         const testCase = this.createEdgeCaseTest(edgeCase, runner)
         it(`should handle ${edgeCase.description}`, testCase)
-      })
+      }
     })
   }
 
@@ -145,10 +145,10 @@ export class CommonTestPatterns {
     }[],
   ): void {
     describe(`${category} performance`, () => {
-      scenarios.forEach((scenario) => {
+      for (const scenario of scenarios) {
         const testCase = this.createPerformanceTest(scenario)
         it(`should benchmark ${scenario.description}`, testCase)
-      })
+      }
     })
   }
 
@@ -187,17 +187,17 @@ export class CommonTestPatterns {
       const testData = dataFactory()
 
       describe('basic transformations', () => {
-        testData.forEach((transformation) => {
+        for (const transformation of testData) {
           const testCase = this.createBasicTransformationTest(transformation, runner)
           it(`should transform ${transformation.function}`, testCase)
-        })
+        }
       })
 
       describe('namespace transformations', () => {
-        testData.slice(0, 3).forEach((transformation) => {
+        for (const transformation of testData.slice(0, 3)) {
           const testCase = this.createNamespaceTransformationTest(transformation, runner)
           it(`should transform namespace ${transformation.function}`, testCase)
-        })
+        }
       })
     })
   }
@@ -330,9 +330,9 @@ export class CommonTestPatterns {
     configurations?: { name: string, options: EnforceFunctionsRuleOptions, testCases: { function: LodashFunctionName, code: string, shouldError: boolean }[] }[],
   ): void {
     if (configurations) {
-      configurations.forEach((configuration) => {
+      for (const configuration of configurations) {
         this.configurationTests(configuration.name, configuration.options, configuration.testCases)
-      })
+      }
     }
   }
 

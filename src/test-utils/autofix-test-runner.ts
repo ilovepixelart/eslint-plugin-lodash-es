@@ -59,8 +59,8 @@ export class AutofixTestRunner {
   /**
    * Test multiple transformations in a batch
    */
-  testBatch(tests: TransformTest[], groupName?: string): void {
-    const testName = groupName || 'batch transformations'
+  testBatch(tests: TransformTest[], groupName = 'batch transformations'): void {
+    const testName = groupName
 
     this.ruleTester.run(testName, this.defaultRule, {
       valid: [],
@@ -283,8 +283,8 @@ export class PerformanceTestRunner {
    */
   static measureMemoryUsage(operation: () => void): { initialMB: number, finalMB: number, increaseMB: number } {
     // Force garbage collection if available
-    if (global.gc) {
-      global.gc()
+    if (globalThis.gc) {
+      globalThis.gc()
     }
 
     const initialMemory = process.memoryUsage().heapUsed

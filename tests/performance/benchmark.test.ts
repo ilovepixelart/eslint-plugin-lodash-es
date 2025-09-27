@@ -251,8 +251,8 @@ describe('performance benchmarks', () => {
         })
 
         // Force garbage collection every 100 iterations
-        if (i % 100 === 0 && global.gc) {
-          global.gc()
+        if (i % 100 === 0 && globalThis.gc) {
+          globalThis.gc()
         }
       }
 

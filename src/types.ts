@@ -4,11 +4,11 @@
  */
 
 // Import and re-export all core types for convenience
+export type { FixResult, CallInfo } from './autofix/parameter-parser'
 export type {
   // Core types
   LodashFunctionName,
   LodashModuleName,
-  LodashAlternativeFunctionName,
 
   // Configuration types
   EnforceFunctionsRuleOptions,
@@ -20,8 +20,6 @@ export type {
 
   // Usage and autofix types
   Usage,
-  FixResult,
-  CallInfo,
   TransformPattern,
 
   // Test utility types

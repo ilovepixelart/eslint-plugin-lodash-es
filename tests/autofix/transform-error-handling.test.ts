@@ -1,13 +1,12 @@
 import { describe, it, expect } from 'vitest'
+import { handleNegationOperator, type CallInfo } from '../../src/autofix/parameter-parser'
 import {
-  handleNegationOperator,
   createExpressionFix,
   createConstructorFix,
   createStaticMethodFix,
   createFixedParamPrototypeMethodFix,
   createPrototypeMethodFix,
   extractFixedParams,
-  type CallInfo,
 } from '../../src/autofix/shared-transforms'
 
 describe('shared-transforms branch coverage', () => {

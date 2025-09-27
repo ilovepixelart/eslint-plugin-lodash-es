@@ -2,8 +2,7 @@
  * Ultra-elegant pattern-based transform system
  * Consolidates all specialized transform functions into declarative patterns
  */
-import { findFirstTopLevelComma, needsParentheses } from './parameter-parser'
-import { handleNegationOperator, CallInfo, FixResult } from './shared-transforms'
+import { findFirstTopLevelComma, needsParentheses, handleNegationOperator, CallInfo, FixResult } from './parameter-parser'
 import { RegexCache } from '../regex-cache'
 
 export interface TransformPattern {

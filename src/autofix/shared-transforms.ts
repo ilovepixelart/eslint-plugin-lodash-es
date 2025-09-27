@@ -1,43 +1,9 @@
 /**
  * Shared transformation utilities for both destructured and namespace autofix
  */
-import { findFirstTopLevelComma, extractMethodName, needsParentheses, isArrayLikeObject, extractStaticMethodInfo, isZeroParamStaticMethod, isExpressionAlternative, isConstructorCall, isStaticMethod } from './parameter-parser'
+import { findFirstTopLevelComma, extractMethodName, needsParentheses, isArrayLikeObject, extractStaticMethodInfo, isZeroParamStaticMethod, isExpressionAlternative, isConstructorCall, isStaticMethod, handleNegationOperator, CallInfo, FixResult } from './parameter-parser'
 import { createPatternBasedTransform } from './transform-patterns'
 import { RegexCache } from '../regex-cache'
-
-export interface FixResult {
-  range: [number, number]
-  text: string
-}
-
-export interface CallInfo {
-  fullText: string
-  callStart: number
-  callEnd: number
-  params: string
-}
-
-/**
- * Check for negation operator before function call and adjust range/expression accordingly
- */
-export function handleNegationOperator(callInfo: CallInfo, expression: string): { start: number, text: string } {
-  let actualStart = callInfo.callStart
-  let actualExpression = expression
-
-  // Look backward from callStart to check for negation operator
-  let checkPos = callInfo.callStart - 1
-  while (checkPos >= 0 && /\s/.test(callInfo.fullText[checkPos] ?? '')) {
-    checkPos-- // Skip whitespace
-  }
-
-  if (checkPos >= 0 && callInfo.fullText[checkPos] === '!') {
-    // Include the negation operator and wrap the expression in parentheses
-    actualStart = checkPos
-    actualExpression = `!(${expression})`
-  }
-
-  return { start: actualStart, text: actualExpression }
-}
 
 /**
  * Create fix for zero-parameter static methods (e.g., now -> Date.now)

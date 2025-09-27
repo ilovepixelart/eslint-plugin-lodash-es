@@ -15,7 +15,7 @@ describe('ReDoS Protection', () => {
         'String.prototype.padStart[10, "0"]',
       ]
 
-      validInputs.forEach((input) => {
+      for (const input of validInputs) {
         const start = performance.now()
         // Test the regex pattern directly
         const result = /^\w{1,50}\.prototype\.\w{1,50}\[[^\]]{1,20}\]$/.test(input)
@@ -23,7 +23,7 @@ describe('ReDoS Protection', () => {
 
         expect(result).toBe(true)
         expect(end - start).toBeLessThan(1) // Should be very fast
-      })
+      }
     })
 
     it('should reject malicious inputs safely and quickly', () => {
@@ -38,14 +38,14 @@ describe('ReDoS Protection', () => {
         'a'.repeat(100) + '.prototype.' + 'b'.repeat(100) + '[' + 'c'.repeat(100) + ']',
       ]
 
-      maliciousInputs.forEach((input) => {
+      for (const input of maliciousInputs) {
         const start = performance.now()
         const result = /^\w{1,50}\.prototype\.\w{1,50}\[[^\]]{1,20}\]$/.test(input)
         const end = performance.now()
 
         expect(result).toBe(false) // Should reject
         expect(end - start).toBeLessThan(5) // Should be fast (< 5ms)
-      })
+      }
     })
 
     it('should handle edge cases at length boundaries', () => {
@@ -71,7 +71,7 @@ describe('ReDoS Protection', () => {
         '[someParam]',
       ]
 
-      validInputs.forEach((input) => {
+      for (const input of validInputs) {
         const start = performance.now()
         const match = /\[([^\]]{1,20})\]$/.exec(input)
         const end = performance.now()
@@ -79,7 +79,7 @@ describe('ReDoS Protection', () => {
         expect(match).toBeTruthy()
         expect(match?.[1]).toBeDefined()
         expect(end - start).toBeLessThan(1) // Should be very fast
-      })
+      }
     })
 
     it('should reject malicious parameter inputs safely', () => {
@@ -89,14 +89,14 @@ describe('ReDoS Protection', () => {
         '[' + 'z'.repeat(100) + ']', // Beyond 20 char limit
       ]
 
-      maliciousInputs.forEach((input) => {
+      for (const input of maliciousInputs) {
         const start = performance.now()
         const match = /\[([^\]]{1,20})\]$/.exec(input)
         const end = performance.now()
 
         expect(match).toBe(null) // Should not match
         expect(end - start).toBeLessThan(5) // Should be fast
-      })
+      }
     })
 
     it('should handle boundary cases correctly', () => {
@@ -122,9 +122,9 @@ describe('ReDoS Protection', () => {
       )
 
       const start = performance.now()
-      validInputs.forEach((input) => {
+      for (const input of validInputs) {
         /^\w{1,50}\.prototype\.\w{1,50}\[[^\]]{1,20}\]$/.test(input)
-      })
+      }
       const end = performance.now()
 
       expect(end - start).toBeLessThan(100) // Should process 1000 inputs in < 100ms
@@ -136,9 +136,9 @@ describe('ReDoS Protection', () => {
       )
 
       const start = performance.now()
-      maliciousInputs.forEach((input) => {
+      for (const input of maliciousInputs) {
         /^\w{1,50}\.prototype\.\w{1,50}\[[^\]]{1,20}\]$/.test(input)
-      })
+      }
       const end = performance.now()
 
       expect(end - start).toBeLessThan(50) // Should process 100 malicious inputs in < 50ms

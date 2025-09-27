@@ -5,7 +5,7 @@
  */
 import type { SourceCode } from 'eslint'
 import type { Usage } from '../types'
-import type { FixResult } from './shared-transforms'
+import type { FixResult } from './parameter-parser'
 import { createCommonAutofix, createNamespaceRegex } from './common-autofix'
 
 /**

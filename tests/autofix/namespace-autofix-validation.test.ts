@@ -53,7 +53,7 @@ describe('namespace-autofix branch coverage', () => {
         '', // Empty string
       ]
 
-      testCases.forEach((malformedCall) => {
+      for (const malformedCall of testCases) {
         const mockSourceCode = {
           getText: () => malformedCall,
         } as SourceCode
@@ -68,7 +68,7 @@ describe('namespace-autofix branch coverage', () => {
 
         const result = createNamespaceFix(mockSourceCode, usage, 'map')
         expect(result).toBe(null)
-      })
+      }
     })
 
     it('should handle edge cases in function name extraction', () => {
@@ -118,7 +118,7 @@ describe('namespace-autofix branch coverage', () => {
         'prefix _.map(args)', // Extra content before
       ]
 
-      complexCases.forEach((complexCall) => {
+      for (const complexCall of complexCases) {
         const mockSourceCode = {
           getText: () => complexCall,
         } as SourceCode
@@ -133,7 +133,7 @@ describe('namespace-autofix branch coverage', () => {
 
         const result = createNamespaceFix(mockSourceCode, usage, 'map')
         expect(result).toBe(null)
-      })
+      }
     })
   })
 
@@ -165,7 +165,7 @@ describe('namespace-autofix branch coverage', () => {
         '_.map()', // Valid but empty params
       ]
 
-      edgeCases.forEach((edgeCase) => {
+      for (const edgeCase of edgeCases) {
         const mockSourceCode = {
           getText: () => edgeCase,
         } as SourceCode
@@ -185,7 +185,7 @@ describe('namespace-autofix branch coverage', () => {
         } else {
           expect(result).toBe(null) // Others should fail
         }
-      })
+      }
     })
   })
 })

@@ -2,6 +2,40 @@
  * Parameter parsing utilities for autofix functionality
  */
 
+export interface CallInfo {
+  fullText: string
+  callStart: number
+  callEnd: number
+  params: string
+}
+
+export interface FixResult {
+  range: [number, number]
+  text: string
+}
+
+/**
+ * Check for negation operator before function call and adjust range/expression accordingly
+ */
+export function handleNegationOperator(callInfo: CallInfo, expression: string): { start: number, text: string } {
+  let actualStart = callInfo.callStart
+  let actualExpression = expression
+
+  // Look backward from callStart to check for negation operator
+  let checkPos = callInfo.callStart - 1
+  while (checkPos >= 0 && /\s/.test(callInfo.fullText[checkPos] ?? '')) {
+    checkPos-- // Skip whitespace
+  }
+
+  if (checkPos >= 0 && callInfo.fullText[checkPos] === '!') {
+    // Include the negation operator and wrap the expression in parentheses
+    actualStart = checkPos
+    actualExpression = `!(${expression})`
+  }
+
+  return { start: actualStart, text: actualExpression }
+}
+
 interface ParseState {
   parenLevel: number
   braceLevel: number
