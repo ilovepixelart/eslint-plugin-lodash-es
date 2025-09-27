@@ -1,11 +1,12 @@
 /**
  * ESLint rule to enforce destructured imports from lodash-es and auto-fix them
  */
-import { getSourceCode, isLodashModule, findLodashUsages, extractFunctionNames } from '../utils'
+import { getSourceCode, findLodashUsages, extractFunctionNames } from '../utils'
+import { validateLodashImport, categorizeImportSpecifiers } from '../utils/import-mapping'
 
 import type { ImportDeclaration } from 'estree'
 import type { Rule } from 'eslint'
-import type { Usage, LodashModuleName } from '../types'
+import type { Usage } from '../types'
 
 const enforceLodashDestructuring: Rule.RuleModule = {
   meta: {
@@ -24,27 +25,12 @@ const enforceLodashDestructuring: Rule.RuleModule = {
 
     return {
       ImportDeclaration(node: ImportDeclaration): void {
-        const source = node.source.value as LodashModuleName
-        if (typeof source !== 'string') return
+        if (!validateLodashImport(node)) return
 
-        if (!isLodashModule(source)) {
-          return
-        }
-
-        // Check for default or namespace imports
-        const hasDefaultImport = node.specifiers.some(spec =>
-          spec.type === 'ImportDefaultSpecifier',
-        )
-
-        const hasNamespaceImport = node.specifiers.some(spec =>
-          spec.type === 'ImportNamespaceSpecifier',
-        )
+        const { defaultOrNamespaceSpecifier, hasDefaultImport, hasNamespaceImport } = categorizeImportSpecifiers(node)
 
         if (hasDefaultImport || hasNamespaceImport) {
-          const importSpecifier = node.specifiers.find(spec =>
-            ['ImportDefaultSpecifier', 'ImportNamespaceSpecifier'].includes(spec.type),
-          )
-          if (!importSpecifier) return
+          if (!defaultOrNamespaceSpecifier) return
 
           context.report({
             node,
@@ -52,8 +38,8 @@ const enforceLodashDestructuring: Rule.RuleModule = {
             fix(fixer: Rule.RuleFixer) {
               try {
                 const fullSourceCode = sourceCode.getText()
-                const usedFunctions = extractFunctionNames(fullSourceCode, importSpecifier.local.name)
-                const allUsages = findLodashUsages(fullSourceCode, importSpecifier.local.name)
+                const usedFunctions = extractFunctionNames(fullSourceCode, defaultOrNamespaceSpecifier.local.name)
+                const allUsages = findLodashUsages(fullSourceCode, defaultOrNamespaceSpecifier.local.name)
 
                 if (usedFunctions.length === 0) {
                   // If no functions are detected, just remove the import

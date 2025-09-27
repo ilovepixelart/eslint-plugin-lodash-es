@@ -1,14 +1,15 @@
 /**
  * ESLint rule to suggest native JavaScript alternatives to lodash functions
  */
-import { getSourceCode, isLodashModule, findLodashUsages, findDestructuredLodashUsages, getNativeAlternative } from '../utils'
+import { getSourceCode, findLodashUsages, findDestructuredLodashUsages, getNativeAlternative } from '../utils'
 import { functionClassifications } from '../shared'
 import { createDestructuredFix, createNamespaceFix } from '../autofix'
 import { EnforceFunctionsConfig } from '../config/enforce-functions-config'
+import { extractImportMappings, validateLodashImport, categorizeImportSpecifiers } from '../utils/import-mapping'
 
 import type { ImportDeclaration, ImportSpecifier } from 'estree'
 import type { Rule } from 'eslint'
-import type { Usage, SuggestNativeAlternativesRuleOptions, LodashFunctionName, LodashModuleName } from '../types'
+import type { Usage, SuggestNativeAlternativesRuleOptions, LodashFunctionName } from '../types'
 
 /**
  * Create message with null safety warnings and context
@@ -107,17 +108,6 @@ const suggestNativeAlternatives: Rule.RuleModule = {
     }
 
     /**
-     * Extract import mappings from destructured specifiers
-     */
-    function extractImportMappings(destructuredSpecifiers: ImportSpecifier[]): { originalName: string, localName: string, specifier: ImportSpecifier }[] {
-      return destructuredSpecifiers.map((spec) => {
-        const originalName = spec.imported.type === 'Identifier' ? spec.imported.name : ''
-        const localName = spec.local.name
-        return { originalName, localName, specifier: spec }
-      }).filter(mapping => mapping.originalName !== '')
-    }
-
-    /**
      * Check if function should be processed for suggestions
      */
     function shouldProcessFunction(originalName: string): boolean {
@@ -197,23 +187,13 @@ const suggestNativeAlternatives: Rule.RuleModule = {
 
     return {
       ImportDeclaration(node: ImportDeclaration): void {
-        const source = node.source.value as LodashModuleName
-        if (typeof source !== 'string') return
-        if (!isLodashModule(source)) return
+        if (!validateLodashImport(node)) return
 
-        // Check for default or namespace imports
-        const defaultOrNamespaceSpecifier = node.specifiers.find(spec =>
-          ['ImportDefaultSpecifier', 'ImportNamespaceSpecifier'].includes(spec.type),
-        )
+        const { defaultOrNamespaceSpecifier, destructuredSpecifiers } = categorizeImportSpecifiers(node)
 
         if (defaultOrNamespaceSpecifier) {
           handleDefaultImports(node, defaultOrNamespaceSpecifier.local.name)
         }
-
-        // Check destructured imports
-        const destructuredSpecifiers = node.specifiers.filter(spec =>
-          spec.type === 'ImportSpecifier',
-        )
 
         if (destructuredSpecifiers.length > 0) {
           handleDestructuredImports(destructuredSpecifiers)

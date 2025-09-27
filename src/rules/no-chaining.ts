@@ -2,11 +2,11 @@
  * ESLint rule to prevent lodash chaining that kills tree-shaking
  * Even with destructured imports, using chain() prevents optimization
  */
-import { getSourceCode, isLodashModule } from '../utils'
+import { getSourceCode } from '../utils'
+import { validateLodashImport } from '../utils/import-mapping'
 
 import type { ImportDeclaration, ImportSpecifier, CallExpression } from 'estree'
 import type { Rule } from 'eslint'
-import type { LodashModuleName } from '../types'
 
 const noChaining: Rule.RuleModule = {
   meta: {
@@ -31,12 +31,7 @@ const noChaining: Rule.RuleModule = {
 
     return {
       ImportDeclaration(node: ImportDeclaration): void {
-        const source = node.source.value as LodashModuleName
-        if (typeof source !== 'string') return
-
-        if (!isLodashModule(source)) {
-          return
-        }
+        if (!validateLodashImport(node)) return
 
         hasLodashImport = true
 
@@ -72,7 +67,7 @@ const noChaining: Rule.RuleModule = {
                         : spec.local.name)
                     .join(', ')
 
-                  return fixer.replaceText(node, `import { ${specifiers} } from '${source}';`)
+                  return fixer.replaceText(node, `import { ${specifiers} } from '${node.source.value}';`)
                 },
               },
             ],
