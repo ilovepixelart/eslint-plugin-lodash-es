@@ -568,6 +568,11 @@ function trySpecializedHandlers(callInfo: CallInfo, nativeAlternative: string): 
   if (nativeAlternative.includes('structuredClone(')) return createCloneDeepFix(callInfo)
   if (nativeAlternative.includes('Object.groupBy(')) return createGroupByFix(callInfo)
   if (nativeAlternative.includes('.reduce((acc, item)')) return createCountByFix(callInfo)
+  // Util function generators and array builders - must come before generic Array.from check
+  if (nativeAlternative === 'Array.from({length: n}, (_, i) => fn(i))') return createTimesFix(callInfo)
+  if (nativeAlternative === 'Array.from({length: end - start}, (_, i) => start + i)') return createRangeFix(callInfo)
+  if (nativeAlternative === 'Array.from({length: end - start}, (_, i) => end - i - 1)') return createRangeRightFix(callInfo)
+  // Generic Array.from pattern for chunk - must come after specific patterns
   if (nativeAlternative.includes('Array.from({length:')) return createChunkFix(callInfo)
   // Array slice patterns - order matters! More specific patterns first
   if (nativeAlternative.includes('.slice(0, -n)') || nativeAlternative === 'array.slice(0, -n)') return createDropRightFix(callInfo)
@@ -619,11 +624,8 @@ function trySpecializedHandlers(callInfo: CallInfo, nativeAlternative: string): 
   // Function utility patterns
   if (nativeAlternative === 'setTimeout(func, wait, ...args)') return createDelayFix(callInfo)
   if (nativeAlternative === 'setTimeout(func, 0, ...args)') return createDeferFix(callInfo)
-  // Util function generators and array builders
+  // Util function generators
   if (nativeAlternative === '() => value') return createConstantFix(callInfo)
-  if (nativeAlternative === 'Array.from({length: n}, (_, i) => fn(i))') return createTimesFix(callInfo)
-  if (nativeAlternative === 'Array.from({length: end - start}, (_, i) => start + i)') return createRangeFix(callInfo)
-  if (nativeAlternative === 'Array.from({length: end - start}, (_, i) => end - i - 1)') return createRangeRightFix(callInfo)
   // String parsing
   if (nativeAlternative === 'parseInt(string, radix)') return createParseIntFix(callInfo)
 

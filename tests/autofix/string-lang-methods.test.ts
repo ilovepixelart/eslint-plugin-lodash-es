@@ -18,7 +18,7 @@ describe('String and Lang methods', () => {
           invalid: [
             {
               code: 'import { parseInt } from \'lodash-es\'; const result = parseInt(str);',
-              output: 'import { parseInt } from \'lodash-es\'; const result = parseInt(str);',
+              output: null,
               options: [{ exclude: ['parseInt'] }],
               errors: [{ message: /Lodash function 'parseInt' is excluded/ }],
             },
@@ -34,7 +34,7 @@ describe('String and Lang methods', () => {
           invalid: [
             {
               code: 'import { parseInt } from \'lodash-es\'; const result = parseInt(str, 10);',
-              output: 'import { parseInt } from \'lodash-es\'; const result = parseInt(str, 10);',
+              output: null,
               options: [{ exclude: ['parseInt'] }],
               errors: [{ message: /Lodash function 'parseInt' is excluded/ }],
             },

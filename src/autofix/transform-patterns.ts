@@ -210,7 +210,61 @@ export const TRANSFORM_PATTERNS: TransformPattern[] = [
     ),
   },
 
-  // Array.from patterns
+  // Array.from patterns - specific patterns must come before generic ones
+  {
+    name: 'times-arrayFrom',
+    detect: alt => alt === 'Array.from({length: n}, (_, i) => fn(i))',
+    transform: (callInfo: CallInfo): FixResult | null => {
+      const commaIndex = findFirstTopLevelComma(callInfo.params)
+      if (commaIndex === -1) return null
+      const n = callInfo.params.slice(0, commaIndex).trim()
+      const fn = callInfo.params.slice(commaIndex + 1).trim()
+      const expression = `Array.from({length: ${n}}, (_, i) => ${fn}(i))`
+      const { start, text } = handleNegationOperator(callInfo, expression)
+      return { range: [start, callInfo.callEnd], text }
+    },
+  },
+
+  {
+    name: 'range-arrayFrom',
+    detect: alt => alt === 'Array.from({length: end - start}, (_, i) => start + i)',
+    transform: (callInfo: CallInfo): FixResult | null => {
+      const commaIndex = findFirstTopLevelComma(callInfo.params)
+      if (commaIndex === -1) {
+        // Single param: range(end) means range(0, end)
+        const end = callInfo.params.trim()
+        const expression = `Array.from({length: ${end}}, (_, i) => i)`
+        const { start, text } = handleNegationOperator(callInfo, expression)
+        return { range: [start, callInfo.callEnd], text }
+      }
+      const start = callInfo.params.slice(0, commaIndex).trim()
+      const end = callInfo.params.slice(commaIndex + 1).trim()
+      const expression = `Array.from({length: ${end} - ${start}}, (_, i) => ${start} + i)`
+      const { start: actualStart, text } = handleNegationOperator(callInfo, expression)
+      return { range: [actualStart, callInfo.callEnd], text }
+    },
+  },
+
+  {
+    name: 'rangeRight-arrayFrom',
+    detect: alt => alt === 'Array.from({length: end - start}, (_, i) => end - i - 1)',
+    transform: (callInfo: CallInfo): FixResult | null => {
+      const commaIndex = findFirstTopLevelComma(callInfo.params)
+      if (commaIndex === -1) {
+        // Single param: rangeRight(end) means rangeRight(0, end)
+        const end = callInfo.params.trim()
+        const expression = `Array.from({length: ${end}}, (_, i) => ${end} - i - 1)`
+        const { start, text } = handleNegationOperator(callInfo, expression)
+        return { range: [start, callInfo.callEnd], text }
+      }
+      const start = callInfo.params.slice(0, commaIndex).trim()
+      const end = callInfo.params.slice(commaIndex + 1).trim()
+      const expression = `Array.from({length: ${end} - ${start}}, (_, i) => ${end} - i - 1)`
+      const { start: actualStart, text } = handleNegationOperator(callInfo, expression)
+      return { range: [actualStart, callInfo.callEnd], text }
+    },
+  },
+
   {
     name: 'chunk-arrayFrom',
     detect: alt => alt.includes('Array.from({length:'),
