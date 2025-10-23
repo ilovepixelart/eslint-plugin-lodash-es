@@ -1,7 +1,7 @@
 /**
  * Native alternatives for String functions
  */
-import { FunctionCategory, createPrototypeMethodAlternative, descriptions } from '../shared'
+import { FunctionCategory, createPrototypeMethodAlternative, createExpressionAlternative, descriptions } from '../shared'
 import type { NativeAlternative } from '../shared'
 
 export const stringAlternatives = new Map<string, NativeAlternative>([
@@ -83,5 +83,35 @@ export const stringAlternatives = new Map<string, NativeAlternative>([
     'padEnd',
     descriptions.padString('end'),
     'length, chars',
+  )],
+
+  // String case transformations
+  ['capitalize', createExpressionAlternative(
+    FunctionCategory.String,
+    'capitalize',
+    'string.at(0).toUpperCase() + string.slice(1).toLowerCase()',
+    'Capitalize first character and lowercase rest',
+  )],
+
+  ['lowerFirst', createExpressionAlternative(
+    FunctionCategory.String,
+    'lowerFirst',
+    'string.at(0).toLowerCase() + string.slice(1)',
+    'Lowercase first character',
+  )],
+
+  ['upperFirst', createExpressionAlternative(
+    FunctionCategory.String,
+    'upperFirst',
+    'string.at(0).toUpperCase() + string.slice(1)',
+    'Uppercase first character',
+  )],
+
+  // Parsing
+  ['parseInt', createExpressionAlternative(
+    FunctionCategory.String,
+    'parseInt',
+    'parseInt(string, radix)',
+    'Parse string to integer',
   )],
 ])

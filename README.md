@@ -142,7 +142,20 @@ const firstItem = items.at(0)
 const grouped = Object.groupBy(users, user => user.department)
 ```
 
-**Supports 67+ lodash functions** with automatic transformation to modern JavaScript equivalents, including ES2022+ features like `Array.at()` and `Object.groupBy()`.
+**Supports 104+ lodash functions** with automatic transformation to modern JavaScript equivalents, including ES2022+ features like `Array.at()` and `Object.groupBy()`.
+
+### Recently Added Native Alternatives (37 new functions)
+
+**Array slice operations**: `drop`, `dropRight`, `take`, `takeRight`
+**Math & arithmetic**: `add`, `subtract`, `multiply`, `divide`, `sum`, `mean`
+**Number utilities**: `clamp`, `inRange`, `random`
+**String transformations**: `capitalize`, `lowerFirst`, `upperFirst` (using modern `.at()`)
+**Type checking**: `isDate`, `isRegExp`, `isError`, `isSet`, `isWeakMap`, `isWeakSet`, `isSymbol`, `isSafeInteger`
+**Type conversion**: `castArray`, `toArray`, `toFinite`, `toInteger`, `toSafeInteger`
+**Comparisons**: `eq`, `gt`, `gte`, `lt`, `lte`
+**Function utilities**: `bind`, `delay`, `defer`
+**Object creation**: `create`
+**Utility stubs**: `identity`, `noop`, `stubArray`, `stubFalse`, `stubObject`, `stubString`, `stubTrue`
 
 ## Rules
 

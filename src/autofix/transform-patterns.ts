@@ -219,6 +219,31 @@ export const TRANSFORM_PATTERNS: TransformPattern[] = [
       { first: safeParam },
     ),
   },
+
+  // Arithmetic operation patterns (two parameters)
+  {
+    name: 'add-operator',
+    detect: alt => alt === 'a + b',
+    transform: createTwoParamTransform('$FIRST$ + $SECOND$'),
+  },
+
+  {
+    name: 'subtract-operator',
+    detect: alt => alt === 'a - b',
+    transform: createTwoParamTransform('$FIRST$ - $SECOND$'),
+  },
+
+  {
+    name: 'multiply-operator',
+    detect: alt => alt === 'a * b',
+    transform: createTwoParamTransform('$FIRST$ * $SECOND$'),
+  },
+
+  {
+    name: 'divide-operator',
+    detect: alt => alt === 'a / b',
+    transform: createTwoParamTransform('$FIRST$ / $SECOND$'),
+  },
 ]
 
 /**

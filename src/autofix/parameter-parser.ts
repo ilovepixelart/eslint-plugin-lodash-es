@@ -215,6 +215,61 @@ export function isExpressionAlternative(nativeAlternative: string): boolean {
     || nativeAlternative.includes('Object.groupBy(') // ES2024 groupBy pattern
     || nativeAlternative.includes('.reduce((acc, item)') // countBy pattern
     || nativeAlternative.includes('Array.from({length:') // chunk pattern
+    // Array slice patterns
+    || nativeAlternative.includes('array.slice(') // drop, take, dropRight, takeRight patterns
+    // Arithmetic operation patterns
+    || nativeAlternative === 'a + b'
+    || nativeAlternative === 'a - b'
+    || nativeAlternative === 'a * b'
+    || nativeAlternative === 'a / b'
+    // Array aggregation patterns
+    || nativeAlternative === 'array.reduce((sum, n) => sum + n, 0)'
+    || nativeAlternative === 'array.reduce((sum, n) => sum + n, 0) / array.length'
+    // Number operation patterns
+    || nativeAlternative === 'Math.min(Math.max(number, lower), upper)'
+    || nativeAlternative === 'number >= start && number < end'
+    || nativeAlternative === 'Math.random() * (max - min) + min'
+    // String transformation patterns
+    || nativeAlternative === 'string.at(0).toUpperCase() + string.slice(1).toLowerCase()'
+    || nativeAlternative === 'string.at(0).toLowerCase() + string.slice(1)'
+    || nativeAlternative === 'string.at(0).toUpperCase() + string.slice(1)'
+    // Lang comparison operators
+    || nativeAlternative === 'value > other'
+    || nativeAlternative === 'value >= other'
+    || nativeAlternative === 'value < other'
+    || nativeAlternative === 'value <= other'
+    // Lang instanceof patterns
+    || nativeAlternative === 'value instanceof Date'
+    || nativeAlternative === 'value instanceof RegExp'
+    || nativeAlternative === 'value instanceof Error'
+    || nativeAlternative === 'value instanceof Set'
+    || nativeAlternative === 'value instanceof WeakMap'
+    || nativeAlternative === 'value instanceof WeakSet'
+    // Util stub/helper patterns
+    || nativeAlternative === '[]'
+    || nativeAlternative === 'false'
+    || nativeAlternative === 'true'
+    || nativeAlternative === '{}'
+    || nativeAlternative === '\'\''
+    || nativeAlternative === 'undefined'
+    // Lang type conversion patterns
+    || nativeAlternative === 'Array.isArray(value) ? value : [value]' // castArray
+    || nativeAlternative === 'Number(value) || 0' // toFinite
+    || nativeAlternative === 'Math.trunc(Number(value)) || 0' // toInteger
+    || nativeAlternative === 'Math.min(Math.max(Math.trunc(Number(value)) || 0, -Number.MAX_SAFE_INTEGER), Number.MAX_SAFE_INTEGER)' // toSafeInteger
+    // Function utility patterns
+    || nativeAlternative === 'setTimeout(func, wait, ...args)' // delay
+    || nativeAlternative === 'setTimeout(func, 0, ...args)' // defer
+    // Util function generators and array builders
+    || nativeAlternative === '() => value' // constant
+    || nativeAlternative === 'Array.from({length: n}, (_, i) => fn(i))' // times
+    || nativeAlternative === 'Array.from({length: end - start}, (_, i) => start + i)' // range
+    || nativeAlternative === 'Array.from({length: end - start}, (_, i) => end - i - 1)' // rangeRight
+    // String parsing
+    || nativeAlternative === 'parseInt(string, radix)' // parseInt
+    // Lang array-like validation
+    || nativeAlternative === 'Number.isInteger(value) && value >= 0 && value <= Number.MAX_SAFE_INTEGER' // isLength
+    || nativeAlternative === 'value != null && typeof value.length === \'number\' && value.length >= 0 && value.length <= Number.MAX_SAFE_INTEGER' // isArrayLike
 }
 
 /**

@@ -570,5 +570,85 @@ describe('mixed array function usage', () => {
         })
       }).not.toThrow()
     })
+
+    it('should autofix fill calls with all parameters', () => {
+      expect(() => {
+        ruleTester.run('enforce-functions', enforceFunctions, {
+          valid: [],
+          invalid: [
+            {
+              code: 'import { fill } from \'lodash-es\'; const result = fill(array, \'a\', 2, 4);',
+              output: 'import { fill } from \'lodash-es\'; const result = array.fill(\'a\', 2, 4);',
+              options: [{ exclude: ['fill'] }],
+              errors: [{ message: /Lodash function 'fill' is excluded/ }],
+            },
+          ],
+        })
+      }).not.toThrow()
+    })
+
+    it('should autofix fill calls with value only', () => {
+      expect(() => {
+        ruleTester.run('enforce-functions', enforceFunctions, {
+          valid: [],
+          invalid: [
+            {
+              code: 'import { fill } from \'lodash-es\'; const result = fill([1, 2, 3], 0);',
+              output: 'import { fill } from \'lodash-es\'; const result = [1, 2, 3].fill(0);',
+              options: [{ exclude: ['fill'] }],
+              errors: [{ message: /Lodash function 'fill' is excluded/ }],
+            },
+          ],
+        })
+      }).not.toThrow()
+    })
+
+    it('should autofix nth calls with positive index', () => {
+      expect(() => {
+        ruleTester.run('enforce-functions', enforceFunctions, {
+          valid: [],
+          invalid: [
+            {
+              code: 'import { nth } from \'lodash-es\'; const result = nth(array, 2);',
+              output: 'import { nth } from \'lodash-es\'; const result = array.at(2);',
+              options: [{ exclude: ['nth'] }],
+              errors: [{ message: /Lodash function 'nth' is excluded/ }],
+            },
+          ],
+        })
+      }).not.toThrow()
+    })
+
+    it('should autofix nth calls with negative index', () => {
+      expect(() => {
+        ruleTester.run('enforce-functions', enforceFunctions, {
+          valid: [],
+          invalid: [
+            {
+              code: 'import { nth } from \'lodash-es\'; const result = nth(array, -2);',
+              output: 'import { nth } from \'lodash-es\'; const result = array.at(-2);',
+              options: [{ exclude: ['nth'] }],
+              errors: [{ message: /Lodash function 'nth' is excluded/ }],
+            },
+          ],
+        })
+      }).not.toThrow()
+    })
+
+    it('should autofix fromPairs calls', () => {
+      expect(() => {
+        ruleTester.run('enforce-functions', enforceFunctions, {
+          valid: [],
+          invalid: [
+            {
+              code: 'import { fromPairs } from \'lodash-es\'; const result = fromPairs([[\'a\', 1], [\'b\', 2]]);',
+              output: 'import { fromPairs } from \'lodash-es\'; const result = Object.fromEntries([[\'a\', 1], [\'b\', 2]]);',
+              options: [{ exclude: ['fromPairs'] }],
+              errors: [{ message: /Lodash function 'fromPairs' is excluded/ }],
+            },
+          ],
+        })
+      }).not.toThrow()
+    })
   })
 })

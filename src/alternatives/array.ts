@@ -3,6 +3,8 @@
  */
 import {
   FunctionCategory,
+  SafetyLevel,
+  MigrationDifficulty,
   createPrototypeMethodAlternative,
   createStaticMethodAlternative,
   createFixedParamPrototypeMethodAlternative,
@@ -97,6 +99,7 @@ export const arrayAlternatives = new Map<string, NativeAlternative>([
     ['slice', 'Extract section of array', 'start, end'],
     ['concat', 'Concatenate arrays', '...values'],
     ['join', 'Join array elements into string', 'separator'],
+    ['fill', 'Fill array elements with static value', 'value, start, end'],
   ]),
 
   // Array Methods - With Behavioral Differences
@@ -153,6 +156,15 @@ export const arrayAlternatives = new Map<string, NativeAlternative>([
     ['tail', 'slice', '1', 'Get all elements except the first', 'Returns all but first element using slice(1)'],
   ]),
 
+  // Array methods with parameters that map to native methods
+  ['nth', createPrototypeMethodAlternative(
+    FunctionCategory.Array,
+    'at',
+    'Get element at index n of array',
+    'n',
+    { notes: ['Modern at() method available since ES2022, supports negative indices'] },
+  )],
+
   // Quick Wins - High Impact Array Functions
   ['uniq', createArrayTransformMethod(
     'uniq',
@@ -183,4 +195,115 @@ export const arrayAlternatives = new Map<string, NativeAlternative>([
       notes: ['Uses ES2023 toSorted() method', 'Returns new array (immutable)', 'Assumes numeric sort by default'],
     },
   )],
+
+  // Array to Object Conversion
+  ['fromPairs', {
+    category: FunctionCategory.Array,
+    native: 'Object.fromEntries',
+    description: 'Create object from array of key-value pairs',
+    example: {
+      lodash: '_.fromPairs(pairs)',
+      native: 'Object.fromEntries(pairs)',
+    },
+    safety: {
+      level: SafetyLevel.Safe,
+      concerns: [],
+      mitigation: 'Direct replacement',
+    },
+    migration: {
+      difficulty: MigrationDifficulty.Easy,
+      challenges: [],
+      steps: ['Replace _.fromPairs(pairs) with Object.fromEntries(pairs)'],
+    },
+    notes: ['Uses Object.fromEntries() to convert [[key, value], ...] to object', 'Available since ES2019'],
+    related: [...relatedFunctions.arrayReducers],
+  } as NativeAlternative],
+
+  ['drop', {
+    category: FunctionCategory.Array,
+    native: 'array.slice(n)',
+    description: 'Drop n elements from beginning of array',
+    example: {
+      lodash: '_.drop(array, 2)',
+      native: 'array.slice(2)',
+    },
+    safety: {
+      level: SafetyLevel.Safe,
+      concerns: [],
+      mitigation: 'Direct replacement',
+    },
+    migration: {
+      difficulty: MigrationDifficulty.Easy,
+      challenges: [],
+      steps: ['Replace _.drop(array, n) with array.slice(n)'],
+    },
+    notes: ['Uses native slice() method to skip first n elements'],
+    related: [...relatedFunctions.arrayReducers],
+  } as NativeAlternative],
+
+  ['dropRight', {
+    category: FunctionCategory.Array,
+    native: 'array.slice(0, -n)',
+    description: 'Drop n elements from end of array',
+    example: {
+      lodash: '_.dropRight(array, 2)',
+      native: 'array.slice(0, -2)',
+    },
+    safety: {
+      level: SafetyLevel.Safe,
+      concerns: [],
+      mitigation: 'Direct replacement',
+    },
+    migration: {
+      difficulty: MigrationDifficulty.Easy,
+      challenges: [],
+      steps: ['Replace _.dropRight(array, n) with array.slice(0, -n)'],
+    },
+    notes: ['Uses native slice() with negative index to remove last n elements'],
+    related: [...relatedFunctions.arrayReducers],
+  } as NativeAlternative],
+
+  ['take', {
+    category: FunctionCategory.Array,
+    native: 'array.slice(0, n)',
+    description: 'Take first n elements from array',
+    example: {
+      lodash: '_.take(array, 3)',
+      native: 'array.slice(0, 3)',
+    },
+    safety: {
+      level: SafetyLevel.Safe,
+      concerns: [],
+      mitigation: 'Direct replacement',
+    },
+    migration: {
+      difficulty: MigrationDifficulty.Easy,
+      challenges: [],
+      steps: ['Replace _.take(array, n) with array.slice(0, n)'],
+    },
+    notes: ['Uses native slice() method to get first n elements'],
+    related: [...relatedFunctions.arrayReducers],
+  } as NativeAlternative],
+
+  ['takeRight', {
+    category: FunctionCategory.Array,
+    native: 'array.slice(-n)',
+    description: 'Take last n elements from array',
+    example: {
+      lodash: '_.takeRight(array, 3)',
+      native: 'array.slice(-3)',
+    },
+    safety: {
+      level: SafetyLevel.Safe,
+      concerns: [],
+      mitigation: 'Direct replacement',
+    },
+    migration: {
+      difficulty: MigrationDifficulty.Easy,
+      challenges: [],
+      steps: ['Replace _.takeRight(array, n) with array.slice(-n)'],
+    },
+    notes: ['Uses native slice() with negative index to get last n elements'],
+    related: [...relatedFunctions.arrayReducers],
+  } as NativeAlternative],
 ])

@@ -81,4 +81,27 @@ export const functionAlternatives = new Map<string, NativeAlternative>([
     undefined,
     { notes: ['Note: .toString() may fail on null/undefined values'] },
   )],
+
+  // Function utility methods
+  ['bind', createPrototypeMethodAlternative(
+    FunctionCategory.Function,
+    'bind',
+    'Create bound function with this context',
+    'thisArg, ...partials',
+    { notes: ['Native bind() method on Function.prototype'] },
+  )],
+
+  ['delay', createExpressionAlternative(
+    FunctionCategory.Function,
+    'delay',
+    'setTimeout(func, wait, ...args)',
+    'Invoke function after delay',
+  )],
+
+  ['defer', createExpressionAlternative(
+    FunctionCategory.Function,
+    'defer',
+    'setTimeout(func, 0, ...args)',
+    'Defer function execution',
+  )],
 ])
