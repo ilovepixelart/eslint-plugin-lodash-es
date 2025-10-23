@@ -893,8 +893,8 @@ export function createAutofixRouting(callInfo: CallInfo, nativeMethod: string, f
   }
 
   // Handle zero-parameter literal returns (stub functions)
-  if (nativeMethod === '[]' || nativeMethod === 'false' || nativeMethod === 'true' ||
-      nativeMethod === '{}' || nativeMethod === '\'\'' || nativeMethod === 'undefined') {
+  if (nativeMethod === '[]' || nativeMethod === 'false' || nativeMethod === 'true'
+    || nativeMethod === '{}' || nativeMethod === '\'\'' || nativeMethod === 'undefined') {
     return {
       range: [callInfo.callStart, callInfo.callEnd],
       text: nativeMethod,
