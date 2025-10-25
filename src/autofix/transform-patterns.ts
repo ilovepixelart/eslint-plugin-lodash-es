@@ -80,6 +80,19 @@ const stringPathToFunction = (param: string): string => {
 }
 
 /**
+ * Helper to create arithmetic operator patterns
+ */
+function createArithmeticPatterns(
+  operators: [string, string, string][],
+): TransformPattern[] {
+  return operators.map(([name, pattern, operator]) => ({
+    name,
+    detect: (alt: string) => alt === pattern,
+    transform: createTwoParamTransform(`$FIRST$ ${operator} $SECOND$`),
+  }))
+}
+
+/**
  * Declarative transform patterns - the heart of the elegant system
  */
 export const TRANSFORM_PATTERNS: TransformPattern[] = [
@@ -275,29 +288,12 @@ export const TRANSFORM_PATTERNS: TransformPattern[] = [
   },
 
   // Arithmetic operation patterns (two parameters)
-  {
-    name: 'add-operator',
-    detect: alt => alt === 'a + b',
-    transform: createTwoParamTransform('$FIRST$ + $SECOND$'),
-  },
-
-  {
-    name: 'subtract-operator',
-    detect: alt => alt === 'a - b',
-    transform: createTwoParamTransform('$FIRST$ - $SECOND$'),
-  },
-
-  {
-    name: 'multiply-operator',
-    detect: alt => alt === 'a * b',
-    transform: createTwoParamTransform('$FIRST$ * $SECOND$'),
-  },
-
-  {
-    name: 'divide-operator',
-    detect: alt => alt === 'a / b',
-    transform: createTwoParamTransform('$FIRST$ / $SECOND$'),
-  },
+  ...createArithmeticPatterns([
+    ['add-operator', 'a + b', '+'],
+    ['subtract-operator', 'a - b', '-'],
+    ['multiply-operator', 'a * b', '*'],
+    ['divide-operator', 'a / b', '/'],
+  ]),
 ]
 
 /**

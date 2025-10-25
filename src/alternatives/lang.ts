@@ -4,6 +4,34 @@
 import { FunctionCategory, createExpressionAlternative, createStaticMethodAlternative } from '../shared'
 import type { NativeAlternative } from '../shared'
 
+// Helper functions to reduce duplication
+function createComparisonOperators(
+  operators: [string, string, string][],
+): [string, NativeAlternative][] {
+  return operators.map(([name, operator, description]) => [
+    name,
+    createExpressionAlternative(FunctionCategory.Function, name, operator, description),
+  ])
+}
+
+function createInstanceOfChecks(
+  checks: [string, string, string][],
+): [string, NativeAlternative][] {
+  return checks.map(([name, type, description]) => [
+    name,
+    createExpressionAlternative(FunctionCategory.Function, name, `value instanceof ${type}`, description),
+  ])
+}
+
+function createTypeConversions(
+  conversions: [string, FunctionCategory, string, string][],
+): [string, NativeAlternative][] {
+  return conversions.map(([name, category, expression, description]) => [
+    name,
+    createExpressionAlternative(category, name, expression, description),
+  ])
+}
+
 export const langAlternatives = new Map<string, NativeAlternative>([
   // Comparison operators
   ['eq', createStaticMethodAlternative(
@@ -14,76 +42,22 @@ export const langAlternatives = new Map<string, NativeAlternative>([
     'value, other',
   )],
 
-  ['gt', createExpressionAlternative(
-    FunctionCategory.Function,
-    'gt',
-    'value > other',
-    'Check if value is greater than other',
-  )],
-
-  ['gte', createExpressionAlternative(
-    FunctionCategory.Function,
-    'gte',
-    'value >= other',
-    'Check if value is greater than or equal to other',
-  )],
-
-  ['lt', createExpressionAlternative(
-    FunctionCategory.Function,
-    'lt',
-    'value < other',
-    'Check if value is less than other',
-  )],
-
-  ['lte', createExpressionAlternative(
-    FunctionCategory.Function,
-    'lte',
-    'value <= other',
-    'Check if value is less than or equal to other',
-  )],
+  ...createComparisonOperators([
+    ['gt', 'value > other', 'Check if value is greater than other'],
+    ['gte', 'value >= other', 'Check if value is greater than or equal to other'],
+    ['lt', 'value < other', 'Check if value is less than other'],
+    ['lte', 'value <= other', 'Check if value is less than or equal to other'],
+  ]),
 
   // Type checking with instanceof
-  ['isDate', createExpressionAlternative(
-    FunctionCategory.Function,
-    'isDate',
-    'value instanceof Date',
-    'Check if value is a Date object',
-  )],
-
-  ['isRegExp', createExpressionAlternative(
-    FunctionCategory.Function,
-    'isRegExp',
-    'value instanceof RegExp',
-    'Check if value is a RegExp object',
-  )],
-
-  ['isError', createExpressionAlternative(
-    FunctionCategory.Function,
-    'isError',
-    'value instanceof Error',
-    'Check if value is an Error object',
-  )],
-
-  ['isSet', createExpressionAlternative(
-    FunctionCategory.Function,
-    'isSet',
-    'value instanceof Set',
-    'Check if value is a Set object',
-  )],
-
-  ['isWeakMap', createExpressionAlternative(
-    FunctionCategory.Function,
-    'isWeakMap',
-    'value instanceof WeakMap',
-    'Check if value is a WeakMap object',
-  )],
-
-  ['isWeakSet', createExpressionAlternative(
-    FunctionCategory.Function,
-    'isWeakSet',
-    'value instanceof WeakSet',
-    'Check if value is a WeakSet object',
-  )],
+  ...createInstanceOfChecks([
+    ['isDate', 'Date', 'Check if value is a Date object'],
+    ['isRegExp', 'RegExp', 'Check if value is a RegExp object'],
+    ['isError', 'Error', 'Check if value is an Error object'],
+    ['isSet', 'Set', 'Check if value is a Set object'],
+    ['isWeakMap', 'WeakMap', 'Check if value is a WeakMap object'],
+    ['isWeakSet', 'WeakSet', 'Check if value is a WeakSet object'],
+  ]),
 
   // Type checking with typeof
   ['isSymbol', createExpressionAlternative(
@@ -118,12 +92,12 @@ export const langAlternatives = new Map<string, NativeAlternative>([
   )],
 
   // Type conversion functions
-  ['castArray', createExpressionAlternative(
-    FunctionCategory.Array,
-    'castArray',
-    'Array.isArray(value) ? value : [value]',
-    'Cast value as an array if it\'s not one',
-  )],
+  ...createTypeConversions([
+    ['castArray', FunctionCategory.Array, 'Array.isArray(value) ? value : [value]', 'Cast value as an array if it\'s not one'],
+    ['toFinite', FunctionCategory.Number, 'Number(value) || 0', 'Convert value to a finite number'],
+    ['toInteger', FunctionCategory.Number, 'Math.trunc(Number(value)) || 0', 'Convert value to an integer'],
+    ['toSafeInteger', FunctionCategory.Number, 'Math.min(Math.max(Math.trunc(Number(value)) || 0, -Number.MAX_SAFE_INTEGER), Number.MAX_SAFE_INTEGER)', 'Convert value to a safe integer'],
+  ]),
 
   ['toArray', createStaticMethodAlternative(
     FunctionCategory.Array,
@@ -131,26 +105,5 @@ export const langAlternatives = new Map<string, NativeAlternative>([
     'Array',
     'Convert value to an array',
     'value',
-  )],
-
-  ['toFinite', createExpressionAlternative(
-    FunctionCategory.Number,
-    'toFinite',
-    'Number(value) || 0',
-    'Convert value to a finite number',
-  )],
-
-  ['toInteger', createExpressionAlternative(
-    FunctionCategory.Number,
-    'toInteger',
-    'Math.trunc(Number(value)) || 0',
-    'Convert value to an integer',
-  )],
-
-  ['toSafeInteger', createExpressionAlternative(
-    FunctionCategory.Number,
-    'toSafeInteger',
-    'Math.min(Math.max(Math.trunc(Number(value)) || 0, -Number.MAX_SAFE_INTEGER), Number.MAX_SAFE_INTEGER)',
-    'Convert value to a safe integer',
   )],
 ])

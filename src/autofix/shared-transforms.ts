@@ -556,10 +556,18 @@ type PatternMatcher = (nativeAlternative: string) => boolean
 type HandlerFunction = (callInfo: CallInfo, nativeAlternative: string) => FixResult | null
 
 /**
+ * Generic handler entry type
+ */
+interface HandlerEntry {
+  matches: PatternMatcher
+  handler: HandlerFunction
+}
+
+/**
  * Registry of pattern matchers with their corresponding handlers
  * Organized by priority (more specific patterns first)
  */
-const SPECIALIZED_HANDLERS: { matches: PatternMatcher, handler: HandlerFunction }[] = [
+const SPECIALIZED_HANDLERS: HandlerEntry[] = [
   // Exact match patterns (highest priority)
   { matches: alt => alt === 'Array.from({length: n}, (_, i) => fn(i))', handler: (c, _alt) => createTimesFix(c) },
   { matches: alt => alt === 'Array.from({length: end - start}, (_, i) => start + i)', handler: (c, _alt) => createRangeFix(c) },
@@ -601,76 +609,68 @@ const SPECIALIZED_HANDLERS: { matches: PatternMatcher, handler: HandlerFunction 
 ]
 
 /**
+ * Create exact match handler
+ */
+function createExactMatchHandler(pattern: string, handlerFn: (c: CallInfo) => FixResult | null): HandlerEntry {
+  return {
+    matches: (alt: string): boolean => alt === pattern,
+    handler: (c: CallInfo, _alt: string): FixResult | null => handlerFn(c),
+  }
+}
+
+/**
  * Helper to create comparison operator handlers
  */
-function createComparisonHandlers(): { matches: PatternMatcher, handler: HandlerFunction }[] {
+function createComparisonHandlers(): HandlerEntry[] {
   const operators = [
     { pattern: 'value > other', op: '>' },
     { pattern: 'value >= other', op: '>=' },
     { pattern: 'value < other', op: '<' },
     { pattern: 'value <= other', op: '<=' },
   ] as const
-  return operators.map(({ pattern, op }) => ({
-    matches: (alt: string): boolean => alt === pattern,
-    handler: (c: CallInfo, _alt: string): FixResult | null => createComparisonFix(c, op),
-  }))
+  return operators.map(({ pattern, op }) => createExactMatchHandler(pattern, c => createComparisonFix(c, op)))
 }
 
 /**
  * Helper to create instanceof handlers
  */
-function createInstanceOfHandlers(): { matches: PatternMatcher, handler: HandlerFunction }[] {
+function createInstanceOfHandlers(): HandlerEntry[] {
   const types = ['Date', 'RegExp', 'Error', 'Set', 'WeakMap', 'WeakSet'] as const
-  return types.map(type => ({
-    matches: (alt: string): boolean => alt === `value instanceof ${type}`,
-    handler: (c: CallInfo, _alt: string): FixResult | null => createInstanceOfFix(c, type),
-  }))
+  return types.map(type => createExactMatchHandler(`value instanceof ${type}`, c => createInstanceOfFix(c, type)))
 }
 
 /**
  * Helper to create stub function handlers
  */
-function createStubHandlers(): { matches: PatternMatcher, handler: HandlerFunction }[] {
+function createStubHandlers(): HandlerEntry[] {
   const stubs = ['[]', 'false', 'true', '{}', '\'\'', 'undefined'] as const
   return [
-    ...stubs.map(stub => ({
-      matches: (alt: string): boolean => alt === stub,
-      handler: (c: CallInfo, _alt: string): FixResult | null => createStubFix(c, stub),
-    })),
-    {
-      matches: (alt: string): boolean => alt === 'value',
-      handler: (c: CallInfo, _alt: string): FixResult | null => createStubFix(c, c.params),
-    },
+    ...stubs.map(stub => createExactMatchHandler(stub, c => createStubFix(c, stub))),
+    createExactMatchHandler('value', c => createStubFix(c, c.params)),
   ]
 }
 
 /**
  * Helper to create type conversion handlers
  */
-function createTypeConversionHandlers(): { matches: PatternMatcher, handler: HandlerFunction }[] {
+function createTypeConversionHandlers(): HandlerEntry[] {
   return [
     { pattern: 'Array.isArray(value) ? value : [value]', handler: createCastArrayFix },
     { pattern: 'Number(value) || 0', handler: createToFiniteFix },
     { pattern: 'Math.trunc(Number(value)) || 0', handler: createToIntegerFix },
     { pattern: 'Math.min(Math.max(Math.trunc(Number(value)) || 0, -Number.MAX_SAFE_INTEGER), Number.MAX_SAFE_INTEGER)', handler: createToSafeIntegerFix },
-  ].map(({ pattern, handler }) => ({
-    matches: (alt: string): boolean => alt === pattern,
-    handler: (c: CallInfo, _alt: string): FixResult | null => handler(c),
-  }))
+  ].map(({ pattern, handler }) => createExactMatchHandler(pattern, handler))
 }
 
 /**
  * Helper to create function utility handlers
  */
-function createFunctionUtilityHandlers(): { matches: PatternMatcher, handler: HandlerFunction }[] {
+function createFunctionUtilityHandlers(): HandlerEntry[] {
   return [
     { pattern: 'setTimeout(func, wait, ...args)', handler: createDelayFix },
     { pattern: 'setTimeout(func, 0, ...args)', handler: createDeferFix },
     { pattern: '() => value', handler: createConstantFix },
-  ].map(({ pattern, handler }) => ({
-    matches: (alt: string): boolean => alt === pattern,
-    handler: (c: CallInfo, _alt: string): FixResult | null => handler(c),
-  }))
+  ].map(({ pattern, handler }) => createExactMatchHandler(pattern, handler))
 }
 
 /**
