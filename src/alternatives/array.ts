@@ -52,6 +52,40 @@ function createFixedParamMethods(
   ])
 }
 
+function createArraySliceMethod(
+  name: string,
+  nativePattern: string,
+  description: string,
+  lodashExample: string,
+  nativeExample: string,
+  note: string,
+): [string, NativeAlternative] {
+  return [
+    name,
+    {
+      category: FunctionCategory.Array,
+      native: nativePattern,
+      description,
+      example: {
+        lodash: lodashExample,
+        native: nativeExample,
+      },
+      safety: {
+        level: SafetyLevel.Safe,
+        concerns: [],
+        mitigation: 'Direct replacement',
+      },
+      migration: {
+        difficulty: MigrationDifficulty.Easy,
+        challenges: [],
+        steps: [`Replace ${lodashExample} with ${nativeExample}`],
+      },
+      notes: [note],
+      related: [...relatedFunctions.arrayReducers],
+    } as NativeAlternative,
+  ]
+}
+
 export const arrayAlternatives = new Map<string, NativeAlternative>([
   // Array Methods - Safe and Direct Replacements
   ['isArray', createStaticMethodAlternative(
@@ -219,91 +253,39 @@ export const arrayAlternatives = new Map<string, NativeAlternative>([
     related: [...relatedFunctions.arrayReducers],
   } as NativeAlternative],
 
-  ['drop', {
-    category: FunctionCategory.Array,
-    native: 'array.slice(n)',
-    description: 'Drop n elements from beginning of array',
-    example: {
-      lodash: '_.drop(array, 2)',
-      native: 'array.slice(2)',
-    },
-    safety: {
-      level: SafetyLevel.Safe,
-      concerns: [],
-      mitigation: 'Direct replacement',
-    },
-    migration: {
-      difficulty: MigrationDifficulty.Easy,
-      challenges: [],
-      steps: ['Replace _.drop(array, n) with array.slice(n)'],
-    },
-    notes: ['Uses native slice() method to skip first n elements'],
-    related: [...relatedFunctions.arrayReducers],
-  } as NativeAlternative],
+  createArraySliceMethod(
+    'drop',
+    'array.slice(n)',
+    'Drop n elements from beginning of array',
+    '_.drop(array, 2)',
+    'array.slice(2)',
+    'Uses native slice() method to skip first n elements',
+  ),
 
-  ['dropRight', {
-    category: FunctionCategory.Array,
-    native: 'array.slice(0, -n)',
-    description: 'Drop n elements from end of array',
-    example: {
-      lodash: '_.dropRight(array, 2)',
-      native: 'array.slice(0, -2)',
-    },
-    safety: {
-      level: SafetyLevel.Safe,
-      concerns: [],
-      mitigation: 'Direct replacement',
-    },
-    migration: {
-      difficulty: MigrationDifficulty.Easy,
-      challenges: [],
-      steps: ['Replace _.dropRight(array, n) with array.slice(0, -n)'],
-    },
-    notes: ['Uses native slice() with negative index to remove last n elements'],
-    related: [...relatedFunctions.arrayReducers],
-  } as NativeAlternative],
+  createArraySliceMethod(
+    'dropRight',
+    'array.slice(0, -n)',
+    'Drop n elements from end of array',
+    '_.dropRight(array, 2)',
+    'array.slice(0, -2)',
+    'Uses native slice() with negative index to remove last n elements',
+  ),
 
-  ['take', {
-    category: FunctionCategory.Array,
-    native: 'array.slice(0, n)',
-    description: 'Take first n elements from array',
-    example: {
-      lodash: '_.take(array, 3)',
-      native: 'array.slice(0, 3)',
-    },
-    safety: {
-      level: SafetyLevel.Safe,
-      concerns: [],
-      mitigation: 'Direct replacement',
-    },
-    migration: {
-      difficulty: MigrationDifficulty.Easy,
-      challenges: [],
-      steps: ['Replace _.take(array, n) with array.slice(0, n)'],
-    },
-    notes: ['Uses native slice() method to get first n elements'],
-    related: [...relatedFunctions.arrayReducers],
-  } as NativeAlternative],
+  createArraySliceMethod(
+    'take',
+    'array.slice(0, n)',
+    'Take first n elements from array',
+    '_.take(array, 3)',
+    'array.slice(0, 3)',
+    'Uses native slice() method to get first n elements',
+  ),
 
-  ['takeRight', {
-    category: FunctionCategory.Array,
-    native: 'array.slice(-n)',
-    description: 'Take last n elements from array',
-    example: {
-      lodash: '_.takeRight(array, 3)',
-      native: 'array.slice(-3)',
-    },
-    safety: {
-      level: SafetyLevel.Safe,
-      concerns: [],
-      mitigation: 'Direct replacement',
-    },
-    migration: {
-      difficulty: MigrationDifficulty.Easy,
-      challenges: [],
-      steps: ['Replace _.takeRight(array, n) with array.slice(-n)'],
-    },
-    notes: ['Uses native slice() with negative index to get last n elements'],
-    related: [...relatedFunctions.arrayReducers],
-  } as NativeAlternative],
+  createArraySliceMethod(
+    'takeRight',
+    'array.slice(-n)',
+    'Take last n elements from array',
+    '_.takeRight(array, 3)',
+    'array.slice(-3)',
+    'Uses native slice() with negative index to get last n elements',
+  ),
 ])
