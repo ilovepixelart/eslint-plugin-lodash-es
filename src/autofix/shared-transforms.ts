@@ -550,6 +550,130 @@ function createParseIntFix(callInfo: CallInfo): FixResult | null {
 }
 
 /**
+ * Pattern matcher type for specialized handlers
+ */
+type PatternMatcher = (nativeAlternative: string) => boolean
+type HandlerFunction = (callInfo: CallInfo, nativeAlternative: string) => FixResult | null
+
+/**
+ * Registry of pattern matchers with their corresponding handlers
+ * Organized by priority (more specific patterns first)
+ */
+const SPECIALIZED_HANDLERS: { matches: PatternMatcher, handler: HandlerFunction }[] = [
+  // Exact match patterns (highest priority)
+  { matches: alt => alt === 'Array.from({length: n}, (_, i) => fn(i))', handler: (c, _alt) => createTimesFix(c) },
+  { matches: alt => alt === 'Array.from({length: end - start}, (_, i) => start + i)', handler: (c, _alt) => createRangeFix(c) },
+  { matches: alt => alt === 'Array.from({length: end - start}, (_, i) => end - i - 1)', handler: (c, _alt) => createRangeRightFix(c) },
+  { matches: alt => alt === 'a + b', handler: (c, _alt) => createArithmeticFix(c, '+') },
+  { matches: alt => alt === 'a - b', handler: (c, _alt) => createArithmeticFix(c, '-') },
+  { matches: alt => alt === 'a * b', handler: (c, _alt) => createArithmeticFix(c, '*') },
+  { matches: alt => alt === 'a / b', handler: (c, _alt) => createArithmeticFix(c, '/') },
+  { matches: alt => alt === 'array.reduce((sum, n) => sum + n, 0) / array.length', handler: (c, _alt) => createMeanFix(c) },
+  { matches: alt => alt === 'array.reduce((sum, n) => sum + n, 0)', handler: (c, _alt) => createSumFix(c) },
+  { matches: alt => alt === 'Math.min(Math.max(number, lower), upper)', handler: (c, _alt) => createClampFix(c) },
+  { matches: alt => alt === 'number >= start && number < end', handler: (c, _alt) => createInRangeFix(c) },
+  { matches: alt => alt === 'Math.random() * (max - min) + min', handler: (c, _alt) => createRandomFix(c) },
+  { matches: alt => alt === 'string.at(0).toUpperCase() + string.slice(1).toLowerCase()', handler: (c, _alt) => createCapitalizeFix(c) },
+  { matches: alt => alt === 'string.at(0).toLowerCase() + string.slice(1)', handler: (c, _alt) => createLowerFirstFix(c) },
+  { matches: alt => alt === 'string.at(0).toUpperCase() + string.slice(1)', handler: (c, _alt) => createUpperFirstFix(c) },
+  { matches: alt => alt === 'parseInt(string, radix)', handler: (c, _alt) => createParseIntFix(c) },
+  ...createComparisonHandlers(),
+  ...createInstanceOfHandlers(),
+  ...createStubHandlers(),
+  ...createTypeConversionHandlers(),
+  ...createFunctionUtilityHandlers(),
+  // Partial match patterns (lower priority, check order matters)
+  { matches: alt => alt.includes('.slice(0, -n)') || alt === 'array.slice(0, -n)', handler: (c, _alt) => createDropRightFix(c) },
+  { matches: alt => alt.includes('.slice(0, n)') || alt === 'array.slice(0, n)', handler: (c, _alt) => createTakeFix(c) },
+  { matches: alt => alt.includes('.slice(-n)') || alt === 'array.slice(-n)', handler: (c, _alt) => createTakeRightFix(c) },
+  { matches: alt => alt.includes('.slice(n)') || alt === 'array.slice(n)', handler: (c, _alt) => createDropFix(c) },
+  { matches: alt => alt.includes('[...new Set('), handler: createUniqFix },
+  { matches: alt => alt.includes('.filter(Boolean)'), handler: (c, _alt) => createCompactFix(c) },
+  { matches: alt => alt.includes('Object.fromEntries(') && alt.includes('.map('), handler: createPickOmitFix },
+  { matches: alt => alt.includes('.toSorted('), handler: (c, _alt) => createSortByFix(c) },
+  { matches: alt => alt.includes('Object.assign({}, '), handler: (c, _alt) => createMergeFix(c) },
+  { matches: alt => alt.includes('?.'), handler: (c, _alt) => createGetFix(c) },
+  { matches: alt => alt.includes('{...'), handler: (c, _alt) => createCloneFix(c) },
+  { matches: alt => alt.includes('structuredClone('), handler: (c, _alt) => createCloneDeepFix(c) },
+  { matches: alt => alt.includes('Object.groupBy('), handler: (c, _alt) => createGroupByFix(c) },
+  { matches: alt => alt.includes('.reduce((acc, item)'), handler: (c, _alt) => createCountByFix(c) },
+  { matches: alt => alt.includes('Array.from({length:'), handler: (c, _alt) => createChunkFix(c) },
+]
+
+/**
+ * Helper to create comparison operator handlers
+ */
+function createComparisonHandlers(): { matches: PatternMatcher, handler: HandlerFunction }[] {
+  const operators = [
+    { pattern: 'value > other', op: '>' },
+    { pattern: 'value >= other', op: '>=' },
+    { pattern: 'value < other', op: '<' },
+    { pattern: 'value <= other', op: '<=' },
+  ] as const
+  return operators.map(({ pattern, op }) => ({
+    matches: (alt: string): boolean => alt === pattern,
+    handler: (c: CallInfo, _alt: string): FixResult | null => createComparisonFix(c, op),
+  }))
+}
+
+/**
+ * Helper to create instanceof handlers
+ */
+function createInstanceOfHandlers(): { matches: PatternMatcher, handler: HandlerFunction }[] {
+  const types = ['Date', 'RegExp', 'Error', 'Set', 'WeakMap', 'WeakSet'] as const
+  return types.map(type => ({
+    matches: (alt: string): boolean => alt === `value instanceof ${type}`,
+    handler: (c: CallInfo, _alt: string): FixResult | null => createInstanceOfFix(c, type),
+  }))
+}
+
+/**
+ * Helper to create stub function handlers
+ */
+function createStubHandlers(): { matches: PatternMatcher, handler: HandlerFunction }[] {
+  const stubs = ['[]', 'false', 'true', '{}', '\'\'', 'undefined'] as const
+  return [
+    ...stubs.map(stub => ({
+      matches: (alt: string): boolean => alt === stub,
+      handler: (c: CallInfo, _alt: string): FixResult | null => createStubFix(c, stub),
+    })),
+    {
+      matches: (alt: string): boolean => alt === 'value',
+      handler: (c: CallInfo, _alt: string): FixResult | null => createStubFix(c, c.params),
+    },
+  ]
+}
+
+/**
+ * Helper to create type conversion handlers
+ */
+function createTypeConversionHandlers(): { matches: PatternMatcher, handler: HandlerFunction }[] {
+  return [
+    { pattern: 'Array.isArray(value) ? value : [value]', handler: createCastArrayFix },
+    { pattern: 'Number(value) || 0', handler: createToFiniteFix },
+    { pattern: 'Math.trunc(Number(value)) || 0', handler: createToIntegerFix },
+    { pattern: 'Math.min(Math.max(Math.trunc(Number(value)) || 0, -Number.MAX_SAFE_INTEGER), Number.MAX_SAFE_INTEGER)', handler: createToSafeIntegerFix },
+  ].map(({ pattern, handler }) => ({
+    matches: (alt: string): boolean => alt === pattern,
+    handler: (c: CallInfo, _alt: string): FixResult | null => handler(c),
+  }))
+}
+
+/**
+ * Helper to create function utility handlers
+ */
+function createFunctionUtilityHandlers(): { matches: PatternMatcher, handler: HandlerFunction }[] {
+  return [
+    { pattern: 'setTimeout(func, wait, ...args)', handler: createDelayFix },
+    { pattern: 'setTimeout(func, 0, ...args)', handler: createDeferFix },
+    { pattern: '() => value', handler: createConstantFix },
+  ].map(({ pattern, handler }) => ({
+    matches: (alt: string): boolean => alt === pattern,
+    handler: (c: CallInfo, _alt: string): FixResult | null => handler(c),
+  }))
+}
+
+/**
  * Get specialized handler result using elegant pattern system
  */
 function trySpecializedHandlers(callInfo: CallInfo, nativeAlternative: string): FixResult | null {
@@ -557,78 +681,19 @@ function trySpecializedHandlers(callInfo: CallInfo, nativeAlternative: string): 
   const patternResult = createPatternBasedTransform(callInfo, nativeAlternative)
   if (patternResult) return patternResult
 
-  // Fallback to legacy handlers for any patterns not yet migrated
-  if (nativeAlternative.includes('[...new Set(')) return createUniqFix(callInfo, nativeAlternative)
-  if (nativeAlternative.includes('.filter(Boolean)')) return createCompactFix(callInfo)
-  if (nativeAlternative.includes('Object.fromEntries(') && nativeAlternative.includes('.map(')) return createPickOmitFix(callInfo, nativeAlternative)
-  if (nativeAlternative.includes('.toSorted(')) return createSortByFix(callInfo)
-  if (nativeAlternative.includes('Object.assign({}, ')) return createMergeFix(callInfo)
-  if (nativeAlternative.includes('?.')) return createGetFix(callInfo)
-  if (nativeAlternative.includes('{...')) return createCloneFix(callInfo)
-  if (nativeAlternative.includes('structuredClone(')) return createCloneDeepFix(callInfo)
-  if (nativeAlternative.includes('Object.groupBy(')) return createGroupByFix(callInfo)
-  if (nativeAlternative.includes('.reduce((acc, item)')) return createCountByFix(callInfo)
-  // Util function generators and array builders - must come before generic Array.from check
-  if (nativeAlternative === 'Array.from({length: n}, (_, i) => fn(i))') return createTimesFix(callInfo)
-  if (nativeAlternative === 'Array.from({length: end - start}, (_, i) => start + i)') return createRangeFix(callInfo)
-  if (nativeAlternative === 'Array.from({length: end - start}, (_, i) => end - i - 1)') return createRangeRightFix(callInfo)
-  // Generic Array.from pattern for chunk - must come after specific patterns
-  if (nativeAlternative.includes('Array.from({length:')) return createChunkFix(callInfo)
-  // Array slice patterns - order matters! More specific patterns first
-  if (nativeAlternative.includes('.slice(0, -n)') || nativeAlternative === 'array.slice(0, -n)') return createDropRightFix(callInfo)
-  if (nativeAlternative.includes('.slice(0, n)') || nativeAlternative === 'array.slice(0, n)') return createTakeFix(callInfo)
-  if (nativeAlternative.includes('.slice(-n)') || nativeAlternative === 'array.slice(-n)') return createTakeRightFix(callInfo)
-  if (nativeAlternative.includes('.slice(n)') || nativeAlternative === 'array.slice(n)') return createDropFix(callInfo)
-  // Arithmetic operation patterns
-  if (nativeAlternative === 'a + b') return createArithmeticFix(callInfo, '+')
-  if (nativeAlternative === 'a - b') return createArithmeticFix(callInfo, '-')
-  if (nativeAlternative === 'a * b') return createArithmeticFix(callInfo, '*')
-  if (nativeAlternative === 'a / b') return createArithmeticFix(callInfo, '/')
-  // Array aggregation patterns
-  if (nativeAlternative === 'array.reduce((sum, n) => sum + n, 0)') return createSumFix(callInfo)
-  if (nativeAlternative === 'array.reduce((sum, n) => sum + n, 0) / array.length') return createMeanFix(callInfo)
-  // Number operation patterns
-  if (nativeAlternative === 'Math.min(Math.max(number, lower), upper)') return createClampFix(callInfo)
-  if (nativeAlternative === 'number >= start && number < end') return createInRangeFix(callInfo)
-  if (nativeAlternative === 'Math.random() * (max - min) + min') return createRandomFix(callInfo)
-  // String transformation patterns
-  if (nativeAlternative === 'string.at(0).toUpperCase() + string.slice(1).toLowerCase()') return createCapitalizeFix(callInfo)
-  if (nativeAlternative === 'string.at(0).toLowerCase() + string.slice(1)') return createLowerFirstFix(callInfo)
-  if (nativeAlternative === 'string.at(0).toUpperCase() + string.slice(1)') return createUpperFirstFix(callInfo)
-  // Lang comparison operators
-  if (nativeAlternative === 'value > other') return createComparisonFix(callInfo, '>')
-  if (nativeAlternative === 'value >= other') return createComparisonFix(callInfo, '>=')
-  if (nativeAlternative === 'value < other') return createComparisonFix(callInfo, '<')
-  if (nativeAlternative === 'value <= other') return createComparisonFix(callInfo, '<=')
-  // Lang type checking with instanceof
-  if (nativeAlternative === 'value instanceof Date') return createInstanceOfFix(callInfo, 'Date')
-  if (nativeAlternative === 'value instanceof RegExp') return createInstanceOfFix(callInfo, 'RegExp')
-  if (nativeAlternative === 'value instanceof Error') return createInstanceOfFix(callInfo, 'Error')
-  if (nativeAlternative === 'value instanceof Set') return createInstanceOfFix(callInfo, 'Set')
-  if (nativeAlternative === 'value instanceof WeakMap') return createInstanceOfFix(callInfo, 'WeakMap')
-  if (nativeAlternative === 'value instanceof WeakSet') return createInstanceOfFix(callInfo, 'WeakSet')
-  // Util stub functions
-  if (nativeAlternative === '[]') return createStubFix(callInfo, '[]')
-  if (nativeAlternative === 'false') return createStubFix(callInfo, 'false')
-  if (nativeAlternative === 'true') return createStubFix(callInfo, 'true')
-  if (nativeAlternative === '{}') return createStubFix(callInfo, '{}')
-  if (nativeAlternative === '\'\'') return createStubFix(callInfo, '\'\'')
-  if (nativeAlternative === 'undefined') return createStubFix(callInfo, 'undefined')
-  // Util helper functions
-  if (nativeAlternative === 'value') return createStubFix(callInfo, callInfo.params) // identity just returns the param
-  // Lang type conversion patterns
-  if (nativeAlternative === 'Array.isArray(value) ? value : [value]') return createCastArrayFix(callInfo)
-  if (nativeAlternative === 'Number(value) || 0') return createToFiniteFix(callInfo)
-  if (nativeAlternative === 'Math.trunc(Number(value)) || 0') return createToIntegerFix(callInfo)
-  if (nativeAlternative === 'Math.min(Math.max(Math.trunc(Number(value)) || 0, -Number.MAX_SAFE_INTEGER), Number.MAX_SAFE_INTEGER)') return createToSafeIntegerFix(callInfo)
-  // Function utility patterns
-  if (nativeAlternative === 'setTimeout(func, wait, ...args)') return createDelayFix(callInfo)
-  if (nativeAlternative === 'setTimeout(func, 0, ...args)') return createDeferFix(callInfo)
-  // Util function generators
-  if (nativeAlternative === '() => value') return createConstantFix(callInfo)
-  // String parsing
-  if (nativeAlternative === 'parseInt(string, radix)') return createParseIntFix(callInfo)
+  // Use registry-based lookup for specialized handlers
+  return findMatchingHandler(callInfo, nativeAlternative)
+}
 
+/**
+ * Find and execute matching handler from registry
+ */
+function findMatchingHandler(callInfo: CallInfo, nativeAlternative: string): FixResult | null {
+  for (const { matches, handler } of SPECIALIZED_HANDLERS) {
+    if (matches(nativeAlternative)) {
+      return handler(callInfo, nativeAlternative)
+    }
+  }
   return null
 }
 

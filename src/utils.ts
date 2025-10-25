@@ -11,7 +11,9 @@ import type { Usage, NativeAlternative, AlternativeFilterConfig, LodashFunctionN
  * Get source code from ESLint context (handles deprecated API)
  */
 export function getSourceCode(context: Rule.RuleContext): SourceCode {
-  return context.sourceCode ?? context.getSourceCode()
+  // Use sourceCode property (ESLint 9+) with fallback for ESLint 8
+  // Type assertion needed for backwards compatibility
+  return context.sourceCode ?? (context as unknown as { getSourceCode(): SourceCode }).getSourceCode()
 }
 
 /**
