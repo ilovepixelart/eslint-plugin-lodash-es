@@ -1,7 +1,13 @@
 /**
  * Native alternatives for Number functions
  */
-import { FunctionCategory, createStaticMethodAlternative } from '../shared'
+import {
+  FunctionCategory,
+  createStaticMethodAlternative,
+  createExpressionAlternative,
+  createArrayTransformMethod,
+  relatedFunctions,
+} from '../shared'
 import type { NativeAlternative } from '../shared'
 
 export const numberAlternatives = new Map<string, NativeAlternative>([
@@ -68,5 +74,71 @@ export const numberAlternatives = new Map<string, NativeAlternative>([
     'Math',
     'Round to nearest integer',
     'number',
+  )],
+
+  // Arithmetic operations
+  ['add', createExpressionAlternative(
+    FunctionCategory.Number,
+    'add',
+    'a + b',
+    'Add two numbers',
+  )],
+
+  ['subtract', createExpressionAlternative(
+    FunctionCategory.Number,
+    'subtract',
+    'a - b',
+    'Subtract two numbers',
+  )],
+
+  ['multiply', createExpressionAlternative(
+    FunctionCategory.Number,
+    'multiply',
+    'a * b',
+    'Multiply two numbers',
+  )],
+
+  ['divide', createExpressionAlternative(
+    FunctionCategory.Number,
+    'divide',
+    'a / b',
+    'Divide two numbers',
+  )],
+
+  // Array aggregation
+  ['sum', createArrayTransformMethod(
+    'sum',
+    'array.reduce((sum, n) => sum + n, 0)',
+    'Sum all numbers in array',
+    relatedFunctions.arrayReducers,
+  )],
+
+  ['mean', createArrayTransformMethod(
+    'mean',
+    'array.reduce((sum, n) => sum + n, 0) / array.length',
+    'Calculate mean of numbers in array',
+    relatedFunctions.arrayReducers,
+  )],
+
+  // Number operations
+  ['clamp', createExpressionAlternative(
+    FunctionCategory.Number,
+    'clamp',
+    'Math.min(Math.max(number, lower), upper)',
+    'Clamp number within inclusive bounds',
+  )],
+
+  ['inRange', createExpressionAlternative(
+    FunctionCategory.Number,
+    'inRange',
+    'number >= start && number < end',
+    'Check if number is in range',
+  )],
+
+  ['random', createExpressionAlternative(
+    FunctionCategory.Number,
+    'random',
+    'Math.random() * (max - min) + min',
+    'Generate random number between bounds',
   )],
 ])

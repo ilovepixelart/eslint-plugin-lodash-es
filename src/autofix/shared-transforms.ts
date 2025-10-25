@@ -213,6 +213,343 @@ function createChunkFix(callInfo: CallInfo): FixResult | null {
 }
 
 /**
+ * Handle drop function - drop(array, n) → array.slice(n)
+ */
+function createDropFix(callInfo: CallInfo): FixResult | null {
+  const commaIndex = findFirstTopLevelComma(callInfo.params)
+  if (commaIndex === -1) return null
+
+  const array = callInfo.params.slice(0, commaIndex).trim()
+  const n = callInfo.params.slice(commaIndex + 1).trim()
+
+  const safeArray = needsParentheses(array) ? `(${array})` : array
+  const expression = `${safeArray}.slice(${n})`
+  const { start, text } = handleNegationOperator(callInfo, expression)
+  return { range: [start, callInfo.callEnd], text }
+}
+
+/**
+ * Handle dropRight function - dropRight(array, n) → array.slice(0, -n)
+ */
+function createDropRightFix(callInfo: CallInfo): FixResult | null {
+  const commaIndex = findFirstTopLevelComma(callInfo.params)
+  if (commaIndex === -1) return null
+
+  const array = callInfo.params.slice(0, commaIndex).trim()
+  const n = callInfo.params.slice(commaIndex + 1).trim()
+
+  const safeArray = needsParentheses(array) ? `(${array})` : array
+  const expression = `${safeArray}.slice(0, -${n})`
+  const { start, text } = handleNegationOperator(callInfo, expression)
+  return { range: [start, callInfo.callEnd], text }
+}
+
+/**
+ * Handle take function - take(array, n) → array.slice(0, n)
+ */
+function createTakeFix(callInfo: CallInfo): FixResult | null {
+  const commaIndex = findFirstTopLevelComma(callInfo.params)
+  if (commaIndex === -1) return null
+
+  const array = callInfo.params.slice(0, commaIndex).trim()
+  const n = callInfo.params.slice(commaIndex + 1).trim()
+
+  const safeArray = needsParentheses(array) ? `(${array})` : array
+  const expression = `${safeArray}.slice(0, ${n})`
+  const { start, text } = handleNegationOperator(callInfo, expression)
+  return { range: [start, callInfo.callEnd], text }
+}
+
+/**
+ * Handle takeRight function - takeRight(array, n) → array.slice(-n)
+ */
+function createTakeRightFix(callInfo: CallInfo): FixResult | null {
+  const commaIndex = findFirstTopLevelComma(callInfo.params)
+  if (commaIndex === -1) return null
+
+  const array = callInfo.params.slice(0, commaIndex).trim()
+  const n = callInfo.params.slice(commaIndex + 1).trim()
+
+  const safeArray = needsParentheses(array) ? `(${array})` : array
+  const expression = `${safeArray}.slice(-${n})`
+  const { start, text } = handleNegationOperator(callInfo, expression)
+  return { range: [start, callInfo.callEnd], text }
+}
+
+/**
+ * Handle arithmetic operations - add(a, b) → a + b, subtract(a, b) → a - b, etc.
+ */
+function createArithmeticFix(callInfo: CallInfo, operator: string): FixResult | null {
+  const commaIndex = findFirstTopLevelComma(callInfo.params)
+  if (commaIndex === -1) return null
+
+  const first = callInfo.params.slice(0, commaIndex).trim()
+  const second = callInfo.params.slice(commaIndex + 1).trim()
+
+  const expression = `${first} ${operator} ${second}`
+  const { start, text } = handleNegationOperator(callInfo, expression)
+  return { range: [start, callInfo.callEnd], text }
+}
+
+/**
+ * Handle sum function - sum(array) → array.reduce((sum, n) => sum + n, 0)
+ */
+function createSumFix(callInfo: CallInfo): FixResult | null {
+  const safeParam = needsParentheses(callInfo.params) ? `(${callInfo.params})` : callInfo.params
+  const expression = `${safeParam}.reduce((sum, n) => sum + n, 0)`
+  const { start, text } = handleNegationOperator(callInfo, expression)
+  return { range: [start, callInfo.callEnd], text }
+}
+
+/**
+ * Handle mean function - mean(array) → array.reduce((sum, n) => sum + n, 0) / array.length
+ */
+function createMeanFix(callInfo: CallInfo): FixResult | null {
+  const safeParam = needsParentheses(callInfo.params) ? `(${callInfo.params})` : callInfo.params
+  const expression = `${safeParam}.reduce((sum, n) => sum + n, 0) / ${safeParam}.length`
+  const { start, text } = handleNegationOperator(callInfo, expression)
+  return { range: [start, callInfo.callEnd], text }
+}
+
+/**
+ * Handle clamp function - clamp(number, lower, upper) → Math.min(Math.max(number, lower), upper)
+ */
+function createClampFix(callInfo: CallInfo): FixResult | null {
+  const params = callInfo.params.split(',').map(p => p.trim())
+  if (params.length !== 3) return null
+
+  const [number, lower, upper] = params
+  const expression = `Math.min(Math.max(${number}, ${lower}), ${upper})`
+  const { start, text } = handleNegationOperator(callInfo, expression)
+  return { range: [start, callInfo.callEnd], text }
+}
+
+/**
+ * Handle inRange function - inRange(number, start, end) → number >= start && number < end
+ */
+function createInRangeFix(callInfo: CallInfo): FixResult | null {
+  const params = callInfo.params.split(',').map(p => p.trim())
+  if (params.length !== 3) return null
+
+  const [number, start, end] = params
+  const expression = `${number} >= ${start} && ${number} < ${end}`
+  const { start: fixStart, text } = handleNegationOperator(callInfo, expression)
+  return { range: [fixStart, callInfo.callEnd], text }
+}
+
+/**
+ * Handle random function - random(lower, upper) → Math.random() * (upper - lower) + lower
+ * Or random(max) → Math.random() * max
+ */
+function createRandomFix(callInfo: CallInfo): FixResult | null {
+  const params = callInfo.params.split(',').map(p => p.trim())
+
+  let expression: string
+  if (params.length === 1) {
+    // random(max) → Math.random() * max
+    expression = `Math.random() * ${params[0]}`
+  } else if (params.length === 2) {
+    // random(min, max) → Math.random() * (max - min) + min
+    const [lower, upper] = params
+    expression = `Math.random() * (${upper} - ${lower}) + ${lower}`
+  } else {
+    return null
+  }
+
+  const { start, text } = handleNegationOperator(callInfo, expression)
+  return { range: [start, callInfo.callEnd], text }
+}
+
+/**
+ * String transformation handlers
+ */
+function createCapitalizeFix(callInfo: CallInfo): FixResult | null {
+  const str = callInfo.params
+  const expression = `${str}.at(0).toUpperCase() + ${str}.slice(1).toLowerCase()`
+  const { start, text } = handleNegationOperator(callInfo, expression)
+  return { range: [start, callInfo.callEnd], text }
+}
+
+function createLowerFirstFix(callInfo: CallInfo): FixResult | null {
+  const str = callInfo.params
+  const expression = `${str}.at(0).toLowerCase() + ${str}.slice(1)`
+  const { start, text } = handleNegationOperator(callInfo, expression)
+  return { range: [start, callInfo.callEnd], text }
+}
+
+function createUpperFirstFix(callInfo: CallInfo): FixResult | null {
+  const str = callInfo.params
+  const expression = `${str}.at(0).toUpperCase() + ${str}.slice(1)`
+  const { start, text } = handleNegationOperator(callInfo, expression)
+  return { range: [start, callInfo.callEnd], text }
+}
+
+/**
+ * Lang comparison operators
+ */
+function createComparisonFix(callInfo: CallInfo, operator: string): FixResult | null {
+  const params = callInfo.params.split(',').map(p => p.trim())
+  if (params.length !== 2) return null
+
+  const [first, second] = params
+  const expression = `${first} ${operator} ${second}`
+  const { start, text } = handleNegationOperator(callInfo, expression)
+  return { range: [start, callInfo.callEnd], text }
+}
+
+/**
+ * Lang type checking with instanceof
+ */
+function createInstanceOfFix(callInfo: CallInfo, className: string): FixResult | null {
+  const value = callInfo.params
+  const expression = `${value} instanceof ${className}`
+  const { start, text } = handleNegationOperator(callInfo, expression)
+  return { range: [start, callInfo.callEnd], text }
+}
+
+/**
+ * Util stub functions - return literals
+ */
+function createStubFix(callInfo: CallInfo, literal: string): FixResult | null {
+  const { start, text } = handleNegationOperator(callInfo, literal)
+  return { range: [start, callInfo.callEnd], text }
+}
+
+/**
+ * Lang type conversion - castArray
+ */
+function createCastArrayFix(callInfo: CallInfo): FixResult | null {
+  const value = callInfo.params
+  const expression = `Array.isArray(${value}) ? ${value} : [${value}]`
+  const { start, text } = handleNegationOperator(callInfo, expression)
+  return { range: [start, callInfo.callEnd], text }
+}
+
+/**
+ * Lang type conversion - toFinite
+ */
+function createToFiniteFix(callInfo: CallInfo): FixResult | null {
+  const value = callInfo.params
+  const expression = `Number(${value}) || 0`
+  const { start, text } = handleNegationOperator(callInfo, expression)
+  return { range: [start, callInfo.callEnd], text }
+}
+
+/**
+ * Lang type conversion - toInteger
+ */
+function createToIntegerFix(callInfo: CallInfo): FixResult | null {
+  const value = callInfo.params
+  const expression = `Math.trunc(Number(${value})) || 0`
+  const { start, text } = handleNegationOperator(callInfo, expression)
+  return { range: [start, callInfo.callEnd], text }
+}
+
+/**
+ * Lang type conversion - toSafeInteger
+ */
+function createToSafeIntegerFix(callInfo: CallInfo): FixResult | null {
+  const value = callInfo.params
+  const expression = `Math.min(Math.max(Math.trunc(Number(${value})) || 0, -Number.MAX_SAFE_INTEGER), Number.MAX_SAFE_INTEGER)`
+  const { start, text } = handleNegationOperator(callInfo, expression)
+  return { range: [start, callInfo.callEnd], text }
+}
+
+/**
+ * Function utility - delay
+ */
+function createDelayFix(callInfo: CallInfo): FixResult | null {
+  const commaIndex = findFirstTopLevelComma(callInfo.params)
+  if (commaIndex === -1) return null
+  const func = callInfo.params.slice(0, commaIndex).trim()
+  const restParams = callInfo.params.slice(commaIndex + 1).trim()
+  const expression = `setTimeout(${func}, ${restParams})`
+  const { start, text } = handleNegationOperator(callInfo, expression)
+  return { range: [start, callInfo.callEnd], text }
+}
+
+/**
+ * Function utility - defer
+ */
+function createDeferFix(callInfo: CallInfo): FixResult | null {
+  const func = callInfo.params
+  const expression = `setTimeout(${func}, 0)`
+  const { start, text } = handleNegationOperator(callInfo, expression)
+  return { range: [start, callInfo.callEnd], text }
+}
+
+/**
+ * Util - constant
+ */
+function createConstantFix(callInfo: CallInfo): FixResult | null {
+  const value = callInfo.params
+  const expression = `() => ${value}`
+  const { start, text } = handleNegationOperator(callInfo, expression)
+  return { range: [start, callInfo.callEnd], text }
+}
+
+/**
+ * Util - times
+ */
+function createTimesFix(callInfo: CallInfo): FixResult | null {
+  const commaIndex = findFirstTopLevelComma(callInfo.params)
+  if (commaIndex === -1) return null
+  const n = callInfo.params.slice(0, commaIndex).trim()
+  const fn = callInfo.params.slice(commaIndex + 1).trim()
+  const expression = `Array.from({length: ${n}}, (_, i) => ${fn}(i))`
+  const { start, text } = handleNegationOperator(callInfo, expression)
+  return { range: [start, callInfo.callEnd], text }
+}
+
+/**
+ * Util - range
+ */
+function createRangeFix(callInfo: CallInfo): FixResult | null {
+  const commaIndex = findFirstTopLevelComma(callInfo.params)
+  if (commaIndex === -1) {
+    // Single param: range(end) means range(0, end)
+    const end = callInfo.params.trim()
+    const expression = `Array.from({length: ${end}}, (_, i) => i)`
+    const { start, text } = handleNegationOperator(callInfo, expression)
+    return { range: [start, callInfo.callEnd], text }
+  }
+  const start = callInfo.params.slice(0, commaIndex).trim()
+  const end = callInfo.params.slice(commaIndex + 1).trim()
+  const expression = `Array.from({length: ${end} - ${start}}, (_, i) => ${start} + i)`
+  const { start: actualStart, text } = handleNegationOperator(callInfo, expression)
+  return { range: [actualStart, callInfo.callEnd], text }
+}
+
+/**
+ * Util - rangeRight
+ */
+function createRangeRightFix(callInfo: CallInfo): FixResult | null {
+  const commaIndex = findFirstTopLevelComma(callInfo.params)
+  if (commaIndex === -1) {
+    // Single param: rangeRight(end) means rangeRight(0, end)
+    const end = callInfo.params.trim()
+    const expression = `Array.from({length: ${end}}, (_, i) => ${end} - i - 1)`
+    const { start, text } = handleNegationOperator(callInfo, expression)
+    return { range: [start, callInfo.callEnd], text }
+  }
+  const start = callInfo.params.slice(0, commaIndex).trim()
+  const end = callInfo.params.slice(commaIndex + 1).trim()
+  const expression = `Array.from({length: ${end} - ${start}}, (_, i) => ${end} - i - 1)`
+  const { start: actualStart, text } = handleNegationOperator(callInfo, expression)
+  return { range: [actualStart, callInfo.callEnd], text }
+}
+
+/**
+ * String - parseInt
+ */
+function createParseIntFix(callInfo: CallInfo): FixResult | null {
+  const params = callInfo.params
+  const expression = `parseInt(${params})`
+  const { start, text } = handleNegationOperator(callInfo, expression)
+  return { range: [start, callInfo.callEnd], text }
+}
+
+/**
  * Get specialized handler result using elegant pattern system
  */
 function trySpecializedHandlers(callInfo: CallInfo, nativeAlternative: string): FixResult | null {
@@ -231,7 +568,66 @@ function trySpecializedHandlers(callInfo: CallInfo, nativeAlternative: string): 
   if (nativeAlternative.includes('structuredClone(')) return createCloneDeepFix(callInfo)
   if (nativeAlternative.includes('Object.groupBy(')) return createGroupByFix(callInfo)
   if (nativeAlternative.includes('.reduce((acc, item)')) return createCountByFix(callInfo)
+  // Util function generators and array builders - must come before generic Array.from check
+  if (nativeAlternative === 'Array.from({length: n}, (_, i) => fn(i))') return createTimesFix(callInfo)
+  if (nativeAlternative === 'Array.from({length: end - start}, (_, i) => start + i)') return createRangeFix(callInfo)
+  if (nativeAlternative === 'Array.from({length: end - start}, (_, i) => end - i - 1)') return createRangeRightFix(callInfo)
+  // Generic Array.from pattern for chunk - must come after specific patterns
   if (nativeAlternative.includes('Array.from({length:')) return createChunkFix(callInfo)
+  // Array slice patterns - order matters! More specific patterns first
+  if (nativeAlternative.includes('.slice(0, -n)') || nativeAlternative === 'array.slice(0, -n)') return createDropRightFix(callInfo)
+  if (nativeAlternative.includes('.slice(0, n)') || nativeAlternative === 'array.slice(0, n)') return createTakeFix(callInfo)
+  if (nativeAlternative.includes('.slice(-n)') || nativeAlternative === 'array.slice(-n)') return createTakeRightFix(callInfo)
+  if (nativeAlternative.includes('.slice(n)') || nativeAlternative === 'array.slice(n)') return createDropFix(callInfo)
+  // Arithmetic operation patterns
+  if (nativeAlternative === 'a + b') return createArithmeticFix(callInfo, '+')
+  if (nativeAlternative === 'a - b') return createArithmeticFix(callInfo, '-')
+  if (nativeAlternative === 'a * b') return createArithmeticFix(callInfo, '*')
+  if (nativeAlternative === 'a / b') return createArithmeticFix(callInfo, '/')
+  // Array aggregation patterns
+  if (nativeAlternative === 'array.reduce((sum, n) => sum + n, 0)') return createSumFix(callInfo)
+  if (nativeAlternative === 'array.reduce((sum, n) => sum + n, 0) / array.length') return createMeanFix(callInfo)
+  // Number operation patterns
+  if (nativeAlternative === 'Math.min(Math.max(number, lower), upper)') return createClampFix(callInfo)
+  if (nativeAlternative === 'number >= start && number < end') return createInRangeFix(callInfo)
+  if (nativeAlternative === 'Math.random() * (max - min) + min') return createRandomFix(callInfo)
+  // String transformation patterns
+  if (nativeAlternative === 'string.at(0).toUpperCase() + string.slice(1).toLowerCase()') return createCapitalizeFix(callInfo)
+  if (nativeAlternative === 'string.at(0).toLowerCase() + string.slice(1)') return createLowerFirstFix(callInfo)
+  if (nativeAlternative === 'string.at(0).toUpperCase() + string.slice(1)') return createUpperFirstFix(callInfo)
+  // Lang comparison operators
+  if (nativeAlternative === 'value > other') return createComparisonFix(callInfo, '>')
+  if (nativeAlternative === 'value >= other') return createComparisonFix(callInfo, '>=')
+  if (nativeAlternative === 'value < other') return createComparisonFix(callInfo, '<')
+  if (nativeAlternative === 'value <= other') return createComparisonFix(callInfo, '<=')
+  // Lang type checking with instanceof
+  if (nativeAlternative === 'value instanceof Date') return createInstanceOfFix(callInfo, 'Date')
+  if (nativeAlternative === 'value instanceof RegExp') return createInstanceOfFix(callInfo, 'RegExp')
+  if (nativeAlternative === 'value instanceof Error') return createInstanceOfFix(callInfo, 'Error')
+  if (nativeAlternative === 'value instanceof Set') return createInstanceOfFix(callInfo, 'Set')
+  if (nativeAlternative === 'value instanceof WeakMap') return createInstanceOfFix(callInfo, 'WeakMap')
+  if (nativeAlternative === 'value instanceof WeakSet') return createInstanceOfFix(callInfo, 'WeakSet')
+  // Util stub functions
+  if (nativeAlternative === '[]') return createStubFix(callInfo, '[]')
+  if (nativeAlternative === 'false') return createStubFix(callInfo, 'false')
+  if (nativeAlternative === 'true') return createStubFix(callInfo, 'true')
+  if (nativeAlternative === '{}') return createStubFix(callInfo, '{}')
+  if (nativeAlternative === '\'\'') return createStubFix(callInfo, '\'\'')
+  if (nativeAlternative === 'undefined') return createStubFix(callInfo, 'undefined')
+  // Util helper functions
+  if (nativeAlternative === 'value') return createStubFix(callInfo, callInfo.params) // identity just returns the param
+  // Lang type conversion patterns
+  if (nativeAlternative === 'Array.isArray(value) ? value : [value]') return createCastArrayFix(callInfo)
+  if (nativeAlternative === 'Number(value) || 0') return createToFiniteFix(callInfo)
+  if (nativeAlternative === 'Math.trunc(Number(value)) || 0') return createToIntegerFix(callInfo)
+  if (nativeAlternative === 'Math.min(Math.max(Math.trunc(Number(value)) || 0, -Number.MAX_SAFE_INTEGER), Number.MAX_SAFE_INTEGER)') return createToSafeIntegerFix(callInfo)
+  // Function utility patterns
+  if (nativeAlternative === 'setTimeout(func, wait, ...args)') return createDelayFix(callInfo)
+  if (nativeAlternative === 'setTimeout(func, 0, ...args)') return createDeferFix(callInfo)
+  // Util function generators
+  if (nativeAlternative === '() => value') return createConstantFix(callInfo)
+  // String parsing
+  if (nativeAlternative === 'parseInt(string, radix)') return createParseIntFix(callInfo)
 
   return null
 }
@@ -496,6 +892,23 @@ export function createAutofixRouting(callInfo: CallInfo, nativeMethod: string, f
 
   if (nativeMethod === 'Object.fromEntries(Object.entries(obj).filter(([k]) => !keys.includes(k)))') {
     return createOmitFix(callInfo)
+  }
+
+  // Handle zero-parameter literal returns (stub functions)
+  if (nativeMethod === '[]' || nativeMethod === 'false' || nativeMethod === 'true'
+    || nativeMethod === '{}' || nativeMethod === '\'\'' || nativeMethod === 'undefined') {
+    return {
+      range: [callInfo.callStart, callInfo.callEnd],
+      text: nativeMethod,
+    }
+  }
+
+  // Handle identity function - just return the parameter as-is
+  if (nativeMethod === 'value' && functionName === 'identity') {
+    return {
+      range: [callInfo.callStart, callInfo.callEnd],
+      text: callInfo.params,
+    }
   }
 
   if (isExpressionAlternative(nativeMethod)) {

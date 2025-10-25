@@ -181,4 +181,14 @@ export const objectAlternatives = new Map<string, NativeAlternative>([
       ],
     },
   )],
+
+  // Object creation
+  ['create', createStaticMethodAlternative(
+    FunctionCategory.Object,
+    'create',
+    'Object',
+    'Create object with specified prototype',
+    'prototype',
+    { notes: ['Native Object.create() method'] },
+  )],
 ])

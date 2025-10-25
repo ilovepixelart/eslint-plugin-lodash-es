@@ -26,6 +26,7 @@ export enum FunctionCategory {
   Date = 'date',
   Function = 'function',
   Collection = 'collection',
+  Util = 'util',
 }
 
 export const functionCategories = Object.values(FunctionCategory)

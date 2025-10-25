@@ -14,6 +14,8 @@ import { numberAlternatives } from './number'
 import { dateAlternatives } from './date'
 import { functionAlternatives } from './function'
 import { collectionAlternatives } from './collection'
+import { langAlternatives } from './lang'
+import { utilAlternatives } from './util'
 
 // Export all category maps for individual access if needed using export...from
 export { arrayAlternatives } from './array'
@@ -23,6 +25,8 @@ export { numberAlternatives } from './number'
 export { dateAlternatives } from './date'
 export { functionAlternatives } from './function'
 export { collectionAlternatives } from './collection'
+export { langAlternatives } from './lang'
+export { utilAlternatives } from './util'
 
 /**
  * Combined map of all native alternatives, organized by function name
@@ -36,6 +40,8 @@ export const nativeAlternatives = new Map<string, NativeAlternative>([
   ...dateAlternatives,
   ...functionAlternatives,
   ...collectionAlternatives,
+  ...langAlternatives,
+  ...utilAlternatives,
 ] as const)
 
 /**
@@ -49,4 +55,6 @@ export const alternativesByCategory = {
   date: dateAlternatives,
   function: functionAlternatives,
   collection: collectionAlternatives,
+  lang: langAlternatives,
+  util: utilAlternatives,
 } as const
