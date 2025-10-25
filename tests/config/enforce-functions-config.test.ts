@@ -320,7 +320,9 @@ describe('EnforceFunctionsConfig', () => {
         expect(allowed).not.toBeNull()
         expect(Array.isArray(allowed)).toBe(true)
         // Should have some functions from nativeAlternatives
-        expect(allowed!.length).toBeGreaterThan(0)
+        if (allowed) {
+          expect(allowed.length).toBeGreaterThan(0)
+        }
       })
 
       it('should create config with all native alternatives (including unsafe)', () => {
@@ -329,18 +331,25 @@ describe('EnforceFunctionsConfig', () => {
         const allowed = config.getAllowedFunctions()
         expect(allowed).not.toBeNull()
         expect(Array.isArray(allowed)).toBe(true)
-        expect(allowed!.length).toBeGreaterThan(0)
+        if (allowed) {
+          expect(allowed.length).toBeGreaterThan(0)
+        }
       })
 
       it('should exclude more functions when excludeUnsafe is true', () => {
         const configWithoutUnsafe = EnforceFunctionsConfig.createForNativeAlternatives(true)
         const configWithUnsafe = EnforceFunctionsConfig.createForNativeAlternatives(false)
 
-        const withoutUnsafe = configWithoutUnsafe.getAllowedFunctions()!
-        const withUnsafe = configWithUnsafe.getAllowedFunctions()!
+        const withoutUnsafe = configWithoutUnsafe.getAllowedFunctions()
+        const withUnsafe = configWithUnsafe.getAllowedFunctions()
+
+        expect(withoutUnsafe).not.toBeNull()
+        expect(withUnsafe).not.toBeNull()
 
         // Including unsafe should have same or more functions
-        expect(withUnsafe.length).toBeGreaterThanOrEqual(withoutUnsafe.length)
+        if (withoutUnsafe && withUnsafe) {
+          expect(withUnsafe.length).toBeGreaterThanOrEqual(withoutUnsafe.length)
+        }
       })
 
       it('should use excludeUnsafe=true by default', () => {
@@ -370,14 +379,18 @@ describe('EnforceFunctionsConfig', () => {
     it('should maintain immutability of returned arrays', () => {
       const original = ['map', 'filter'] as LodashFunctionName[]
       const config = new EnforceFunctionsConfig({ include: original })
-      const returned = config.getAllowedFunctions()!
+      const returned = config.getAllowedFunctions()
 
-      // Modify the returned array
-      returned.push('reduce' as LodashFunctionName)
+      expect(returned).not.toBeNull()
 
-      // Original config should not be affected
-      expect(config.getAllowedFunctions()).toEqual(original)
-      expect(config.getAllowedFunctions()).not.toEqual(returned)
+      if (returned) {
+        // Modify the returned array
+        returned.push('reduce' as LodashFunctionName)
+
+        // Original config should not be affected
+        expect(config.getAllowedFunctions()).toEqual(original)
+        expect(config.getAllowedFunctions()).not.toEqual(returned)
+      }
     })
   })
 })

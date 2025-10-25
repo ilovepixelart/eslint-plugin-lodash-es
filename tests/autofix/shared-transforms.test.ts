@@ -1400,4 +1400,333 @@ describe('shared-transforms', () => {
       expect(result?.text).toContain('item => item.age')
     })
   })
+
+  describe('specialized handler coverage - triggering uncovered lines', () => {
+    it('should trigger createUniqFix handler (lines 39-42)', () => {
+      const callInfo: CallInfo = {
+        callStart: 0,
+        callEnd: 20,
+        params: 'myArray',
+        hasNegation: false,
+      }
+      // This pattern triggers createUniqFix via SPECIALIZED_HANDLERS
+      const result = createExpressionFix(callInfo, '[...new Set(array)]')
+      expect(result?.text).toBe('[...new Set(myArray)]')
+    })
+
+    it('should trigger createCompactFix handler (lines 47-52)', () => {
+      const callInfo: CallInfo = {
+        callStart: 0,
+        callEnd: 25,
+        params: 'items',
+        hasNegation: false,
+      }
+      // This pattern triggers createCompactFix
+      const result = createExpressionFix(callInfo, 'array.filter(Boolean)')
+      expect(result?.text).toBe('items.filter(Boolean)')
+    })
+
+    it('should trigger createCompactFix with parentheses needed', () => {
+      const callInfo: CallInfo = {
+        callStart: 0,
+        callEnd: 30,
+        params: 'a || b',
+        hasNegation: false,
+      }
+      const result = createExpressionFix(callInfo, 'array.filter(Boolean)')
+      expect(result?.text).toBe('(a || b).filter(Boolean)')
+    })
+
+    it('should trigger createPickOmitFix for pick (lines 57-76)', () => {
+      const callInfo: CallInfo = {
+        callStart: 0,
+        callEnd: 35,
+        params: 'user, [\'name\', \'age\']',
+        hasNegation: false,
+      }
+      // Pick pattern with Object.fromEntries and .map
+      const result = createExpressionFix(callInfo, 'Object.fromEntries(keys.map(k => [k, obj[k]]))')
+      expect(result?.text).toContain('Object.fromEntries')
+      expect(result?.text).toContain('[\'name\', \'age\']')
+    })
+
+    it('should trigger createPickOmitFix for omit', () => {
+      const callInfo: CallInfo = {
+        callStart: 0,
+        callEnd: 40,
+        params: 'user, [\'password\']',
+        hasNegation: false,
+      }
+      // Omit pattern with Object.entries
+      const result = createExpressionFix(callInfo, 'Object.fromEntries(Object.entries(obj).filter(([k]) => !keys.includes(k)))')
+      expect(result?.text).toContain('Object.entries(user)')
+      expect(result?.text).toContain('[\'password\']')
+    })
+
+    it('should trigger createPickOmitFix with complex object needing parentheses', () => {
+      const callInfo: CallInfo = {
+        callStart: 0,
+        callEnd: 35,
+        params: 'a ? obj1 : obj2, keys',
+        hasNegation: false,
+      }
+      const result = createExpressionFix(callInfo, 'Object.fromEntries(keys.map(k => [k, obj[k]]))')
+      expect(result?.text).toContain('(a ? obj1 : obj2)')
+    })
+
+    it('should trigger createMergeFix handler (lines 105-108)', () => {
+      const callInfo: CallInfo = {
+        callStart: 0,
+        callEnd: 30,
+        params: 'obj1, obj2, obj3',
+        hasNegation: false,
+      }
+      // Merge pattern with Object.assign
+      const result = createExpressionFix(callInfo, 'Object.assign({}, obj)')
+      expect(result?.text).toBe('Object.assign({}, obj1, obj2, obj3)')
+    })
+
+    it('should trigger createGetFix with valid simple path (lines 125-129)', () => {
+      const callInfo: CallInfo = {
+        callStart: 0,
+        callEnd: 30,
+        params: 'user, "profile.name"',
+        hasNegation: false,
+      }
+      // Get pattern with optional chaining
+      const result = createExpressionFix(callInfo, 'obj?.a?.b?.c')
+      expect(result?.text).toBe('user?.profile?.name')
+    })
+
+    it('should trigger createGetFix with complex object needing parentheses', () => {
+      const callInfo: CallInfo = {
+        callStart: 0,
+        callEnd: 35,
+        params: 'x || y, "data.value"',
+        hasNegation: false,
+      }
+      const result = createExpressionFix(callInfo, 'obj?.data?.value')
+      expect(result?.text).toBe('(x || y)?.data?.value')
+    })
+
+    it('should trigger createCloneFix handler (lines 139-143)', () => {
+      const callInfo: CallInfo = {
+        callStart: 0,
+        callEnd: 20,
+        params: 'original',
+        hasNegation: false,
+      }
+      // Clone pattern with spread
+      const result = createExpressionFix(callInfo, '{...obj}')
+      expect(result?.text).toBe('{...original}')
+    })
+
+    it('should trigger createCloneFix with complex object needing parentheses', () => {
+      const callInfo: CallInfo = {
+        callStart: 0,
+        callEnd: 25,
+        params: 'a ? b : c',
+        hasNegation: false,
+      }
+      const result = createExpressionFix(callInfo, '{...obj}')
+      expect(result?.text).toBe('{...(a ? b : c)}')
+    })
+
+    it('should trigger createCloneDeepFix handler (lines 148-152)', () => {
+      const callInfo: CallInfo = {
+        callStart: 0,
+        callEnd: 25,
+        params: 'deepObject',
+        hasNegation: false,
+      }
+      // CloneDeep pattern with structuredClone
+      const result = createExpressionFix(callInfo, 'structuredClone(obj)')
+      expect(result?.text).toBe('structuredClone(deepObject)')
+    })
+
+    it('should trigger createGroupByFix handler (lines 157-174)', () => {
+      const callInfo: CallInfo = {
+        callStart: 0,
+        callEnd: 35,
+        params: 'users, u => u.role',
+        hasNegation: false,
+      }
+      // GroupBy pattern
+      const result = createExpressionFix(callInfo, 'Object.groupBy(array, fn)')
+      expect(result?.text).toBe('Object.groupBy(users, u => u.role)')
+    })
+
+    it('should trigger createGroupByFix with string path conversion', () => {
+      const callInfo: CallInfo = {
+        callStart: 0,
+        callEnd: 30,
+        params: 'users, "department"',
+        hasNegation: false,
+      }
+      const result = createExpressionFix(callInfo, 'Object.groupBy(array, fn)')
+      expect(result?.text).toBe('Object.groupBy(users, item => item.department)')
+    })
+
+    it('should trigger createCountByFix handler (lines 179-197)', () => {
+      const callInfo: CallInfo = {
+        callStart: 0,
+        callEnd: 35,
+        params: 'items, i => i.status',
+        hasNegation: false,
+      }
+      // CountBy pattern with reduce
+      const result = createExpressionFix(callInfo, 'array.reduce((acc, item) => { const key = fn(item); acc[key] = (acc[key] || 0) + 1; return acc; }, {})')
+      expect(result?.text).toContain('items.reduce')
+      expect(result?.text).toContain('i => i.status')
+    })
+
+    it('should trigger createCountByFix with string path conversion', () => {
+      const callInfo: CallInfo = {
+        callStart: 0,
+        callEnd: 30,
+        params: 'items, "category"',
+        hasNegation: false,
+      }
+      const result = createExpressionFix(callInfo, 'array.reduce((acc, item) => { const key = fn(item); acc[key] = (acc[key] || 0) + 1; return acc; }, {})')
+      expect(result?.text).toContain('item => item.category')
+    })
+
+    it('should trigger createCountByFix with parentheses for complex array', () => {
+      const callInfo: CallInfo = {
+        callStart: 0,
+        callEnd: 35,
+        params: 'arr1 && arr2, fn',
+        hasNegation: false,
+      }
+      const result = createExpressionFix(callInfo, 'array.reduce((acc, item) => { const key = fn(item); acc[key] = (acc[key] || 0) + 1; return acc; }, {})')
+      expect(result?.text).toContain('(arr1 && arr2).reduce')
+    })
+
+    it('should trigger createChunkFix handler (lines 202-213)', () => {
+      const callInfo: CallInfo = {
+        callStart: 0,
+        callEnd: 25,
+        params: 'data, 3',
+        hasNegation: false,
+      }
+      // Chunk pattern with Array.from
+      const result = createExpressionFix(callInfo, 'Array.from({length: Math.ceil(array.length / size)}, (_, i) => array.slice(i * size, (i + 1) * size))')
+      expect(result?.text).toContain('Array.from({length: Math.ceil(data.length / 3)}')
+      expect(result?.text).toContain('data.slice')
+    })
+
+    it('should trigger createChunkFix with parentheses for complex array', () => {
+      const callInfo: CallInfo = {
+        callStart: 0,
+        callEnd: 30,
+        params: 'x ? a : b, 5',
+        hasNegation: false,
+      }
+      const result = createExpressionFix(callInfo, 'Array.from({length: Math.ceil(array.length / size)}, (_, i) => array.slice(i * size, (i + 1) * size))')
+      expect(result?.text).toContain('(x ? a : b)')
+    })
+
+    it('should trigger arithmetic handlers - add with missing second param (line 284)', () => {
+      const callInfo: CallInfo = {
+        callStart: 0,
+        callEnd: 15,
+        params: '5',
+        hasNegation: false,
+      }
+      // Arithmetic needs 2 params, should return null from specialized handler
+      const result = createExpressionFix(callInfo, 'a + b')
+      // Falls back to standard expression fix
+      expect(result).toBeTruthy()
+    })
+
+    it('should trigger arithmetic handlers - subtract', () => {
+      const callInfo: CallInfo = {
+        callStart: 0,
+        callEnd: 20,
+        params: '10, 3',
+        hasNegation: false,
+      }
+      const result = createExpressionFix(callInfo, 'a - b')
+      expect(result?.text).toBe('10 - 3')
+    })
+
+    it('should trigger arithmetic handlers - multiply', () => {
+      const callInfo: CallInfo = {
+        callStart: 0,
+        callEnd: 20,
+        params: '4, 5',
+        hasNegation: false,
+      }
+      const result = createExpressionFix(callInfo, 'a * b')
+      expect(result?.text).toBe('4 * 5')
+    })
+
+    it('should trigger arithmetic handlers - divide', () => {
+      const callInfo: CallInfo = {
+        callStart: 0,
+        callEnd: 20,
+        params: '20, 4',
+        hasNegation: false,
+      }
+      const result = createExpressionFix(callInfo, 'a / b')
+      expect(result?.text).toBe('20 / 4')
+    })
+
+    it('should trigger createTimesFix directly via pattern match (lines 497-501)', () => {
+      const callInfo: CallInfo = {
+        callStart: 0,
+        callEnd: 20,
+        params: '5, fn',
+        hasNegation: false,
+      }
+      // Exact pattern match for times
+      const result = createExpressionFix(callInfo, 'Array.from({length: n}, (_, i) => fn(i))')
+      expect(result?.text).toBe('Array.from({length: 5}, (_, i) => fn(i))')
+    })
+
+    it('should trigger createRangeFix single param (lines 509-514)', () => {
+      const callInfo: CallInfo = {
+        callStart: 0,
+        callEnd: 15,
+        params: '10',
+        hasNegation: false,
+      }
+      // Exact pattern for range
+      const result = createExpressionFix(callInfo, 'Array.from({length: end - start}, (_, i) => start + i)')
+      expect(result?.text).toBe('Array.from({length: 10}, (_, i) => i)')
+    })
+
+    it('should trigger createRangeFix two params (lines 516-520)', () => {
+      const callInfo: CallInfo = {
+        callStart: 0,
+        callEnd: 20,
+        params: '5, 15',
+        hasNegation: false,
+      }
+      const result = createExpressionFix(callInfo, 'Array.from({length: end - start}, (_, i) => start + i)')
+      expect(result?.text).toBe('Array.from({length: 15 - 5}, (_, i) => 5 + i)')
+    })
+
+    it('should trigger createRangeRightFix single param (lines 528-533)', () => {
+      const callInfo: CallInfo = {
+        callStart: 0,
+        callEnd: 15,
+        params: '8',
+        hasNegation: false,
+      }
+      const result = createExpressionFix(callInfo, 'Array.from({length: end - start}, (_, i) => end - i - 1)')
+      expect(result?.text).toBe('Array.from({length: 8}, (_, i) => 8 - i - 1)')
+    })
+
+    it('should trigger createRangeRightFix two params (lines 535-539)', () => {
+      const callInfo: CallInfo = {
+        callStart: 0,
+        callEnd: 20,
+        params: '3, 12',
+        hasNegation: false,
+      }
+      const result = createExpressionFix(callInfo, 'Array.from({length: end - start}, (_, i) => end - i - 1)')
+      expect(result?.text).toBe('Array.from({length: 12 - 3}, (_, i) => 12 - i - 1)')
+    })
+  })
 })
