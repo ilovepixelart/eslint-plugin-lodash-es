@@ -71,9 +71,8 @@ const safeParam = (param: string): string =>
  * String path to function processor - converts "prop" to item => item.prop
  */
 const stringPathToFunction = (param: string): string => {
-  if ((param.startsWith('"') && param.endsWith('"'))
-    || (param.startsWith('\'') && param.endsWith('\''))) {
-    const propPath = param.slice(1, -1)
+  if (isQuotedString(param)) {
+    const propPath = unquote(param)
     return `item => item.${propPath}`
   }
   return param
@@ -90,6 +89,42 @@ function createArithmeticPatterns(
     detect: (alt: string) => alt === pattern,
     transform: createTwoParamTransform(`$FIRST$ ${operator} $SECOND$`),
   }))
+}
+
+/**
+ * Helper to check if parameter is a quoted string
+ */
+const isQuotedString = (param: string): boolean =>
+  (param.startsWith('"') && param.endsWith('"')) || (param.startsWith('\'') && param.endsWith('\''))
+
+/**
+ * Helper to extract string content from quotes
+ */
+const unquote = (param: string): string => param.slice(1, -1)
+
+/**
+ * Factory for Array.from range patterns with shared logic
+ */
+function createRangeTransform(
+  expressionTemplate: (params: { start: string, end: string }) => string,
+  singleParamTemplate: (end: string) => string,
+) {
+  return (callInfo: CallInfo): FixResult | null => {
+    const commaIndex = findFirstTopLevelComma(callInfo.params)
+
+    let expression: string
+    if (commaIndex === -1) {
+      const end = callInfo.params.trim()
+      expression = singleParamTemplate(end)
+    } else {
+      const start = callInfo.params.slice(0, commaIndex).trim()
+      const end = callInfo.params.slice(commaIndex + 1).trim()
+      expression = expressionTemplate({ start, end })
+    }
+
+    const { start, text } = handleNegationOperator(callInfo, expression)
+    return { range: [start, callInfo.callEnd], text }
+  }
 }
 
 /**
@@ -172,8 +207,8 @@ export const TRANSFORM_PATTERNS: TransformPattern[] = [
       const path = callInfo.params.slice(commaIndex + 1).trim()
 
       // Simple path conversion for common cases
-      if ((path.startsWith('"') && path.endsWith('"')) || (path.startsWith('\'') && path.endsWith('\''))) {
-        const pathStr = path.slice(1, -1)
+      if (isQuotedString(path)) {
+        const pathStr = unquote(path)
         if (RegexCache.getSimplePropertyPathRegex().test(pathStr)) {
           const optionalChainPath = pathStr.replaceAll('.', '?.')
           const safeObj = safeParam(obj)
@@ -241,41 +276,19 @@ export const TRANSFORM_PATTERNS: TransformPattern[] = [
   {
     name: 'range-arrayFrom',
     detect: alt => alt === 'Array.from({length: end - start}, (_, i) => start + i)',
-    transform: (callInfo: CallInfo): FixResult | null => {
-      const commaIndex = findFirstTopLevelComma(callInfo.params)
-      if (commaIndex === -1) {
-        // Single param: range(end) means range(0, end)
-        const end = callInfo.params.trim()
-        const expression = `Array.from({length: ${end}}, (_, i) => i)`
-        const { start, text } = handleNegationOperator(callInfo, expression)
-        return { range: [start, callInfo.callEnd], text }
-      }
-      const start = callInfo.params.slice(0, commaIndex).trim()
-      const end = callInfo.params.slice(commaIndex + 1).trim()
-      const expression = `Array.from({length: ${end} - ${start}}, (_, i) => ${start} + i)`
-      const { start: actualStart, text } = handleNegationOperator(callInfo, expression)
-      return { range: [actualStart, callInfo.callEnd], text }
-    },
+    transform: createRangeTransform(
+      ({ start, end }) => `Array.from({length: ${end} - ${start}}, (_, i) => ${start} + i)`,
+      end => `Array.from({length: ${end}}, (_, i) => i)`,
+    ),
   },
 
   {
     name: 'rangeRight-arrayFrom',
     detect: alt => alt === 'Array.from({length: end - start}, (_, i) => end - i - 1)',
-    transform: (callInfo: CallInfo): FixResult | null => {
-      const commaIndex = findFirstTopLevelComma(callInfo.params)
-      if (commaIndex === -1) {
-        // Single param: rangeRight(end) means rangeRight(0, end)
-        const end = callInfo.params.trim()
-        const expression = `Array.from({length: ${end}}, (_, i) => ${end} - i - 1)`
-        const { start, text } = handleNegationOperator(callInfo, expression)
-        return { range: [start, callInfo.callEnd], text }
-      }
-      const start = callInfo.params.slice(0, commaIndex).trim()
-      const end = callInfo.params.slice(commaIndex + 1).trim()
-      const expression = `Array.from({length: ${end} - ${start}}, (_, i) => ${end} - i - 1)`
-      const { start: actualStart, text } = handleNegationOperator(callInfo, expression)
-      return { range: [actualStart, callInfo.callEnd], text }
-    },
+    transform: createRangeTransform(
+      ({ start, end }) => `Array.from({length: ${end} - ${start}}, (_, i) => ${end} - i - 1)`,
+      end => `Array.from({length: ${end}}, (_, i) => ${end} - i - 1)`,
+    ),
   },
 
   {
