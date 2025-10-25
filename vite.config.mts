@@ -17,6 +17,8 @@ export default defineConfig({
         '**/*.config.*',
         '**/tests/**',
         'examples/**',
+        'src/test-utils/**', // Test utilities shouldn't count toward coverage
+        'src/types/**', // Type-only files have no runtime code
       ],
     },
   },
