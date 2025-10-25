@@ -25,7 +25,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 6,
         params: '',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createZeroParamStaticFix(callInfo, 'Date.now')
       expect(result).toEqual({
@@ -41,7 +41,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: 'obj, "key"',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'key in object')
       expect(result?.text).toBe('"key" in obj')
@@ -52,7 +52,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 10,
         params: 'arr',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, '[...new Set(array)]')
       expect(result?.text).toBe('[...new Set(arr)]')
@@ -63,7 +63,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: 'array',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'array.filter(Boolean)')
       expect(result?.text).toBe('array.filter(Boolean)')
@@ -74,7 +74,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 25,
         params: 'obj, keys',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'Object.fromEntries(keys.map(k => [k, obj[k]]))')
       expect(result?.text).toBe('Object.fromEntries(keys.map(k => [k, obj[k]]))')
@@ -85,7 +85,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: 'array, fn',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'array.toSorted((a, b) => fn(a) - fn(b))')
       expect(result?.text).toBe('array.toSorted((a, b) => fn(a) - fn(b))')
@@ -96,7 +96,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: 'obj1, obj2',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'Object.assign({}, obj)')
       expect(result?.text).toBe('Object.assign({}, obj1, obj2)')
@@ -107,7 +107,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: 'obj, "a.b.c"',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'obj?.a?.b?.c')
       expect(result?.text).toBe('obj?.a?.b?.c')
@@ -118,7 +118,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: 'obj',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, '{...obj}')
       expect(result?.text).toBe('{...obj}')
@@ -129,7 +129,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: 'obj',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'structuredClone(obj)')
       expect(result?.text).toBe('structuredClone(obj)')
@@ -140,7 +140,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 25,
         params: 'array, fn',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'Object.groupBy(array, fn)')
       expect(result?.text).toBe('Object.groupBy(array, fn)')
@@ -151,7 +151,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 25,
         params: 'array, "prop"',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'Object.groupBy(array, fn)')
       expect(result?.text).toBe('Object.groupBy(array, item => item.prop)')
@@ -162,7 +162,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 30,
         params: 'array, fn',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'array.reduce((acc, item) => { const key = fn(item); acc[key] = (acc[key] || 0) + 1; return acc; }, {})')
       expect(result?.text).toContain('array.reduce((acc, item)')
@@ -173,7 +173,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: 'array, 2',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'Array.from({length: Math.ceil(array.length / size)})')
       expect(result?.text).toContain('Array.from({length:')
@@ -184,7 +184,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: 'array, 2',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'array.slice(n)')
       expect(result?.text).toBe('array.slice(2)')
@@ -195,7 +195,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: 'array, 2',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'array.slice(0, -n)')
       expect(result?.text).toBe('array.slice(0, -2)')
@@ -206,7 +206,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: 'array, 3',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'array.slice(0, n)')
       expect(result?.text).toBe('array.slice(0, 3)')
@@ -217,7 +217,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: 'array, 3',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'array.slice(-n)')
       expect(result?.text).toBe('array.slice(-3)')
@@ -228,7 +228,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 10,
         params: '5, 3',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'a + b')
       expect(result?.text).toBe('5 + 3')
@@ -239,7 +239,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: '10, 4',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'a - b')
       expect(result?.text).toBe('10 - 4')
@@ -250,7 +250,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: '6, 7',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'a * b')
       expect(result?.text).toBe('6 * 7')
@@ -261,7 +261,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: '20, 5',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'a / b')
       expect(result?.text).toBe('20 / 5')
@@ -272,7 +272,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: 'numbers',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'array.reduce((sum, n) => sum + n, 0)')
       expect(result?.text).toBe('numbers.reduce((sum, n) => sum + n, 0)')
@@ -283,7 +283,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: 'numbers',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'array.reduce((sum, n) => sum + n, 0) / array.length')
       expect(result?.text).toBe('numbers.reduce((sum, n) => sum + n, 0) / numbers.length')
@@ -294,7 +294,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 25,
         params: '15, 0, 10',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'Math.min(Math.max(number, lower), upper)')
       expect(result?.text).toBe('Math.min(Math.max(15, 0), 10)')
@@ -305,7 +305,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 25,
         params: '5, 0, 10',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'number >= start && number < end')
       expect(result?.text).toBe('5 >= 0 && 5 < 10')
@@ -316,7 +316,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: '5, 10',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'Math.random() * (max - min) + min')
       expect(result?.text).toBe('Math.random() * (10 - 5) + 5')
@@ -327,7 +327,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: 'str',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'string.at(0).toUpperCase() + string.slice(1).toLowerCase()')
       expect(result?.text).toBe('str.at(0).toUpperCase() + str.slice(1).toLowerCase()')
@@ -338,7 +338,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: 'str',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'string.at(0).toLowerCase() + string.slice(1)')
       expect(result?.text).toBe('str.at(0).toLowerCase() + str.slice(1)')
@@ -349,7 +349,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: 'str',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'string.at(0).toUpperCase() + string.slice(1)')
       expect(result?.text).toBe('str.at(0).toUpperCase() + str.slice(1)')
@@ -360,7 +360,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: '"123", 10',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'parseInt(string, radix)')
       expect(result?.text).toBe('parseInt("123", 10)')
@@ -371,7 +371,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: '5, 3',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'value > other')
       expect(result?.text).toBe('5 > 3')
@@ -382,7 +382,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: '5, 5',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'value >= other')
       expect(result?.text).toBe('5 >= 5')
@@ -393,7 +393,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: '3, 5',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'value < other')
       expect(result?.text).toBe('3 < 5')
@@ -404,7 +404,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: '5, 5',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'value <= other')
       expect(result?.text).toBe('5 <= 5')
@@ -415,7 +415,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: 'obj',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'value instanceof Date')
       expect(result?.text).toBe('obj instanceof Date')
@@ -426,7 +426,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: 'obj',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'value instanceof RegExp')
       expect(result?.text).toBe('obj instanceof RegExp')
@@ -437,7 +437,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: 'obj',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'value instanceof Error')
       expect(result?.text).toBe('obj instanceof Error')
@@ -448,7 +448,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: 'obj',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'value instanceof Set')
       expect(result?.text).toBe('obj instanceof Set')
@@ -459,7 +459,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: 'obj',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'value instanceof WeakMap')
       expect(result?.text).toBe('obj instanceof WeakMap')
@@ -470,7 +470,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: 'obj',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'value instanceof WeakSet')
       expect(result?.text).toBe('obj instanceof WeakSet')
@@ -481,7 +481,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: '',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createAutofixRouting(callInfo, '[]', 'stubArray')
       expect(result?.text).toBe('[]')
@@ -492,7 +492,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: '',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createAutofixRouting(callInfo, 'false', 'stubFalse')
       expect(result?.text).toBe('false')
@@ -503,7 +503,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: '',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createAutofixRouting(callInfo, 'true', 'stubTrue')
       expect(result?.text).toBe('true')
@@ -514,7 +514,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: '',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createAutofixRouting(callInfo, '{}', 'stubObject')
       expect(result?.text).toBe('{}')
@@ -525,7 +525,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: '',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createAutofixRouting(callInfo, '\'\'', 'stubString')
       expect(result?.text).toBe('\'\'')
@@ -536,7 +536,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: '',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createAutofixRouting(callInfo, 'undefined', 'noop')
       expect(result?.text).toBe('undefined')
@@ -547,7 +547,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: 'value',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'Array.isArray(value) ? value : [value]')
       expect(result?.text).toBe('Array.isArray(value) ? value : [value]')
@@ -558,7 +558,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: 'value',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'Number(value) || 0')
       expect(result?.text).toBe('Number(value) || 0')
@@ -569,7 +569,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: 'value',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'Math.trunc(Number(value)) || 0')
       expect(result?.text).toBe('Math.trunc(Number(value)) || 0')
@@ -580,7 +580,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: 'value',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'Math.min(Math.max(Math.trunc(Number(value)) || 0, -Number.MAX_SAFE_INTEGER), Number.MAX_SAFE_INTEGER)')
       expect(result?.text).toContain('Math.min(Math.max(Math.trunc')
@@ -591,7 +591,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 25,
         params: 'fn, 1000',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'setTimeout(func, wait, ...args)')
       expect(result?.text).toBe('setTimeout(fn, 1000)')
@@ -602,7 +602,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: 'fn',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'setTimeout(func, 0, ...args)')
       expect(result?.text).toBe('setTimeout(fn, 0)')
@@ -613,7 +613,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: '42',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, '() => value')
       expect(result?.text).toBe('() => 42')
@@ -624,7 +624,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: '5, fn',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'Array.from({length: n}, (_, i) => fn(i))')
       expect(result?.text).toBe('Array.from({length: 5}, (_, i) => fn(i))')
@@ -635,7 +635,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: '0, 10',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'Array.from({length: end - start}, (_, i) => start + i)')
       expect(result?.text).toBe('Array.from({length: 10 - 0}, (_, i) => 0 + i)')
@@ -646,7 +646,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: '5',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'Array.from({length: end - start}, (_, i) => start + i)')
       expect(result?.text).toBe('Array.from({length: 5}, (_, i) => i)')
@@ -657,7 +657,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: '0, 10',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'Array.from({length: end - start}, (_, i) => end - i - 1)')
       expect(result?.text).toBe('Array.from({length: 10 - 0}, (_, i) => 10 - i - 1)')
@@ -668,7 +668,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: '5',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'Array.from({length: end - start}, (_, i) => end - i - 1)')
       expect(result?.text).toBe('Array.from({length: 5}, (_, i) => 5 - i - 1)')
@@ -679,7 +679,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 10,
         params: '',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'value === null')
       expect(result).toBeNull()
@@ -690,7 +690,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 30,
         params: 'users, u => u.age',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'value.toSorted((a, b) => iteratee(a) - iteratee(b))')
       expect(result?.text).toContain('toSorted')
@@ -701,7 +701,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 30,
         params: 'users, u => u.id',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'Object.fromEntries(value.map(item => [iteratee(item), item]))')
       expect(result?.text).toContain('Object.fromEntries')
@@ -712,7 +712,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: 'x',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'value')
       expect(result?.text).toBe('x')
@@ -723,7 +723,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: 'x',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'value === null')
       expect(result?.text).toBe('x === null')
@@ -734,7 +734,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 25,
         params: 'x ? a : b',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'value.trim()')
       expect(result?.text).toBe('(x ? a : b).trim()')
@@ -747,7 +747,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: '"123"',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createConstructorFix(callInfo, 'Number')
       expect(result?.text).toBe('Number("123")')
@@ -758,7 +758,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: '',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createConstructorFix(callInfo, 'Number')
       expect(result).toBeNull()
@@ -771,7 +771,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: 'obj',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createStaticMethodFix(callInfo, 'Object.keys')
       expect(result?.text).toBe('Object.keys(obj)')
@@ -782,7 +782,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: 'array',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createStaticMethodFix(callInfo, 'Math.max')
       expect(result?.text).toBe('Math.max(...array)')
@@ -793,7 +793,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: 'array',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createStaticMethodFix(callInfo, 'Math.min')
       expect(result?.text).toBe('Math.min(...array)')
@@ -804,7 +804,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: '...array',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createStaticMethodFix(callInfo, 'Math.max')
       expect(result?.text).toBe('Math.max(...array)')
@@ -817,7 +817,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 25,
         params: 'array, fn',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createPrototypeMethodFix(callInfo, 'Array.prototype.map', 'map')
       expect(result?.text).toBe('array.map(fn)')
@@ -828,7 +828,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: 'str',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createPrototypeMethodFix(callInfo, 'String.prototype.trim', 'trim')
       expect(result?.text).toBe('str.trim()')
@@ -839,7 +839,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 30,
         params: 'array, fn',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createPrototypeMethodFix(callInfo, 'Array.prototype.filter', 'reject')
       expect(result?.text).toBe('array.filter(item => !fn(item))')
@@ -850,7 +850,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 35,
         params: 'array, x => x > 5',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createPrototypeMethodFix(callInfo, 'Array.prototype.filter', 'reject')
       expect(result?.text).toBe('array.filter(item => !(x => x > 5)(item))')
@@ -861,7 +861,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 25,
         params: 'arguments, fn',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createPrototypeMethodFix(callInfo, 'Array.prototype.map', 'map')
       expect(result?.text).toBe('Array.from(arguments).map(fn)')
@@ -874,7 +874,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: 'array',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createFixedParamPrototypeMethodFix(callInfo, 'Array.prototype.at[0]')
       expect(result?.text).toBe('array.at(0)')
@@ -885,7 +885,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: 'array',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createFixedParamPrototypeMethodFix(callInfo, 'Array.prototype.at[-1]')
       expect(result?.text).toBe('array.at(-1)')
@@ -925,7 +925,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 25,
         params: 'array, fn',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createKeyByFix(callInfo)
       expect(result?.text).toBe('Object.fromEntries(array.map(item => [(fn)(item), item]))')
@@ -936,7 +936,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 25,
         params: 'array, "id"',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createKeyByFix(callInfo)
       expect(result?.text).toBe('Object.fromEntries(array.map(item => [(item => item.id)(item), item]))')
@@ -947,7 +947,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: 'array',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createKeyByFix(callInfo)
       expect(result).toBeNull()
@@ -960,7 +960,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 25,
         params: 'array, fn',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createOrderByFix(callInfo)
       expect(result?.text).toBe('array.toSorted((a, b) => (fn)(a) - (fn)(b))')
@@ -971,7 +971,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 25,
         params: 'array, "age"',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createOrderByFix(callInfo)
       expect(result?.text).toBe('array.toSorted((a, b) => (item => item.age)(a) - (item => item.age)(b))')
@@ -982,7 +982,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: 'array',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createOrderByFix(callInfo)
       expect(result).toBeNull()
@@ -995,7 +995,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 25,
         params: 'obj, keys',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createOmitFix(callInfo)
       expect(result?.text).toBe('Object.fromEntries(Object.entries(obj).filter(([k]) => !keys.includes(k)))')
@@ -1006,7 +1006,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: 'obj',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createOmitFix(callInfo)
       expect(result).toBeNull()
@@ -1019,7 +1019,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 10,
         params: '',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createAutofixRouting(callInfo, 'Date.now', 'now')
       expect(result?.text).toBe('Date.now()')
@@ -1030,7 +1030,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 25,
         params: 'array, fn',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createAutofixRouting(
         callInfo,
@@ -1045,7 +1045,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 25,
         params: 'array, fn',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createAutofixRouting(
         callInfo,
@@ -1060,7 +1060,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 25,
         params: 'obj, keys',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createAutofixRouting(
         callInfo,
@@ -1075,7 +1075,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: '',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createAutofixRouting(callInfo, '[]', 'stubArray')
       expect(result?.text).toBe('[]')
@@ -1086,7 +1086,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: 'x',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createAutofixRouting(callInfo, 'value', 'identity')
       expect(result?.text).toBe('x')
@@ -1097,7 +1097,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: 'value',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createAutofixRouting(callInfo, 'value === null', 'isNull')
       expect(result?.text).toBe('value === null')
@@ -1108,7 +1108,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: 'obj',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createAutofixRouting(callInfo, 'Object.keys', 'keys')
       expect(result?.text).toBe('Object.keys(obj)')
@@ -1119,7 +1119,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 25,
         params: 'array, fn',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createAutofixRouting(callInfo, 'Array.prototype.map', 'map')
       expect(result?.text).toBe('array.map(fn)')
@@ -1132,7 +1132,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 35,
         params: 'users, u => u.age',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'array.toSorted((a, b) => fn(a) - fn(b))')
       expect(result?.text).toContain('toSorted')
@@ -1144,7 +1144,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 30,
         params: '1, 2, 3',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'Math.random() * (max - min) + min')
       // With 3 params, random should fail validation but createExpressionFix might still work
@@ -1156,7 +1156,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: '',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'Math.random() * (max - min) + min')
       expect(result).toBeNull()
@@ -1167,7 +1167,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: '3, myFunc',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'Array.from({length: n}, (_, i) => fn(i))')
       expect(result?.text).toBe('Array.from({length: 3}, (_, i) => myFunc(i))')
@@ -1178,7 +1178,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: '5',
-        hasNegation: false,
+        fullText: '',
       }
       // Using exact pattern match - times needs 2 params
       const result = createExpressionFix(callInfo, 'Array.from({length: n}, (_, i) => fn(i))')
@@ -1191,7 +1191,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: '7',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'Array.from({length: end - start}, (_, i) => start + i)')
       expect(result?.text).toBe('Array.from({length: 7}, (_, i) => i)')
@@ -1202,7 +1202,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: '3, 8',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'Array.from({length: end - start}, (_, i) => start + i)')
       expect(result?.text).toBe('Array.from({length: 8 - 3}, (_, i) => 3 + i)')
@@ -1213,7 +1213,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: '6',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'Array.from({length: end - start}, (_, i) => end - i - 1)')
       expect(result?.text).toBe('Array.from({length: 6}, (_, i) => 6 - i - 1)')
@@ -1224,7 +1224,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: '2, 9',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'Array.from({length: end - start}, (_, i) => end - i - 1)')
       expect(result?.text).toBe('Array.from({length: 9 - 2}, (_, i) => 9 - i - 1)')
@@ -1235,7 +1235,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: '5, 10',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'Math.min(Math.max(number, lower), upper)')
       // clamp specialized handler needs exactly 3 params, so it falls back to standard expression fix
@@ -1247,7 +1247,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: '5, 10',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'number >= start && number < end')
       // inRange specialized handler needs exactly 3 params, falls back to standard fix
@@ -1259,7 +1259,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 30,
         params: 'items, \'type\'',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'Object.groupBy(array, fn)')
       expect(result?.text).toContain('item => item.type')
@@ -1270,7 +1270,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 30,
         params: 'items, \'category\'',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'array.reduce((acc, item) => { const key = fn(item); acc[key] = (acc[key] || 0) + 1; return acc; }, {})')
       expect(result?.text).toContain('item => item.category')
@@ -1281,7 +1281,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 25,
         params: 'obj, pathVar',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'obj?.a?.b?.c')
       // Specialized get handler returns null, but standard expression fix handles it
@@ -1293,7 +1293,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 30,
         params: 'obj, "users[0].name"',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'obj?.users?.name')
       // Path with [0] doesn't match simple property path regex in specialized handler
@@ -1306,7 +1306,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: 'obj',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'key in object')
       expect(result).toBeNull()
@@ -1317,7 +1317,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 30,
         params: 'flag ? arr1 : arr2',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'array.filter(Boolean)')
       expect(result?.text).toBe('(flag ? arr1 : arr2).filter(Boolean)')
@@ -1328,7 +1328,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: 'numbers',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'array.toSorted((a, b) => fn(a) - fn(b))')
       expect(result?.text).toBe('numbers.toSorted()')
@@ -1339,7 +1339,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 40,
         params: 'data, item => item.value',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'array.toSorted((a, b) => fn(a) - fn(b))')
       expect(result?.text).toContain('.toSorted((a, b) => (item => item.value)(a) - (item => item.value)(b))')
@@ -1350,7 +1350,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 35,
         params: 'x ? a : b, 5',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'Array.from({length: Math.ceil(array.length / size)})')
       expect(result?.text).toContain('(x ? a : b)')
@@ -1361,7 +1361,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 30,
         params: 'x = arr, 3',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'array.slice(n)')
       expect(result?.text).toBe('(x = arr).slice(3)')
@@ -1372,7 +1372,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 35,
         params: 'arr1 || arr2, fn',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'array.reduce((acc, item) => { const key = fn(item); acc[key] = (acc[key] || 0) + 1; return acc; }, {})')
       expect(result?.text).toContain('(arr1 || arr2).reduce')
@@ -1383,7 +1383,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 30,
         params: 'users, \'id\'',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createKeyByFix(callInfo)
       expect(result?.text).toContain('item => item.id')
@@ -1394,7 +1394,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 30,
         params: 'users, \'age\'',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createOrderByFix(callInfo)
       expect(result?.text).toContain('item => item.age')
@@ -1407,7 +1407,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: 'myArray',
-        hasNegation: false,
+        fullText: '',
       }
       // This pattern triggers createUniqFix via SPECIALIZED_HANDLERS
       const result = createExpressionFix(callInfo, '[...new Set(array)]')
@@ -1419,7 +1419,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 25,
         params: 'items',
-        hasNegation: false,
+        fullText: '',
       }
       // This pattern triggers createCompactFix
       const result = createExpressionFix(callInfo, 'array.filter(Boolean)')
@@ -1431,7 +1431,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 30,
         params: 'a || b',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'array.filter(Boolean)')
       expect(result?.text).toBe('(a || b).filter(Boolean)')
@@ -1442,7 +1442,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 35,
         params: 'user, [\'name\', \'age\']',
-        hasNegation: false,
+        fullText: '',
       }
       // Pick pattern with Object.fromEntries and .map
       const result = createExpressionFix(callInfo, 'Object.fromEntries(keys.map(k => [k, obj[k]]))')
@@ -1455,7 +1455,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 40,
         params: 'user, [\'password\']',
-        hasNegation: false,
+        fullText: '',
       }
       // Omit pattern with Object.entries
       const result = createExpressionFix(callInfo, 'Object.fromEntries(Object.entries(obj).filter(([k]) => !keys.includes(k)))')
@@ -1468,7 +1468,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 35,
         params: 'a ? obj1 : obj2, keys',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'Object.fromEntries(keys.map(k => [k, obj[k]]))')
       expect(result?.text).toContain('(a ? obj1 : obj2)')
@@ -1479,7 +1479,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 30,
         params: 'obj1, obj2, obj3',
-        hasNegation: false,
+        fullText: '',
       }
       // Merge pattern with Object.assign
       const result = createExpressionFix(callInfo, 'Object.assign({}, obj)')
@@ -1491,7 +1491,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 30,
         params: 'user, "profile.name"',
-        hasNegation: false,
+        fullText: '',
       }
       // Get pattern with optional chaining
       const result = createExpressionFix(callInfo, 'obj?.a?.b?.c')
@@ -1503,7 +1503,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 35,
         params: 'x || y, "data.value"',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'obj?.data?.value')
       expect(result?.text).toBe('(x || y)?.data?.value')
@@ -1514,7 +1514,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: 'original',
-        hasNegation: false,
+        fullText: '',
       }
       // Clone pattern with spread
       const result = createExpressionFix(callInfo, '{...obj}')
@@ -1526,7 +1526,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 25,
         params: 'a ? b : c',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, '{...obj}')
       expect(result?.text).toBe('{...(a ? b : c)}')
@@ -1537,7 +1537,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 25,
         params: 'deepObject',
-        hasNegation: false,
+        fullText: '',
       }
       // CloneDeep pattern with structuredClone
       const result = createExpressionFix(callInfo, 'structuredClone(obj)')
@@ -1549,7 +1549,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 35,
         params: 'users, u => u.role',
-        hasNegation: false,
+        fullText: '',
       }
       // GroupBy pattern
       const result = createExpressionFix(callInfo, 'Object.groupBy(array, fn)')
@@ -1561,7 +1561,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 30,
         params: 'users, "department"',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'Object.groupBy(array, fn)')
       expect(result?.text).toBe('Object.groupBy(users, item => item.department)')
@@ -1572,7 +1572,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 35,
         params: 'items, i => i.status',
-        hasNegation: false,
+        fullText: '',
       }
       // CountBy pattern with reduce
       const result = createExpressionFix(callInfo, 'array.reduce((acc, item) => { const key = fn(item); acc[key] = (acc[key] || 0) + 1; return acc; }, {})')
@@ -1585,7 +1585,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 30,
         params: 'items, "category"',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'array.reduce((acc, item) => { const key = fn(item); acc[key] = (acc[key] || 0) + 1; return acc; }, {})')
       expect(result?.text).toContain('item => item.category')
@@ -1596,7 +1596,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 35,
         params: 'arr1 && arr2, fn',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'array.reduce((acc, item) => { const key = fn(item); acc[key] = (acc[key] || 0) + 1; return acc; }, {})')
       expect(result?.text).toContain('(arr1 && arr2).reduce')
@@ -1607,7 +1607,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 25,
         params: 'data, 3',
-        hasNegation: false,
+        fullText: '',
       }
       // Chunk pattern with Array.from
       const result = createExpressionFix(callInfo, 'Array.from({length: Math.ceil(array.length / size)}, (_, i) => array.slice(i * size, (i + 1) * size))')
@@ -1620,7 +1620,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 30,
         params: 'x ? a : b, 5',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'Array.from({length: Math.ceil(array.length / size)}, (_, i) => array.slice(i * size, (i + 1) * size))')
       expect(result?.text).toContain('(x ? a : b)')
@@ -1631,7 +1631,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: '5',
-        hasNegation: false,
+        fullText: '',
       }
       // Arithmetic needs 2 params, should return null from specialized handler
       const result = createExpressionFix(callInfo, 'a + b')
@@ -1644,7 +1644,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: '10, 3',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'a - b')
       expect(result?.text).toBe('10 - 3')
@@ -1655,7 +1655,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: '4, 5',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'a * b')
       expect(result?.text).toBe('4 * 5')
@@ -1666,7 +1666,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: '20, 4',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'a / b')
       expect(result?.text).toBe('20 / 4')
@@ -1677,7 +1677,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: '5, fn',
-        hasNegation: false,
+        fullText: '',
       }
       // Exact pattern match for times
       const result = createExpressionFix(callInfo, 'Array.from({length: n}, (_, i) => fn(i))')
@@ -1689,7 +1689,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: '10',
-        hasNegation: false,
+        fullText: '',
       }
       // Exact pattern for range
       const result = createExpressionFix(callInfo, 'Array.from({length: end - start}, (_, i) => start + i)')
@@ -1701,7 +1701,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: '5, 15',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'Array.from({length: end - start}, (_, i) => start + i)')
       expect(result?.text).toBe('Array.from({length: 15 - 5}, (_, i) => 5 + i)')
@@ -1712,7 +1712,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 15,
         params: '8',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'Array.from({length: end - start}, (_, i) => end - i - 1)')
       expect(result?.text).toBe('Array.from({length: 8}, (_, i) => 8 - i - 1)')
@@ -1723,7 +1723,7 @@ describe('shared-transforms', () => {
         callStart: 0,
         callEnd: 20,
         params: '3, 12',
-        hasNegation: false,
+        fullText: '',
       }
       const result = createExpressionFix(callInfo, 'Array.from({length: end - start}, (_, i) => end - i - 1)')
       expect(result?.text).toBe('Array.from({length: 12 - 3}, (_, i) => 12 - i - 1)')
