@@ -2,6 +2,8 @@ name: PR check
 
 on:
   workflow_dispatch:
+  # Trigger analysis when pushing in master or pull requests,
+  # and when creating a pull request.
   push:
     branches:
       - main
@@ -17,7 +19,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x, 20.x, 22.x]
+        node-version: [20.x, 22.x]
 
     steps:
       - name: Checkout
