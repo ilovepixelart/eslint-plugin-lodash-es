@@ -43,7 +43,6 @@ describe('no-method-imports', () => {
             errors: [
               {
                 messageId: 'perMethodDeprecated',
-                type: 'ImportDeclaration',
                 suggestions: [{
                   desc: 'Convert to destructured lodash-es import',
                   output: 'import { map } from \'lodash-es\';',
@@ -56,7 +55,6 @@ describe('no-method-imports', () => {
             errors: [
               {
                 messageId: 'perMethodDeprecated',
-                type: 'ImportDeclaration',
                 suggestions: [{
                   desc: 'Convert to destructured lodash-es import',
                   output: 'import { filter } from \'lodash-es\';',
@@ -69,7 +67,6 @@ describe('no-method-imports', () => {
             errors: [
               {
                 messageId: 'perMethodDeprecated',
-                type: 'ImportDeclaration',
                 suggestions: [{
                   desc: 'Convert to destructured lodash-es import',
                   output: 'import { isArray } from \'lodash-es\';',
@@ -92,7 +89,6 @@ describe('no-method-imports', () => {
             errors: [
               {
                 messageId: 'perMethodDeprecated',
-                type: 'ImportDeclaration',
                 suggestions: [{
                   desc: 'Convert to destructured lodash-es import',
                   output: 'import { map } from \'lodash-es\';',
@@ -105,7 +101,6 @@ describe('no-method-imports', () => {
             errors: [
               {
                 messageId: 'perMethodDeprecated',
-                type: 'ImportDeclaration',
                 suggestions: [{
                   desc: 'Convert to destructured lodash-es import',
                   output: 'import { isEmpty } from \'lodash-es\';',
@@ -128,7 +123,6 @@ describe('no-method-imports', () => {
             errors: [
               {
                 messageId: 'perMethodDeprecated',
-                type: 'ImportDeclaration',
                 suggestions: [{
                   desc: 'Convert to destructured lodash-es import',
                   output: 'import { map } from \'lodash-es\';',
@@ -141,7 +135,6 @@ describe('no-method-imports', () => {
             errors: [
               {
                 messageId: 'perMethodDeprecated',
-                type: 'ImportDeclaration',
                 suggestions: [{
                   desc: 'Convert to destructured lodash-es import',
                   output: 'import { curry } from \'lodash-es\';',
@@ -164,7 +157,7 @@ describe('no-method-imports', () => {
             errors: [
               {
                 messageId: 'invalidPerMethodImport',
-                type: 'ImportDeclaration' },
+              },
             ],
           },
           {
@@ -172,7 +165,7 @@ describe('no-method-imports', () => {
             errors: [
               {
                 messageId: 'invalidPerMethodImport',
-                type: 'ImportDeclaration' },
+              },
             ],
           },
         ],
@@ -192,7 +185,6 @@ import reduce from 'lodash/reduce';`,
             errors: [
               {
                 messageId: 'perMethodDeprecated',
-                type: 'ImportDeclaration',
                 suggestions: [{
                   desc: 'Convert to destructured lodash-es import',
                   output: `import { map } from 'lodash-es';
@@ -202,7 +194,6 @@ import reduce from 'lodash/reduce';`,
               },
               {
                 messageId: 'autoFixSuggestion',
-                type: 'ImportDeclaration',
                 suggestions: [{
                   desc: 'Consolidate 3 per-method imports into single destructured import',
                   output: `import { filter, map, reduce } from 'lodash-es';\n\n`,
@@ -210,7 +201,6 @@ import reduce from 'lodash/reduce';`,
               },
               {
                 messageId: 'perMethodDeprecated',
-                type: 'ImportDeclaration',
                 suggestions: [{
                   desc: 'Convert to destructured lodash-es import',
                   output: `import map from 'lodash/map';
@@ -220,7 +210,6 @@ import reduce from 'lodash/reduce';`,
               },
               {
                 messageId: 'perMethodDeprecated',
-                type: 'ImportDeclaration',
                 suggestions: [{
                   desc: 'Convert to destructured lodash-es import',
                   output: `import map from 'lodash/map';
@@ -246,7 +235,6 @@ import invalidFunc from 'lodash/invalidFunc';`,
             errors: [
               {
                 messageId: 'perMethodDeprecated',
-                type: 'ImportDeclaration',
                 suggestions: [{
                   desc: 'Convert to destructured lodash-es import',
                   output: 'import { map } from \'lodash-es\';\nimport invalidFunc from \'lodash/invalidFunc\';',
@@ -254,7 +242,7 @@ import invalidFunc from 'lodash/invalidFunc';`,
               },
               {
                 messageId: 'invalidPerMethodImport',
-                type: 'ImportDeclaration' },
+              },
             ],
           },
         ],

@@ -110,7 +110,6 @@ const enforceFunctions: Rule.RuleModule = {
     type: 'problem',
     docs: {
       description: 'Enforce specific lodash-es function usage policies based on include/exclude configuration',
-      category: 'Best Practices',
       recommended: false,
     },
     fixable: 'code',

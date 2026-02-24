@@ -13,7 +13,6 @@ const enforceLodashDestructuring: Rule.RuleModule = {
     type: 'suggestion',
     docs: {
       description: 'Enforce destructured imports from lodash-es',
-      category: 'Best Practices',
       recommended: true,
     },
     fixable: 'code',

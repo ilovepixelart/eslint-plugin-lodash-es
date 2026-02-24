@@ -281,7 +281,7 @@ const filtered = [1, 2, 3].filter(x => x > 1);`,
           {
             code: 'import _ from \'lodash-es\'; const result = _.first([1, 2, 3]);',
             options: [{ include: ['first'], exclude: ['map'] }],
-            errors: [{}],
+            errors: [{ message: 'placeholder' }],
           },
         ],
       })

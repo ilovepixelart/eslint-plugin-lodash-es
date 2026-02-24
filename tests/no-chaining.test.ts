@@ -40,7 +40,6 @@ describe('no-chaining', () => {
             errors: [
               {
                 messageId: 'noChaining',
-                type: 'ImportSpecifier',
                 suggestions: [{
                   desc: 'Remove chain import and use native array methods',
                   output: 'import { map } from \'lodash-es\';',
@@ -53,7 +52,6 @@ describe('no-chaining', () => {
             errors: [
               {
                 messageId: 'noChaining',
-                type: 'ImportSpecifier',
                 suggestions: [{
                   desc: 'Remove chain import and use native array methods',
                   output: '',
@@ -77,7 +75,6 @@ const result = chain([1,2,3]).map(x => x * 2).value();`,
             errors: [
               {
                 messageId: 'noChaining',
-                type: 'ImportSpecifier',
                 suggestions: [{
                   desc: 'Remove chain import and use native array methods',
                   output: '\nconst result = chain([1,2,3]).map(x => x * 2).value();',
@@ -85,7 +82,6 @@ const result = chain([1,2,3]).map(x => x * 2).value();`,
               },
               {
                 messageId: 'noChaining',
-                type: 'CallExpression',
               },
             ],
           },
@@ -95,7 +91,6 @@ const result = _.chain([1,2,3]).map(x => x * 2).value();`,
             errors: [
               {
                 messageId: 'noChaining',
-                type: 'CallExpression',
               },
             ],
           },
@@ -114,7 +109,6 @@ const result = _.chain([1,2,3]).map(x => x * 2).value();`,
             errors: [
               {
                 messageId: 'noChaining',
-                type: 'ImportSpecifier',
                 suggestions: [{
                   desc: 'Remove chain import and use native array methods',
                   output: '',
@@ -128,7 +122,6 @@ const result = _.chain([1,2,3]).map(x => x * 2).value();`,
             errors: [
               {
                 messageId: 'noChaining',
-                type: 'CallExpression',
               },
             ],
           },

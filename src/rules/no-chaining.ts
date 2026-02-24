@@ -13,7 +13,6 @@ const noChaining: Rule.RuleModule = {
     type: 'problem',
     docs: {
       description: 'Prevent lodash chaining that kills tree-shaking even with destructured imports',
-      category: 'Best Practices',
       recommended: true,
     },
     fixable: 'code',

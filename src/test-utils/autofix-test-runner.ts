@@ -48,7 +48,7 @@ export class AutofixTestRunner {
       invalid: [{
         code: test.input,
         output: test.expected,
-        options: test.options ? [test.options] : undefined,
+        ...(test.options && { options: [test.options] }),
         errors: [{
           message: new RegExp(functionName || 'Lodash function'),
         }],
@@ -67,7 +67,7 @@ export class AutofixTestRunner {
       invalid: tests.map(test => ({
         code: test.input,
         output: test.expected,
-        options: test.options ? [test.options] : undefined,
+        ...(test.options && { options: [test.options] }),
         errors: [{
           message: new RegExp(test.functionName ?? this.extractFunctionName(test.input) ?? 'Lodash function'),
         }],
@@ -93,7 +93,7 @@ export class AutofixTestRunner {
       valid: [],
       invalid: errorCases.map(testCase => ({
         code: testCase.code,
-        options: testCase.options ? [testCase.options] : undefined,
+        ...(testCase.options && { options: [testCase.options] }),
         errors: [{
           message: testCase.message ?? /Lodash function/,
         }],
