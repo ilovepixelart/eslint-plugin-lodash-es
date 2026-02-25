@@ -46,9 +46,11 @@ jobs:
         run: npm install ${{ join(matrix.eslint-version, ' ') }} --no-save
 
       - name: Type checking
+        if: ${{ !startsWith(matrix.eslint-version[0], 'eslint@8') }}
         run: npm run type:check
 
       - name: Linting
+        if: ${{ !startsWith(matrix.eslint-version[0], 'eslint@8') }}
         run: npm run lint
 
       - name: Coverage
