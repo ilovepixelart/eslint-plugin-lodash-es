@@ -1,3 +1,22 @@
+<a id="v1.2.1"></a>
+# [v1.2.1](https://github.com/ilovepixelart/eslint-plugin-lodash-es/releases/tag/v1.2.1) - 2026-02-25
+
+- Update  2af824f
+- Merge pull request [#31](https://github.com/ilovepixelart/eslint-plugin-lodash-es/issues/31) from ilovepixelart/feature/dep  1cae7b5
+- Drop 8  ac55332
+- Matrix  84849b0
+- Matrix  d477f48
+- Support latest eslint  461b2b3
+- Dep  79b02ae
+- Update changelog for v1.2.0  d4e2602
+
+---
+
+https://github.com/ilovepixelart/eslint-plugin-lodash-es/compare/v1.2.0...v1.2.1
+
+[Changes][v1.2.1]
+
+
 <a id="v1.2.0"></a>
 # [v1.2.0](https://github.com/ilovepixelart/eslint-plugin-lodash-es/releases/tag/v1.2.0) - 2025-10-25
 
@@ -182,6 +201,7 @@ https://github.com/ilovepixelart/eslint-plugin-lodash-es/compare/62ffd58aa10c5f1
 [Changes][v0.1.1]
 
 
+[v1.2.1]: https://github.com/ilovepixelart/eslint-plugin-lodash-es/compare/v1.2.0...v1.2.1
 [v1.2.0]: https://github.com/ilovepixelart/eslint-plugin-lodash-es/compare/v1.1.0...v1.2.0
 [v1.1.0]: https://github.com/ilovepixelart/eslint-plugin-lodash-es/compare/v1.0.0...v1.1.0
 [v1.0.0]: https://github.com/ilovepixelart/eslint-plugin-lodash-es/compare/v0.3.0...v1.0.0
