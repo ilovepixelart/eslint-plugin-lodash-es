@@ -20,6 +20,11 @@ jobs:
     strategy:
       matrix:
         node-version: [20.x, 22.x]
+        eslint-version:
+          [
+            [eslint@9, "@eslint/js@9"],
+            [eslint@latest, "@eslint/js@latest"],
+          ]
 
     steps:
       - name: Checkout
@@ -35,6 +40,9 @@ jobs:
 
       - name: Installing dependencies
         run: npm ci
+
+      - name: Install eslint ${{ matrix.eslint-version[0] }}
+        run: npm install ${{ join(matrix.eslint-version, ' ') }} --no-save
 
       - name: Type checking
         run: npm run type:check

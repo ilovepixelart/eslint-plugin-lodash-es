@@ -6,7 +6,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ilovepixelart/eslint-plugin-lodash-es.git"
+    "url": "git+https://github.com/ilovepixelart/eslint-plugin-lodash-es.git"
   },
   "bugs": {
     "url": "https://github.com/ilovepixelart/eslint-plugin-lodash-es/issues"
@@ -59,30 +59,34 @@
     "test:open": "vitest run --coverage && open-cli coverage/lcov-report/index.html",
     "type:check": "tsc --noEmit",
     "build": "pkgroll --clean-dist",
-    "release": "npm install && npm run lint && npm run type:check && npm run build && np"
+    "release": "npm install && npm run lint && npm run type:check && npm run build && np --no-publish"
   },
   "devDependencies": {
-    "@eslint/js": "9.38.0",
-    "@stylistic/eslint-plugin": "5.5.0",
+    "@eslint/js": "10.0.1",
+    "@stylistic/eslint-plugin": "5.9.0",
     "@types/estree": "^1.0.8",
-    "@types/node": "24.9.1",
-    "@vitest/coverage-v8": "4.0.2",
-    "eslint": "9.38.0",
-    "globals": "16.4.0",
+    "@types/node": "25.3.0",
+    "@vitest/coverage-v8": "4.0.18",
+    "eslint": "10.0.2",
+    "globals": "17.3.0",
     "jiti": "2.6.1",
+    "np": "11.0.2",
     "open-cli": "8.0.0",
-    "pkgroll": "2.20.1",
+    "pkgroll": "2.26.3",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.46.2",
-    "vitest": "4.0.2"
+    "typescript-eslint": "8.56.1",
+    "vitest": "4.0.18"
   },
   "peerDependencies": {
-    "@types/eslint": "^8.0.0 || ^9.0.0",
-    "eslint": "^8.0.0 || ^9.0.0"
+    "@types/eslint": "^9.0.0 || ^10.0.0",
+    "eslint": "^9.0.0 || ^10.0.0"
   },
   "peerDependenciesMeta": {
     "@types/eslint": {
       "optional": true
     }
+  },
+  "np": {
+    "publish": false
   }
 }

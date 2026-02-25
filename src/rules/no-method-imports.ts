@@ -74,7 +74,6 @@ const noMethodImports: Rule.RuleModule = {
     type: 'problem',
     docs: {
       description: 'Prevent deprecated per-method lodash imports that bypass tree-shaking and will be removed in v5',
-      category: 'Best Practices',
       recommended: true,
     },
     fixable: 'code',

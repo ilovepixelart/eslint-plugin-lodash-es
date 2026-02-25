@@ -44,7 +44,6 @@ const suggestNativeAlternatives: Rule.RuleModule = {
     type: 'suggestion',
     docs: {
       description: 'Suggest native JavaScript alternatives to lodash functions when available',
-      category: 'Best Practices',
       recommended: false,
     },
     fixable: 'code',
