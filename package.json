@@ -75,7 +75,7 @@
     "pkgroll": "2.26.3",
     "typescript": "5.9.3",
     "typescript-eslint": "8.56.1",
-    "vitest": "4.0.18"
+    "vitest": "4.1.0"
   },
   "peerDependencies": {
     "@types/eslint": "^9.0.0 || ^10.0.0",
